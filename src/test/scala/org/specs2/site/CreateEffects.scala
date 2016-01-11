@@ -1,13 +1,12 @@
 package org.specs2.site
 
-import scala.concurrent._, duration._
+import scala.concurrent.{duration}, duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.specs2.control.eff._
 import Eff._
 import Effects._
-import Interpret._
-import cats.data._, Xor._
 import Member.<=
+import snippets._, FutureEffectSnippet._, FutureEffect._
 import cats.syntax.all._
 
 object CreateEffects extends UserGuidePage { def is = "Creating effects".title ^ s2"""
@@ -22,32 +21,7 @@ We need:
 
  - an interpreter
 
-${snippet{
-import scala.concurrent._, duration._
-import scala.concurrent.ExecutionContext.Implicits.global
-import org.specs2.control.eff._
-import Eff._
-import Effects._
-import Interpret._
-import cats.data._, Xor._
-import Member.<=
-
-// create the effect and its interpreter
-object FutureEffect {
-  type Fut[A] = Future[() => A]
-
-  def future[R, A](a: =>A)(implicit m: Fut <= R): Eff[R, A] =
-    send[Fut, R, A](Future(() => a))
-
-  def runFuture[R <: Effects, A, B](atMost: Duration)(effects: Eff[Fut |: R, A]): Eff[R, A] = {
-    val recurse = new Recurse[Fut, R, A] {
-      def apply[X](m: Fut[X]): X Xor Eff[R, A] =
-        Left(Await.result(m.map(_()), atMost))
-    }
-    interpret1((a: A) => a)(recurse)(effects)
-  }
-}
-}}
+${definition[FutureEffectSnippet]}
 
 In the code above:
 
@@ -62,9 +36,8 @@ implementation is shared by many different monads, like `Reader`, `Eval`, `Optio
 example.
 
 Then we can use this effect in a computation:${snippet{
-import FutureEffect._
 
-type F = Fut |: NoEffect
+  type F = Fut |: NoEffect
 
 implicit def FutMember: Fut <= F =
   Member.MemberNatIsMember
@@ -79,19 +52,5 @@ run(runFuture(3.seconds)(action))
 
 """
 
-object FutureEffect {
-  type Fut[A] = Future[() => A]
-
-  def future[R, A](a: =>A)(implicit m: Fut <= R): Eff[R, A] =
-    send[Fut, R, A](Future(() => a))
-
-  def runFuture[R <: Effects, A, B](atMost: Duration)(effects: Eff[Fut |: R, A]): Eff[R, A] = {
-    val recurse = new Recurse[Fut, R, A] {
-      def apply[X](m: Fut[X]): X Xor Eff[R, A] =
-        Left(Await.result(m.map(_()), atMost))
-    }
-    interpret1((a: A) => a)(recurse)(effects)
-  }
-}
 
 }
