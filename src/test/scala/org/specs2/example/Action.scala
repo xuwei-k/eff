@@ -40,16 +40,16 @@ object Action {
   type ActionStack = ErrorOrOk |: Console |: Warnings |: Eval |: NoEffect
 
   implicit def EvalMember: Member[Eval, ActionStack] =
-    Member.MemberNatIsMember
+    Member.infer
 
   implicit def WarningsMember: Member[Warnings, ActionStack] =
-    Member.MemberNatIsMember
+    Member.infer
 
   implicit def ConsoleMember: Member[Console, ActionStack] =
-    Member.MemberNatIsMember
+    Member.infer
 
   implicit def ErrorMember: Member[ErrorOrOk, ActionStack] =
-    Member.MemberNatIsMember
+    Member.infer
 
   /**
    * warn the user about something that is probably wrong on his side,

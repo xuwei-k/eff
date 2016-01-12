@@ -53,7 +53,7 @@ class OptionEffectSpec extends Specification with ScalaCheck { def is = s2"""
     import MemberNat._
 
     implicit def ReaderStackMember: Member[R, S] =
-      Member.MemberNatIsMember
+      Member.infer
 
     // create actions
     val readOption: Eff[S, Int] =
@@ -72,7 +72,7 @@ class OptionEffectSpec extends Specification with ScalaCheck { def is = s2"""
   def stacksafeOption = {
     type E = Option |: NoEffect
     implicit def OptionMember: Member[Option, E] =
-      Member.MemberNatIsMember
+      Member.infer
 
     val list = (1 to 5000).toList
     val action = list.traverseU(i => OptionEffect.some(i))

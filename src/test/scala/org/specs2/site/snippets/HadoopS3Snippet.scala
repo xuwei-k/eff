@@ -26,10 +26,10 @@ object HadoopStack {
   type Hadoop = HadoopReader |: WriterString |: Eval |: NoEffect
 
   implicit def HadoopReaderMember: Member[HadoopReader, Hadoop] =
-    Member.MemberNatIsMember
+    Member.infer
 
   implicit def WriterStringMember: Member[WriterString, Hadoop] =
-    Member.MemberNatIsMember
+    Member.infer
 
   def askHadoopConf: Eff[Hadoop, HadoopConf] =
     ReaderEffect.askTagged
@@ -55,10 +55,10 @@ object S3Stack {
   type S3 = S3Reader |: WriterString |: Eval |: NoEffect
 
   implicit def S3ReaderMember: Member[S3Reader, S3] =
-    Member.MemberNatIsMember
+    Member.infer
 
   implicit def WriterStringMember: Member[WriterString, S3] =
-    Member.MemberNatIsMember
+    Member.infer
 
   def askS3Conf: Eff[S3, S3Conf] =
     ReaderEffect.askTagged

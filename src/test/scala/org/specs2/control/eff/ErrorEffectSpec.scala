@@ -91,10 +91,10 @@ class ErrorEffectSpec extends Specification { def is = s2"""
     type E = ErrorOrOk |: WriterString |: Eval |: NoEffect
 
     implicit def WriterStringMember: Member[WriterString, E] =
-      Member.MemberNatIsMember
+      Member.infer
 
     implicit def ErrorMember: Member[ErrorOrOk, E] =
-      Member.MemberNatIsMember
+      Member.infer
 
     val action: Eff[E, Int] = for {
       _ <- tell[E, String]("start")

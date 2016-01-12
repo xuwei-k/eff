@@ -27,8 +27,8 @@ type WriterString[A] = Writer[String, A]
 
 type S = StateInt |: WriterString |: NoEffect
 
-implicit def StateIntMember: Member[StateInt, S] = Member.MemberNatIsMember
-implicit def WriterStringMember: Member[WriterString, S] = Member.MemberNatIsMember
+implicit def StateIntMember: Member[StateInt, S] = Member.infer
+implicit def WriterStringMember: Member[WriterString, S] = Member.infer
 
 def putAndTell(i: Int): Eff[S, Int] =
   for {
@@ -52,6 +52,7 @@ On the other hand we lose some flexibility:
  - the `putAndTell` method cannot be used in 2 different effects stacks having the `StateInt` and `WriterString` effects
 
 The remedy is to use the `Member` typeclass to create an **open** union of effects:${snippet{
+// '<=' reads 'is member of'
 import Member.<=
 
 def putAndTell[R](i: Int)(implicit s: StateInt <= R, w: WriterString <= R): Eff[R, Int] =
@@ -73,8 +74,8 @@ Now you can learn ${"how to create effects" ~/ CreateEffects}
 
   type S = StateInt |: WriterString |: NoEffect
 
-  implicit def StateIntMember: Member[StateInt, S] = Member.MemberNatIsMember
-  implicit def WriterStringMember: Member[WriterString, S] = Member.MemberNatIsMember
+  implicit def StateIntMember: Member[StateInt, S] = Member.infer
+  implicit def WriterStringMember: Member[WriterString, S] = Member.infer
 
 
 }

@@ -36,7 +36,7 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type S = R |: NoEffect
 
     implicit def ReaderStackMember: Member[R, S] =
-      Member.MemberNatIsMember
+      Member.infer
 
     run(runReader(initial)(ask[S, Int])) === initial
   }
@@ -46,7 +46,7 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type S = R |: NoEffect
 
     implicit def ReaderStackMember: Member[R, S] =
-      Member.MemberNatIsMember
+      Member.infer
 
     val read: Eff[S, Int] =
       for {
@@ -62,7 +62,7 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type S = W |: NoEffect
 
     implicit def WriterStackMember: Member[W, S] =
-      Member.MemberNatIsMember
+      Member.infer
 
     val write: Eff[S, Unit] =
       for {
@@ -81,10 +81,10 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type S = W |: R |: NoEffect
 
     implicit def ReaderStackMember: Member[R, S] =
-      Member.MemberNatIsMember
+      Member.infer
 
     implicit def WriterStack: Member[W, S] =
-      Member.MemberNatIsMember
+      Member.infer
 
     // create actions
     val readWrite: Eff[S, Int] =
@@ -105,7 +105,7 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type WriterString[A] = Writer[String, A]
     type E = WriterString |: NoEffect
     implicit def WriterStringMember: Member[WriterString, E] =
-      Member.MemberNatIsMember
+      Member.infer
 
     val list = (1 to 5000).toList
     val action = list.traverseU(i => WriterEffect.tell[E, String](i.toString))
@@ -117,7 +117,7 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type ReaderString[A] = Reader[String, A]
     type E = ReaderString |: NoEffect
     implicit def ReaderStringMember: Member[ReaderString, E] =
-      Member.MemberNatIsMember
+      Member.infer
 
     val list = (1 to 5000).toList
     val action = list.traverseU(i => ReaderEffect.ask[E, String])
@@ -132,10 +132,10 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type E = ReaderString |: WriterString |: NoEffect
 
     implicit def ReaderStringMember: Member[ReaderString, E] =
-      Member.MemberNatIsMember
+      Member.infer
 
     implicit def WriterStringMember: Member[WriterString, E] =
-      Member.MemberNatIsMember
+      Member.infer
 
     val list = (1 to 5000).toList
     val action = list.traverseU(i => ReaderEffect.ask[E, String] >>= WriterEffect.tell[E, String])

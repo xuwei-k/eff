@@ -31,13 +31,13 @@ class ReadmeSpec extends Specification { def is = s2"""
       type WriterString[X] = Writer[String, X]
 
       implicit def ReaderMember: Member[ReaderInt, Stack] =
-        Member.MemberNatIsMember
+        Member.infer
 
       implicit def WriterMember: Member[WriterString, Stack] =
-        Member.MemberNatIsMember
+        Member.infer
 
       implicit def EvalMember: Member[Eval, Stack] =
-        Member.MemberNatIsMember
+        Member.infer
     }
 
     import StackEffects._
@@ -89,7 +89,7 @@ class ReadmeSpec extends Specification { def is = s2"""
 
     type F = Fut |: NoEffect
     implicit def FutMember: Fut <= F =
-      Member.MemberNatIsMember
+      Member.infer
 
     val action: Eff[F, Int] = for {
       a <- future(1)

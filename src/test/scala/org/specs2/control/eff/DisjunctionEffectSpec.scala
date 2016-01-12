@@ -26,7 +26,7 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
     type S = DisjunctionString |: NoEffect
 
     implicit def DisjunctionStack: Member[DisjunctionString, S] =
-      Member.MemberNatIsMember
+      Member.infer
 
     val disjunction: Eff[S, Int] =
       for {
@@ -41,7 +41,7 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
     type S = DisjunctionString |: NoEffect
 
     implicit def DisjunctionStack: Member[DisjunctionString, S] =
-      Member.MemberNatIsMember
+      Member.infer
 
     val disjunction: Eff[S, Int] =
       for {
@@ -59,10 +59,10 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
     type Stack = DisjunctionString |: ReaderLong |: NoEffect
 
     implicit def ReaderStack: Member[ReaderLong, Stack] =
-      Member.MemberNatIsMember
+      Member.infer
 
     implicit def DisjunctionStringStack: Member[DisjunctionString, Stack] =
-      Member.MemberNatIsMember
+      Member.infer
 
     // create actions
     val readDisjunction: Eff[Stack, Int] =
@@ -83,7 +83,7 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
   def stacksafeRun = {
     type E = DisjunctionString |: NoEffect
     implicit def DisjunctionStringMember: Member[DisjunctionString, E] =
-      Member.MemberNatIsMember
+      Member.infer
 
     val list = (1 to 5000).toList
     val action = list.traverseU(i => DisjunctionEffect.right(i.toString))

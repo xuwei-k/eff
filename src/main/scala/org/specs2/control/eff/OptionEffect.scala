@@ -27,7 +27,7 @@ object OptionEffect {
    *
    * Stop all computations if None is present once
    */
-  def runOption[R <: Effects, A](r: Eff[Option[?] |: R, A]): Eff[R, Option[A]] = {
+  def runOption[R <: Effects, A](r: Eff[Option |: R, A]): Eff[R, Option[A]] = {
     val recurse = new Recurse[Option, R, Option[A]] {
       def apply[X](m: Option[X]) =
         m match {

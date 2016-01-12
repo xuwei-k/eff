@@ -40,7 +40,7 @@ Then we can use this effect in a computation:${snippet{
   type F = Fut |: NoEffect
 
 implicit def FutMember: Fut <= F =
-  Member.MemberNatIsMember
+  Member.infer
 
 val action: Eff[F, Int] = for {
   a <- future(2)

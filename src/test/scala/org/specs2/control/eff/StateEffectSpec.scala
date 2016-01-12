@@ -50,6 +50,6 @@ class StateEffectSpec extends Specification with ScalaCheck { def is = s2"""
   type StateInt[A] = State[Int, A]
   type E = StateInt |: NoEffect
   implicit def StateIntMember: Member[StateInt, E] =
-    Member.MemberNatIsMember
+    Member.infer
 
 }

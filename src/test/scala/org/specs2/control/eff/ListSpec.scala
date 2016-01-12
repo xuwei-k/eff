@@ -20,7 +20,7 @@ class ListSpec extends Specification { def is = s2"""
   type L = List |: NoEffect
 
   implicit def ListMember: List <= L =
-    Member.MemberNatIsMember
+    Member.infer
 
   def listEffect = {
     val action: Eff[L, Int] = for {

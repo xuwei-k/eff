@@ -70,7 +70,10 @@ object Member {
    * Member uses MemberNat which tracks the "depth" of the effect in the stack R
    * using type-level naturals
    */
-  implicit def MemberNatIsMember[T[_], R <: Effects, N <: Nat](implicit m: MemberNat[T, R, N], p: P[N]): Member[T, R] = new Member[T, R] {
+  implicit def infer[T[_], R <: Effects, N <: Nat](implicit m: MemberNat[T, R, N], p: P[N]): Member[T, R] =
+    MemberNatIsMember
+
+  def MemberNatIsMember[T[_], R <: Effects, N <: Nat](implicit m: MemberNat[T, R, N], p: P[N]): Member[T, R] = new Member[T, R] {
     def inject[V](tv: T[V]): Union[R, V] =
       m.inject(p, tv)
 

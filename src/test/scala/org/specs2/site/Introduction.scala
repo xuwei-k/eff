@@ -52,20 +52,20 @@ The stack `Stack` above declares 3 effects:
 Before we can use such a stack we need a bit more boilerplate code:${snippet{
 /**
  * Those declarations are necessary to guide implicit resolution
- * but they only need to be done once per stack.
+ * but they only need to be declared once per stack.
  *
- * Also we need to declare type aliases for Reader and Writer
+ * Also we need to declare type aliases for ReaderInt and WriterString
  * instead of using Reader[Int, ?] or Writer[String, ?] more directly
  */
 
 implicit def ReaderMember: Member[ReaderInt, Stack] =
-  Member.MemberNatIsMember
+  Member.infer
 
 implicit def WriterMember: Member[WriterString, Stack] =
-  Member.MemberNatIsMember
+  Member.infer
 
 implicit def EvalMember: Member[Eval, Stack] =
-  Member.MemberNatIsMember
+  Member.infer
 }}
 
 Now we can write a program with those 3 effects, using the primitive operations provided by `ReaderEffect`, `WriterEffect` and `EvalEffect`:${snippet{
@@ -76,16 +76,16 @@ import cats.syntax.all._
 
 val program: Eff[Stack, Int] = for {
   // get the configuration
-  init <- ask
+  n <- ask
 
   // log the current configuration value
-  _ <- tell("START: the start value is "+init)
+  _ <- tell("the required power is "+n)
 
   // compute the nth power of 2
-  a <- delay(math.pow(2, init.toDouble).toInt)
+  a <- delay(math.pow(2, n.toDouble).toInt)
 
-  // log an end message
-  _ <- tell("END")
+  // log the result
+  _ <- tell("the result is "+a)
 } yield a
 
 // run the action with all the interpreters
@@ -96,7 +96,7 @@ run(runEval(runWriter(runReader(6)(program))))
 As you can see, the effects are being run in the same order as their declaration in the `Stack` type:
 
  1. the `Reader` effect, needing a value to inject
- 2. the `Writer` effect, which will log values
+ 2. the `Writer` effect, which logs values
  3. the `Eval` effect to compute the "power of 2 computation"
  4. finally the `NoEffect` effect (provided by the `Eff` object) to get the final value out of `Eff[Stack, Int]`
 
@@ -110,12 +110,12 @@ Now you can learn about ${"other effects" ~/ OutOfTheBox} supported by this libr
   type Stack = ReaderInt |: WriterString |: Eval |: NoEffect
 
   implicit def ReaderMember: Member[ReaderInt, Stack] =
-    Member.MemberNatIsMember
+    Member.infer
 
   implicit def WriterMember: Member[WriterString, Stack] =
-    Member.MemberNatIsMember
+    Member.infer
 
   implicit def EvalMember: Member[Eval, Stack] =
-    Member.MemberNatIsMember
+    Member.infer
 
 }

@@ -83,10 +83,10 @@ class StacksSpec extends Specification { def is = s2"""
     type Hadoop = HadoopReader |: WriterString |: Eval |: NoEffect
 
     implicit def HadoopReaderMember: Member[HadoopReader, Hadoop] =
-      Member.MemberNatIsMember
+      Member.infer
 
     implicit def WriterStringMember: Member[WriterString, Hadoop] =
-      Member.MemberNatIsMember
+      Member.infer
 
     def askHadoopConf[R](implicit m: HadoopReader <= R): Eff[R, HadoopConf] =
       ReaderEffect.ask(Member.untagMember[Reader[HadoopConf, ?], R, HadoopTag](m))
@@ -112,10 +112,10 @@ class StacksSpec extends Specification { def is = s2"""
     type S3 = S3Reader |: WriterString |: Eval |: NoEffect
 
     implicit def S3ReaderMember: Member[S3Reader, S3] =
-      Member.MemberNatIsMember
+      Member.infer
 
     implicit def WriterStringMember: Member[WriterString, S3] =
-      Member.MemberNatIsMember
+      Member.infer
 
     def askS3Conf[R](implicit m: S3Reader <= R): Eff[R, S3Conf] =
       ReaderEffect.ask(Member.untagMember[Reader[S3Conf, ?], R, S3Tag](m))
@@ -139,10 +139,10 @@ class StacksSpec extends Specification { def is = s2"""
     type Hadoop = HadoopReader |: WriterString |: Eval |: NoEffect
 
     implicit def HadoopReaderMember: Member[HadoopReader, Hadoop] =
-      Member.MemberNatIsMember
+      Member.infer
 
     implicit def WriterStringMember: Member[WriterString, Hadoop] =
-      Member.MemberNatIsMember
+      Member.infer
 
     def askHadoopConf: Eff[Hadoop, HadoopConf] =
       ReaderEffect.askTagged
@@ -168,10 +168,10 @@ class StacksSpec extends Specification { def is = s2"""
     type S3 = S3Reader |: WriterString |: Eval |: NoEffect
 
     implicit def S3ReaderMember: Member[S3Reader, S3] =
-      Member.MemberNatIsMember
+      Member.infer
 
     implicit def WriterStringMember: Member[WriterString, S3] =
-      Member.MemberNatIsMember
+      Member.infer
 
     def askS3Conf: Eff[S3, S3Conf] =
       ReaderEffect.askTagged
