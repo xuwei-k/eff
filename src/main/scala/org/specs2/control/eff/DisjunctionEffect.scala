@@ -1,11 +1,11 @@
 package org.specs2.control.eff
 
 import Eff._
-import Effects._
 import Interpret._
 
 import cats.data.Xor, Xor._
 import cats.syntax.functor._
+//import org.specs2.control.eff.Effects.|:
 
 /**
  * Effect for computation which can fail
@@ -29,20 +29,26 @@ object DisjunctionEffect {
     send[E Xor ?, R, A](Right(a))
 
   /** run the disjunction effect, yielding E Xor A */
-  def runDisjunction[R <: Effects, E, A](r: Eff[(E Xor ?) |: R, A]): Eff[R, E Xor A] = {
-    val recurse = new Recurse[(E Xor ?), R, E Xor A] {
+  def runDisjunction[R <: Effects, U <: Effects, E, A](r: Eff[R, A])(implicit m: Member.Aux[(E Xor ?), R, U]): Eff[U, E Xor A] = {
+    val recurse = new Recurse[(E Xor ?), U, E Xor A] {
       def apply[X](m: E Xor X) =
         m match {
-          case Left(e) => Right(EffMonad[R].pure(Left(e)))
+          case Left(e) => Right(EffMonad[U].pure(Left(e)))
           case Right(a) => Left(a)
         }
     }
 
-    interpret1[R, (E Xor ?), A, E Xor A]((a: A) => Right(a))(recurse)(r)
+    interpret1[R, U, (E Xor ?), A, E Xor A]((a: A) => Right(a): E Xor A)(recurse)(r)
   }
 
   /** run the disjunction effect, yielding Either[E, A] */
-  def runDisjunctionEither[R <: Effects, E, A](r: Eff[(E Xor ?) |: R, A]): Eff[R, Either[E, A]] =
+  def runDisjunctionEither[R <: Effects, U <: Effects, E, A](r: Eff[R, A])(implicit m: Member.Aux[(E Xor ?), R, U]): Eff[U, Either[E, A]] =
     runDisjunction(r).map(_.fold(util.Left.apply, util.Right.apply))
+
+//  implicit def DisjunctionMemberZero[E]: Member.Aux[(E Xor ?), (E Xor ?) |: NoEffect, NoEffect] =
+//    Member.infer[(E Xor ?), (E Xor ?) |: NoEffect, NoEffect, Zero](MemberNat.ZeroMemberNat[(E Xor ?), NoEffect], P[Zero])
+//
+//  implicit def DisjunctionMemberN[R <: Effects, E]: Member.Aux[(E Xor ?), (E Xor ?) |: R, R] =
+//    Member.infer[(E Xor ?), (E Xor ?) |: R, R, Zero](MemberNat.ZeroMemberNat[(E Xor ?), R], P[Zero])
 
 }

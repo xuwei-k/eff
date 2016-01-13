@@ -1,11 +1,12 @@
 package org.specs2.control.eff
 
+//import org.specs2.control.eff.Effects._
+
 import scala.collection.mutable._
 import cats._, data._
 import cats.syntax.semigroup._
 import Tag._
 import Eff._
-import Effects._
 import Interpret._
 
 /**
@@ -35,13 +36,13 @@ object WriterEffect {
    *
    * This uses a ListBuffer internally to append values
    */
-  def runWriter[R <: Effects, O, A, B](w: Eff[Writer[O, ?] |: R, A]): Eff[R, (A, List[O])] =
+  def runWriter[R <: Effects, U <: Effects, O, A, B](w: Eff[R, A])(implicit m: Member.Aux[Writer[O, ?], R, U]): Eff[U, (A, List[O])] =
     runWriterFold(w)(ListFold)
 
   /**
    * More general fold of runWriter where we can use a fold to accumulate values in a mutable buffer
    */
-  def runWriterFold[R <: Effects, O, A, B](w: Eff[Writer[O, ?] |: R, A])(implicit fold: Fold[O, B]): Eff[R, (A, B)] = {
+  def runWriterFold[R <: Effects, U <: Effects, O, A, B](w: Eff[R, A])(fold: Fold[O, B])(implicit m: Member.Aux[Writer[O, ?], R, U]): Eff[U, (A, B)] = {
     val recurse: StateRecurse[Writer[O, ?], A, (A, B)] = new StateRecurse[Writer[O, ?], A, (A, B)] {
       type S = fold.S
       val init = fold.init
@@ -49,16 +50,17 @@ object WriterEffect {
       def finalize(a: A, s: S) = (a, fold.finalize(s))
     }
 
-    interpretState1[R, Writer[O, ?], A, (A, B)]((a: A) => (a, fold.finalize(fold.init)))(recurse)(w)
+    interpretState1[R, U, Writer[O, ?], A, (A, B)]((a: A) => (a, fold.finalize(fold.init)))(recurse)(w)
   }
 
   /**
    * run a tagged writer effect
    */
-  def runTaggedWriter[R <: Effects, T, O, A](w: Eff[({type l[X] = Writer[O, X] @@ T})#l |: R, A]): Eff[R, (A, List[O])] =
+  def runTaggedWriter[R <: Effects, U <: Effects, T, O, A](w: Eff[R, A])(implicit m: Member.Aux[({type l[X] = Writer[O, X] @@ T})#l, R, U]): Eff[U, (A, List[O])] =
     runTaggedWriterFold(w)(ListFold)
 
-  def runTaggedWriterFold[R <: Effects, T, O, A, B](w: Eff[({type l[X] = Writer[O, X] @@ T})#l |: R, A])(implicit fold: Fold[O, B]): Eff[R, (A, B)] = {
+  def runTaggedWriterFold[R <: Effects, U <: Effects, T, O, A, B](w: Eff[R, A])(fold: Fold[O, B])(implicit
+        m: Member.Aux[({type l[X] = Writer[O, X] @@ T})#l, R, U]): Eff[U, (A, B)] = {
     type W[X] = Writer[O, X] @@ T
 
     val recurse = new StateRecurse[W, A, (A, B)] {
@@ -74,7 +76,7 @@ object WriterEffect {
         (a, fold.finalize(s))
     }
 
-    interpretState1[R, W, A, (A, B)]((a: A) => (a, fold.finalize(fold.init)))(recurse)(w)
+    interpretState1[R, U, W, A, (A, B)]((a: A) => (a, fold.finalize(fold.init)))(recurse)(w)
   }
 
   /** support trait for folding values while possibly keeping some internal state */
@@ -98,5 +100,11 @@ object WriterEffect {
     def fold(a: A, s: S) = a |+| s
     def finalize(s: S) = s
   }
+
+//  implicit def WriterMemberZero[A]: Member.Aux[Writer[A, ?], Writer[A, ?] |: NoEffect, NoEffect] =
+//    Member.infer[Writer[A, ?], Writer[A, ?] |: NoEffect, NoEffect, Zero](MemberNat.ZeroMemberNat[Writer[A, ?], NoEffect], P[Zero])
+//
+//  implicit def WriterMemberN[R <: Effects, A]: Member.Aux[Writer[A, ?], Writer[A, ?] |: R, R] =
+//    Member.infer[Writer[A, ?], Writer[A, ?] |: R, R, Zero](MemberNat.ZeroMemberNat[Writer[A, ?], R], P[Zero])
 
 }

@@ -1,11 +1,12 @@
 package org.specs2.control.eff
-
+/*
 import Eff._
 import Effects._
 import org.specs2.{ScalaCheck, Specification}
 import StateEffect._
 import cats.syntax.all._
-import cats.std.all._
+import cats.std.int._
+import cats.std.list._
 import cats.state._
 
 class StateEffectSpec extends Specification with ScalaCheck { def is = s2"""
@@ -22,7 +23,7 @@ class StateEffectSpec extends Specification with ScalaCheck { def is = s2"""
       a <- get[E, Int]
       h <- EffMonad[E].pure("hello")
       _ <- put[E, Int](a + 5)
-      b <- get
+      b <- get[E, Int]
       _ <- put(b + 10)
       w <- EffMonad[E].pure("world")
     } yield h+" "+w
@@ -48,8 +49,8 @@ class StateEffectSpec extends Specification with ScalaCheck { def is = s2"""
   }
 
   type StateInt[A] = State[Int, A]
+
   type E = StateInt |: NoEffect
-  implicit def StateIntMember: Member[StateInt, E] =
-    Member.infer
 
 }
+*/

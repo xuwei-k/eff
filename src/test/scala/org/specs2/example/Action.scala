@@ -1,5 +1,5 @@
 package org.specs2.example
-
+/*
 import org.specs2.control.eff._
 import Effects._, Eff._
 import cats.syntax.all._
@@ -39,18 +39,6 @@ object Action {
 
   type ActionStack = ErrorOrOk |: Console |: Warnings |: Eval |: NoEffect
 
-  implicit def EvalMember: Member[Eval, ActionStack] =
-    Member.infer
-
-  implicit def WarningsMember: Member[Warnings, ActionStack] =
-    Member.infer
-
-  implicit def ConsoleMember: Member[Console, ActionStack] =
-    Member.infer
-
-  implicit def ErrorMember: Member[ErrorOrOk, ActionStack] =
-    Member.infer
-
   /**
    * warn the user about something that is probably wrong on his side,
    * and then fail all other computations
@@ -64,3 +52,4 @@ object Action {
 
 
 }
+*/

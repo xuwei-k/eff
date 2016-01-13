@@ -1,5 +1,6 @@
 package org.specs2.example
 
+/*
 import org.specs2.Specification
 import org.specs2.control.eff._
 import cats.syntax.all._
@@ -10,7 +11,6 @@ import EvalEffect._
 import Effects._
 import Member._
 import Eff._
-
 class ReadmeSpec extends Specification { def is = s2"""
 
  run the first example $firstExample
@@ -22,22 +22,6 @@ class ReadmeSpec extends Specification { def is = s2"""
 
     object StackEffects {
       type Stack = ReaderInt |: WriterString |: Eval |: NoEffect
-
-      /**
-       * Those declarations are necessary to guide implicit resolution
-       * but they only need to be done once per stack
-       */
-      type ReaderInt[X] = Reader[Int, X]
-      type WriterString[X] = Writer[String, X]
-
-      implicit def ReaderMember: Member[ReaderInt, Stack] =
-        Member.infer
-
-      implicit def WriterMember: Member[WriterString, Stack] =
-        Member.infer
-
-      implicit def EvalMember: Member[Eval, Stack] =
-        Member.infer
     }
 
     import StackEffects._
@@ -88,6 +72,7 @@ class ReadmeSpec extends Specification { def is = s2"""
     import FutureEffect._
 
     type F = Fut |: NoEffect
+
     implicit def FutMember: Fut <= F =
       Member.infer
 
@@ -102,3 +87,4 @@ class ReadmeSpec extends Specification { def is = s2"""
   def powerOfTwo(n: Int): Int =
     math.pow(2, n.toDouble).toInt
 }
+*/

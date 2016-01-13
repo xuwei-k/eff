@@ -1,5 +1,5 @@
 package org.specs2.site
-
+/*
 import scala.concurrent.{duration}, duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.specs2.control.eff._
@@ -54,3 +54,4 @@ run(runFuture(3.seconds)(action))
 
 
 }
+*/

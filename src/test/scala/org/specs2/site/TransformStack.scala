@@ -1,5 +1,5 @@
 package org.specs2.site
-
+/*
 import org.specs2.control.eff._
 import Eff._
 import Effects._
@@ -69,7 +69,7 @@ def addKeys(key1: String, key2: String): Eff[S, Int] = for {
   d <- delay(b)
 } yield c + d
 
-run(runEval(runOption1(addKeys("key1", "key2"))))
+run(runEval(runOption(addKeys("key1", "key2"))))
 
 }.eval}
 
@@ -110,3 +110,4 @@ You can find a fully working example of this approach in `src/test/org/specs2/ex
 }
 
 
+*/

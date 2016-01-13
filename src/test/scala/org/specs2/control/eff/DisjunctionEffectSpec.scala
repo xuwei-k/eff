@@ -1,10 +1,9 @@
 package org.specs2.control.eff
-
-import com.ambiata.disorder._
+/*
+import com.ambiata.disorder.{PositiveIntSmall, PositiveLongSmall}
 import DisjunctionEffect._
 import Eff._
 import Effects._
-import MemberNat._
 import ReaderEffect._
 import org.specs2.{ScalaCheck, Specification}
 
@@ -25,9 +24,6 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
   def disjunctionMonad = {
     type S = DisjunctionString |: NoEffect
 
-    implicit def DisjunctionStack: Member[DisjunctionString, S] =
-      Member.infer
-
     val disjunction: Eff[S, Int] =
       for {
         i <- DisjunctionEffect.right[S, String, Int](1)
@@ -39,9 +35,6 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
 
   def disjunctionWithKoMonad = {
     type S = DisjunctionString |: NoEffect
-
-    implicit def DisjunctionStack: Member[DisjunctionString, S] =
-      Member.infer
 
     val disjunction: Eff[S, Int] =
       for {
@@ -58,17 +51,11 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
     type ReaderLong[A] = Reader[Long, A]
     type Stack = DisjunctionString |: ReaderLong |: NoEffect
 
-    implicit def ReaderStack: Member[ReaderLong, Stack] =
-      Member.infer
-
-    implicit def DisjunctionStringStack: Member[DisjunctionString, Stack] =
-      Member.infer
-
     // create actions
     val readDisjunction: Eff[Stack, Int] =
       for {
         j <- DisjunctionEffect.right(someValue.value)
-        i <- ask[Stack, Long]
+        i <- ask[Stack, Long](Member.infer[ReaderLong, Stack, DisjunctionString |: NoEffect, Succ[Zero]])
       } yield i.toInt + j
 
     // run effects
@@ -82,8 +69,6 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
 
   def stacksafeRun = {
     type E = DisjunctionString |: NoEffect
-    implicit def DisjunctionStringMember: Member[DisjunctionString, E] =
-      Member.infer
 
     val list = (1 to 5000).toList
     val action = list.traverseU(i => DisjunctionEffect.right(i.toString))
@@ -92,3 +77,4 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
   }
 
 }
+*/

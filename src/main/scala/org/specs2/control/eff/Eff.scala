@@ -73,13 +73,13 @@ object Eff {
   def collapse[R, M[_], A](r: Eff[R, M[A]])(implicit m: Member[M, R]): Eff[R, A] =
     EffMonad[R].flatMap(r)(mx => send(mx)(m))
 
-  /** use the internal effect as one of the stack effects */
-  def include[R <: Effects, M[_], A](r: Eff[R, M[A]]): Eff[M |: R, A] = {
-    r match {
-      case Pure(mx) => send(mx)
-      case Impure(u, c) => Impure[M |: R, u.X, A](UnionNext(u), Arrs.singleton(x => include(c(x))))
-    }
-  }
+//  /** use the internal effect as one of the stack effects */
+//  def include[R <: Effects, M[_], A](r: Eff[R, M[A]]): Eff[M |: R, A] = {
+//    r match {
+//      case Pure(mx) => send(mx)
+//      case Impure(u, c) => Impure[M |: R, u.X, A](UnionNext(u), Arrs.singleton(x => include(c(x))))
+//    }
+//  }
 
   /** create an Eff value for () */
   def unit[R]: Eff[R, Unit] =

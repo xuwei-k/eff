@@ -1,5 +1,5 @@
 package org.specs2.site
-
+/*
 import cats.data._
 import org.specs2.control.eff._
 import Effects._
@@ -49,25 +49,6 @@ The stack `Stack` above declares 3 effects:
 
  - an `Eval` effect to only compute values on demand (a bit like lazy values)
 
-Before we can use such a stack we need a bit more boilerplate code:${snippet{
-/**
- * Those declarations are necessary to guide implicit resolution
- * but they only need to be declared once per stack.
- *
- * Also we need to declare type aliases for ReaderInt and WriterString
- * instead of using Reader[Int, ?] or Writer[String, ?] more directly
- */
-
-implicit def ReaderMember: Member[ReaderInt, Stack] =
-  Member.infer
-
-implicit def WriterMember: Member[WriterString, Stack] =
-  Member.infer
-
-implicit def EvalMember: Member[Eval, Stack] =
-  Member.infer
-}}
-
 Now we can write a program with those 3 effects, using the primitive operations provided by `ReaderEffect`, `WriterEffect` and `EvalEffect`:${snippet{
 import Eff._
 import ReaderEffect._
@@ -109,13 +90,5 @@ Now you can learn about ${"other effects" ~/ OutOfTheBox} supported by this libr
 
   type Stack = ReaderInt |: WriterString |: Eval |: NoEffect
 
-  implicit def ReaderMember: Member[ReaderInt, Stack] =
-    Member.infer
-
-  implicit def WriterMember: Member[WriterString, Stack] =
-    Member.infer
-
-  implicit def EvalMember: Member[Eval, Stack] =
-    Member.infer
-
 }
+*/

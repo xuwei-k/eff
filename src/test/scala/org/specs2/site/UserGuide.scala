@@ -1,5 +1,5 @@
 package org.specs2.site
-
+/*
 class UserGuide extends UserGuidePage { def is = "eff-cats".title ^ s2"""
 
 Extensible effects are an alternative to monad transformers for computing with effects in a functional way.
@@ -26,3 +26,4 @@ Feel free to open an issue if you notice a bug, have an idea for a feature, or h
 
 }
 
+*/

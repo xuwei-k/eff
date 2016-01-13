@@ -1,11 +1,12 @@
 package org.specs2.control.eff
 
+//import org.specs2.control.eff.Effects._
+
 import scala.util.control.NonFatal
 import cats.data._, Xor._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import Eff._
-import Effects._
 import Member.{<=}
 import Interpret._
 
@@ -50,20 +51,20 @@ trait ErrorEffect[F] { outer =>
    *
    * Stop all computation if there is an exception or a failure.
    */
-  def runError[R <: Effects, A](r: Eff[ErrorOrOk |: R, A]): Eff[R, Error Xor A] = {
-    val recurse = new Recurse[ErrorOrOk, R, Error Xor A] {
+  def runError[R <: Effects, U <: Effects, A](r: Eff[R, A])(implicit m: Member.Aux[ErrorOrOk, R, U]): Eff[U, Error Xor A] = {
+    val recurse = new Recurse[ErrorOrOk, U, Error Xor A] {
       def apply[X](m: ErrorOrOk[X]) =
         m match {
           case Left(e) =>
-            Right(EffMonad[R].pure(Left(e)))
+            Right(EffMonad[U].pure(Left(e)))
 
           case Right(a) =>
             try Left(a.value)
-            catch { case NonFatal(t) => Right(EffMonad[R].pure(Left(Left(t)))) }
+            catch { case NonFatal(t) => Right(EffMonad[U].pure(Left(Left(t)))) }
         }
     }
 
-    interpret1[R, ErrorOrOk, A, Error Xor A]((a: A) => Right(a))(recurse)(r)
+    interpret1[R, U, ErrorOrOk, A, Error Xor A]((a: A) => Right(a): Error Xor A)(recurse)(r)
   }
 
   /**
@@ -101,6 +102,12 @@ trait ErrorEffect[F] { outer =>
         catch { case NonFatal(t) => onError(Left(t)) }
     })
 
+//  implicit def ErrorMemberZero[A]: Member[ErrorOrOk, ErrorOrOk |: NoEffect] =
+//    Member.infer[ErrorOrOk, ErrorOrOk |: NoEffect, NoEffect, Zero](MemberNat.ZeroMemberNat[ErrorOrOk, NoEffect], P[Zero])
+//
+//  implicit def ErrorOrOkMemberN[R <: Effects, A]: Member[ErrorOrOk, ErrorOrOk |: R] =
+//    Member.infer[ErrorOrOk, ErrorOrOk |: R, R, Zero](MemberNat.ZeroMemberNat[ErrorOrOk, R], P[Zero])
+//
 }
 
 /**

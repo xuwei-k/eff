@@ -1,5 +1,5 @@
 package org.specs2.site
-
+/*
 import org.specs2.control.eff._
 import Eff._
 import Effects._
@@ -277,3 +277,4 @@ run(runList(pairsBiggerThan(List(1, 2, 3, 4), 5)))
 }.eval
 
 }
+*/

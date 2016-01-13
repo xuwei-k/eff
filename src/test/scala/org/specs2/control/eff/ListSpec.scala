@@ -1,5 +1,5 @@
 package org.specs2.control.eff
-
+/*
 import org.specs2._
 import Eff._
 import Member.<=
@@ -43,3 +43,4 @@ class ListSpec extends Specification { def is = s2"""
   }
 
 }
+*/

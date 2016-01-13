@@ -1,6 +1,7 @@
 package org.specs2
 package example
 
+/*
 import Action._
 import control.eff.{Member, EvalEffect, ErrorEffect, Eff}
 import EvalEffect._
@@ -13,7 +14,6 @@ import org.specs2.matcher.DisjunctionMatchers
 import cats.syntax.all._
 import cats.data._, Xor._
 import control.eff.syntax.error._
-
 class ActionSpec extends Specification with ScalaCheck with DisjunctionMatchers { def is = s2"""
 
  The action stack can be used to
@@ -100,3 +100,4 @@ class ActionSpec extends Specification with ScalaCheck with DisjunctionMatchers 
   } yield s
 
 }
+*/

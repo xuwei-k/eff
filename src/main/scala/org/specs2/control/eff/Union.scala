@@ -57,12 +57,16 @@ object Union {
  * - extract an effect value from a union if there is such an effect in the stack
  */
 trait Member[T[_], R] {
+  type Out <: Effects
+
   def inject[V](tv: T[V]): Union[R, V]
 
   def project[V](u: Union[R, V]): Option[T[V]]
 }
 
-object Member {
+object Member extends Lower {
+
+  type Aux[T[_], R, U] = Member[T, R] { type Out = U }
 
   /**
    * Implicits for determining if an effect T is member of a stack R
@@ -70,15 +74,70 @@ object Member {
    * Member uses MemberNat which tracks the "depth" of the effect in the stack R
    * using type-level naturals
    */
-  implicit def infer[T[_], R <: Effects, N <: Nat](implicit m: MemberNat[T, R, N], p: P[N]): Member[T, R] =
-    MemberNatIsMember
+//  implicit def infer[T[_], R <: Effects, U <: Effects](implicit m: MemberNat.Aux[T, R, U]): Member.Aux[T, R, U] =
+//    MemberNatIsMember[T, R, U](m)
+//
+//  def MemberNatIsMember[T[_], R <: Effects, U <: Effects](implicit m: MemberNat.Aux[T, R, U]): Member.Aux[T, R, U] = new Member[T, R] {
+//    type Out = U
+//
+//    def inject[V](tv: T[V]): Union[R, V] =
+//      m.inject(tv)
+//
+//    def project[V](u: Union[R, V]): Option[T[V]] =
+//      m.project(u)
+//  }
+//  implicit def ZeroMember2[T[_,_], A]: Member.Aux[T[A,?], T[A,?] |: NoEffect, NoEffect] = new Member[T[A,?], T[A,?] |: NoEffect] {
+//   type Out = NoEffect
+//type TA[V] = T[A, V]
+//    def inject[V](effect: TA[V]): Union[TA |: NoEffect, V] =
+//      Union.now(effect)
+//
+//    def project[V](union: Union[TA |: NoEffect, V]): Option[TA[V]] =
+//      union match {
+//        case UnionNow(x) => Some(x)
+//        case _ => None
+//      }
+//  }
 
-  def MemberNatIsMember[T[_], R <: Effects, N <: Nat](implicit m: MemberNat[T, R, N], p: P[N]): Member[T, R] = new Member[T, R] {
-    def inject[V](tv: T[V]): Union[R, V] =
-      m.inject(p, tv)
 
-    def project[V](u: Union[R, V]): Option[T[V]] =
-      m.project(p, u)
+  implicit def ZeroMember[T[_]]: Member.Aux[T, T |: NoEffect, NoEffect] = new Member[T, T |: NoEffect] {
+   type Out = NoEffect
+
+    def inject[V](effect: T[V]): Union[T |: NoEffect, V] =
+      Union.now(effect)
+
+    def project[V](union: Union[T |: NoEffect, V]): Option[T[V]] =
+      union match {
+        case UnionNow(x) => Some(x)
+        case _ => None
+      }
+  }
+}
+trait Lower {
+  implicit def ZeroMemberR[T[_], R <: Effects]: Member.Aux[T, T |: R, R] = new Member[T, T |: R] {
+   type Out = R
+
+    def inject[V](effect: T[V]): Union[T |: R, V] =
+      Union.now(effect)
+
+    def project[V](union: Union[T |: R, V]): Option[T[V]] =
+      union match {
+        case UnionNow(x) => Some(x)
+        case _ => None
+      }
+  }
+
+  implicit def SuccessorMember[T[_], O[_], R <: Effects](implicit o: Member[O, O |: R], m: Member[T, R]): Member.Aux[T, O |: R, O |: m.Out] = new Member[T, O |: R] {
+    type Out = O |: m.Out
+
+    def inject[V](effect: T[V]) =
+      Union.next(m.inject[V](effect))
+
+    def project[V](union: Union[O |: R, V]) =
+      union match {
+        case UnionNow(_) => None
+        case UnionNext(u) => m.project[V](u)
+      }
   }
 
   /**
@@ -86,6 +145,8 @@ object Member {
    */
   def untagMember[T[_], R, TT](m: Member[({type X[A]=T[A] @@ TT})#X, R]): Member[T, R] =
     new Member[T, R] {
+      type Out = m.Out
+
       def inject[V](tv: T[V]): Union[R, V] =
         m.inject(Tag(tv))
 
@@ -109,33 +170,44 @@ object Member {
  * The rank of a member effects is modelled as a type-level natural
  * and modelled by a value of that type
  */
-trait MemberNat[T[_], R <: Effects, N <: Nat] {
-  def inject[V](rank: P[N], effect: T[V]): Union[R, V]
+trait MemberNat[T[_], R <: Effects] {
+  type Out <: Effects
 
-  def project[V](rank: P[N], union: Union[R, V]): Option[T[V]]
+  def inject[V](effect: T[V]): Union[R, V]
+
+  def project[V](union: Union[R, V]): Option[T[V]]
 }
 
 object MemberNat {
 
-  implicit def ZeroMemberNat[T[_], R <: Effects]: MemberNat[T, T |: R, Zero] = new MemberNat[T, T |: R, Zero] {
-    def inject[V](rank: P[Zero], effect: T[V]): Union[T |: R, V] =
+  type Aux[T[_], R <: Effects, U <: Effects] = MemberNat[T, R] { type Out = U }
+
+  def infer[T[_], R <: Effects, U <: Effects](implicit m: MemberNat.Aux[T, R, U]): MemberNat.Aux[T, R, U] =
+    m
+
+  implicit def ZeroMemberNat[T[_], R <: Effects]: MemberNat.Aux[T, T |: R, R] = new MemberNat[T, T |: R] {
+   type Out = R
+
+    def inject[V](effect: T[V]): Union[T |: R, V] =
       Union.now(effect)
 
-    def project[V](predicate: P[Zero], union: Union[T |: R, V]): Option[T[V]] =
+    def project[V](union: Union[T |: R, V]): Option[T[V]] =
       union match {
         case UnionNow(x) => Some(x)
         case _ => None
       }
   }
 
-  implicit def SuccessorMemberNat[T[_], O[_], R <: Effects, N <: Nat](implicit m: MemberNat[T, R, N]): MemberNat[T, O |: R, Succ[N]] = new MemberNat[T, O |: R, Succ[N]] {
-    def inject[V](predicate: P[Succ[N]], effect: T[V]) =
-      Union.next(m.inject[V](P[N](), effect))
+  implicit def SuccessorMemberNat[T[_], O[_], R <: Effects](implicit m: MemberNat[T, R]): MemberNat.Aux[T, O |: R, O |: m.Out] = new MemberNat[T, O |: R] {
+    type Out = O |: m.Out
 
-    def project[V](predicate: P[Succ[N]], union: Union[O |: R, V]) =
+    def inject[V](effect: T[V]) =
+      Union.next(m.inject[V](effect))
+
+    def project[V](union: Union[O |: R, V]) =
       union match {
         case UnionNow(_) => None
-        case UnionNext(u) => m.project[V](P[N](), u)
+        case UnionNext(u) => m.project[V](u)
       }
   }
 

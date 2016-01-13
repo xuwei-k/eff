@@ -1,5 +1,5 @@
 package org.specs2.control.eff
-
+/*
 import org.specs2.Specification
 import Eff._
 import Effects._
@@ -90,12 +90,6 @@ class ErrorEffectSpec extends Specification { def is = s2"""
 
     type E = ErrorOrOk |: WriterString |: Eval |: NoEffect
 
-    implicit def WriterStringMember: Member[WriterString, E] =
-      Member.infer
-
-    implicit def ErrorMember: Member[ErrorOrOk, E] =
-      Member.infer
-
     val action: Eff[E, Int] = for {
       _ <- tell[E, String]("start")
       a <- OK[E, Int] { throw new Exception("boom"); 1 }
@@ -110,3 +104,4 @@ class ErrorEffectSpec extends Specification { def is = s2"""
   }
 
 }
+*/

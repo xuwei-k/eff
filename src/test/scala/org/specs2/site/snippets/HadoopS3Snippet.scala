@@ -1,6 +1,6 @@
 // 8<---
 package org.specs2.site.snippets
-
+/*
 import HadoopS3Snippet._
 import HadoopStack._
 import S3Stack.{WriterString=>_,_}
@@ -25,12 +25,6 @@ object HadoopStack {
   type WriterString[A] = Writer[String, A]
   type Hadoop = HadoopReader |: WriterString |: Eval |: NoEffect
 
-  implicit def HadoopReaderMember: Member[HadoopReader, Hadoop] =
-    Member.infer
-
-  implicit def WriterStringMember: Member[WriterString, Hadoop] =
-    Member.infer
-
   def askHadoopConf: Eff[Hadoop, HadoopConf] =
     ReaderEffect.askTagged
 
@@ -54,12 +48,6 @@ object S3Stack {
 
   type S3 = S3Reader |: WriterString |: Eval |: NoEffect
 
-  implicit def S3ReaderMember: Member[S3Reader, S3] =
-    Member.infer
-
-  implicit def WriterStringMember: Member[WriterString, S3] =
-    Member.infer
-
   def askS3Conf: Eff[S3, S3Conf] =
     ReaderEffect.askTagged
 
@@ -80,3 +68,4 @@ object S3Stack {
 }
 
 object HadoopS3Snippet extends HadoopS3Snippet
+*/

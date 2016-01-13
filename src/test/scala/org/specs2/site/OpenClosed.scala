@@ -1,5 +1,5 @@
 package org.specs2.site
-
+/*
 import org.specs2.control.eff._
 import Eff._
 import Effects._
@@ -80,3 +80,4 @@ Now you can learn ${"how to create effects" ~/ CreateEffects}
 
 }
 
+*/

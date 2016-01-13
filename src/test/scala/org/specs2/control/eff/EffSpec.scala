@@ -1,5 +1,5 @@
 package org.specs2.control.eff
-
+/*
 import com.ambiata.disorder.PositiveIntSmall
 import org.scalacheck.Arbitrary._
 import org.scalacheck._
@@ -35,18 +35,12 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type R[A] = Reader[Int, A]
     type S = R |: NoEffect
 
-    implicit def ReaderStackMember: Member[R, S] =
-      Member.infer
-
     run(runReader(initial)(ask[S, Int])) === initial
   }
 
   def readerMonadBind = prop { (initial: Int) =>
     type R[A] = Reader[Int, A]
     type S = R |: NoEffect
-
-    implicit def ReaderStackMember: Member[R, S] =
-      Member.infer
 
     val read: Eff[S, Int] =
       for {
@@ -60,9 +54,6 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
   def writerTwice = prop { _ : Int =>
     type W[A] = Writer[String, A]
     type S = W |: NoEffect
-
-    implicit def WriterStackMember: Member[W, S] =
-      Member.infer
 
     val write: Eff[S, Unit] =
       for {
@@ -79,12 +70,6 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type W[A] = Writer[String, A]
     type R[A] = Reader[Int, A]
     type S = W |: R |: NoEffect
-
-    implicit def ReaderStackMember: Member[R, S] =
-      Member.infer
-
-    implicit def WriterStack: Member[W, S] =
-      Member.infer
 
     // create actions
     val readWrite: Eff[S, Int] =
@@ -104,8 +89,6 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
   def stacksafeWriter = {
     type WriterString[A] = Writer[String, A]
     type E = WriterString |: NoEffect
-    implicit def WriterStringMember: Member[WriterString, E] =
-      Member.infer
 
     val list = (1 to 5000).toList
     val action = list.traverseU(i => WriterEffect.tell[E, String](i.toString))
@@ -116,8 +99,6 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
   def stacksafeReader = {
     type ReaderString[A] = Reader[String, A]
     type E = ReaderString |: NoEffect
-    implicit def ReaderStringMember: Member[ReaderString, E] =
-      Member.infer
 
     val list = (1 to 5000).toList
     val action = list.traverseU(i => ReaderEffect.ask[E, String])
@@ -130,12 +111,6 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type WriterString[A] = Writer[String, A]
 
     type E = ReaderString |: WriterString |: NoEffect
-
-    implicit def ReaderStringMember: Member[ReaderString, E] =
-      Member.infer
-
-    implicit def WriterStringMember: Member[WriterString, E] =
-      Member.infer
 
     val list = (1 to 5000).toList
     val action = list.traverseU(i => ReaderEffect.ask[E, String] >>= WriterEffect.tell[E, String])
@@ -159,3 +134,4 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
      Arbitrary(arbitrary[Int => Int].map(f => EffMonad[NoEffect].pure(f)))
 
 }
+*/
