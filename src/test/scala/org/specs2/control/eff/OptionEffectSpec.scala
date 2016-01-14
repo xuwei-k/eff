@@ -110,13 +110,7 @@ object test {
   type S = RI |: Option |: NoEffect
 
 
-import Member2._
-
-implicit def ReaderMember[A, R <: Effects]: Member2.Aux[Reader[A, ?], Reader[A, ?] |: R, R] =
-  ZeroMemberR[Reader[A, ?], R]
-
-implicit val oo: Member2.Aux[Option, S, RI |: NoEffect] =
-  SuccessorMember[Option, RI, Option |: NoEffect, RI |: NoEffect](???, ???)
+import ReaderImplicits._
 
 
    val readOption: Eff[S, Int] =
@@ -144,12 +138,19 @@ trait Member2[T[_], R] {
   def project[V](u: Union[R, V]): Option[T[V]]
 }
 
-object Member2 extends Lower2 {
+object Member2 {
 
   type Aux[T[_], R, U] = Member2[T, R] { type Out = U }
 
-  implicit def ZeroMemberR[T[_], R <: Effects]: Member2.Aux[T, T |: R, R] = new Member2[T, T |: R] {
-   type Out = R
+  implicit def ZeroMemberInfer[T[_], R <: Effects]: Member2.Aux[T, T |: R, R] =
+    Member2.ZeroMember[T, R]
+
+
+  implicit def SuccessorMemberInfer[T[_], O[_], R <: Effects, U <: Effects](implicit o: Member2.Aux[O, O |: R, R], m: Member2.Aux[T, R, U]): Member2.Aux[T, O |: R, O |: U] =
+    Member2.SuccessorMember[T, O, R, U](o, m)
+
+  def ZeroMember[T[_], R <: Effects]: Member2.Aux[T, T |: R, R] = new Member2[T, T |: R] {
+    type Out = R
 
     def inject[V](effect: T[V]): Union[T |: R, V] =
       Union.now(effect)
@@ -161,8 +162,7 @@ object Member2 extends Lower2 {
       }
   }
 
-
-  implicit def SuccessorMember[T[_], O[_], R <: Effects, U <: Effects](implicit o: Member2.Aux[O, O |: R, R], m: Member2.Aux[T, R, U]): Member2.Aux[T, O |: R, O |: U] = new Member2[T, O |: R] {
+  def SuccessorMember[T[_], O[_], R <: Effects, U <: Effects](implicit o: Member2.Aux[O, O |: R, R], m: Member2.Aux[T, R, U]): Member2.Aux[T, O |: R, O |: U] = new Member2[T, O |: R] {
     type Out = O |: U
 
     def inject[V](effect: T[V]) =
@@ -175,22 +175,11 @@ object Member2 extends Lower2 {
       }
   }
 
-
-
-//  implicit def ZeroMember[T[_]]: Member2.Aux[T, NoEffect, T |: NoEffect] = new Member2[T, T |: NoEffect] {
-//   type Out = NoEffect
-//
-//    def inject[V](effect: T[V]): Union[T |: NoEffect, V] =
-//      Union.now(effect)
-//
-//    def project[V](union: Union[T |: NoEffect, V]): Option[T[V]] =
-//      union match {
-//        case UnionNow(x) => Some(x)
-//        case _ => None
-//      }
-//  }
 }
-trait Lower2 {
 
+object ReaderImplicits extends ReaderImplicits
 
+trait ReaderImplicits {
+  implicit def ReaderMemberInfer[A, R <: Effects]: Member2.Aux[Reader[A, ?], Reader[A, ?] |: R, R] =
+    Member2.ZeroMember[Reader[A, ?], R]
 }
