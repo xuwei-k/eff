@@ -88,40 +88,49 @@ class OptionEffectSpec extends Specification with ScalaCheck { def is = s2"""
 
 object test {
 
-  type RI[A] = Reader[Int, A]
-  type S = Eval |: RI |: NoEffect
-
   def send2[T[_], R, V](tv: T[V])(implicit member: Member2[T, R]): Eff[R, V] =
     impure(member.inject(tv), Arrs.unit)
 
   def eval2[R, A](a: A)(implicit member: Member2[Eval, R]): Eff[R, A] =
     send2[Eval, R, A](Eval.later(a))
 
-  def ask2[R, T](implicit member: Member2[Reader[T, ?], R]): Eff[R, T] =
-    local2[R, T, T](identity)
+  def ask2[R, A](implicit member: Member2[Reader[A  , ?], R]): Eff[R, A] =
+    send2[Reader[A, ?], R, A](Reader(identity _))
 
-  def local2[R, T, U](f: T => U)(implicit member: Member2[Reader[T, ?], R]): Eff[R, U] =
-    send2[Reader[T, ?], R, U](Reader(f))
+  def some2[R, A](a: A)(implicit member: Member2[Option, R]): Eff[R, A] =
+    send2[Option, R, A](Option(a))
 
   def runReader2[R <: Effects, U <: Effects, A, B](env: A)(r: Eff[R, B])(implicit m: Member2.Aux[Reader[A, ?], R, U]): Eff[U, B] =
    ???
 
-  def runOption2[R <: Effects, U <: Effects, A](r: Eff[R, A])(implicit m: Member2.Aux[Eval, R, U]): Eff[U, Option[A]] = ???
+  def runEval2[R <: Effects, U <: Effects, A](r: Eff[R, A])(implicit m: Member2.Aux[Eval, R, U]): Eff[U, Option[A]] = ???
+  def runOption2[R <: Effects, U <: Effects, A](r: Eff[R, A])(implicit m: Member2.Aux[Option, R, U]): Eff[U, Option[A]] = ???
 
-//   implicit def a: Member2.Aux[RI, Eval |: NoEffect, S] = ???
-//   implicit def b: Member2.Aux[Eval, RI |: NoEffect, S] = ???
-//   implicit def c: Member2.Aux[RI, NoEffect, RI |: NoEffect] = ???
+  type RI[A] = Reader[Int, A]
+  type S = RI |: Option |: NoEffect
+
+
+import Member2._
+
+implicit def ReaderMember[A, R <: Effects]: Member2.Aux[Reader[A, ?], Reader[A, ?] |: R, R] =
+  ZeroMemberR[Reader[A, ?], R]
+
+implicit val oo: Member2.Aux[Option, S, RI |: NoEffect] =
+  SuccessorMember[Option, RI, Option |: NoEffect, RI |: NoEffect](???, ???)
+
 
    val readOption: Eff[S, Int] =
       for {
-        j <- eval2[S, Int](3)
-        i <- ask2[S, Int]
+        j <- ask2[S, Int]
+        i <- some2[S, Int](2)
       } yield i + j
 
-    // run effects
-    val initial = 10
 
-    run(runReader2(initial)(runOption2(readOption)))
+    run(
+      runReader2(10)(
+        runOption2(readOption) //(oo)
+      ) //(rr)
+    )
 
 
 
@@ -137,10 +146,24 @@ trait Member2[T[_], R] {
 
 object Member2 extends Lower2 {
 
-  type Aux[T[_], U, R] = Member2[T, R] { type Out = U }
+  type Aux[T[_], R, U] = Member2[T, R] { type Out = U }
 
-  implicit def SuccessorMember[T[_], O[_], R <: Effects](implicit o: Member2[O, O |: R], m: Member[T, R]): Member2.Aux[T, O |: m.Out, O |: R] = new Member2[T, O |: R] {
-    type Out = O |: m.Out
+  implicit def ZeroMemberR[T[_], R <: Effects]: Member2.Aux[T, T |: R, R] = new Member2[T, T |: R] {
+   type Out = R
+
+    def inject[V](effect: T[V]): Union[T |: R, V] =
+      Union.now(effect)
+
+    def project[V](union: Union[T |: R, V]): Option[T[V]] =
+      union match {
+        case UnionNow(x) => Some(x)
+        case _ => None
+      }
+  }
+
+
+  implicit def SuccessorMember[T[_], O[_], R <: Effects, U <: Effects](implicit o: Member2.Aux[O, O |: R, R], m: Member2.Aux[T, R, U]): Member2.Aux[T, O |: R, O |: U] = new Member2[T, O |: R] {
+    type Out = O |: U
 
     def inject[V](effect: T[V]) =
       Union.next(m.inject[V](effect))
@@ -168,18 +191,6 @@ object Member2 extends Lower2 {
 //  }
 }
 trait Lower2 {
-  implicit def ZeroMemberR[T[_], R <: Effects]: Member2.Aux[T, R, T |: R] = new Member2[T, T |: R] {
-   type Out = R
-
-    def inject[V](effect: T[V]): Union[T |: R, V] =
-      Union.now(effect)
-
-    def project[V](union: Union[T |: R, V]): Option[T[V]] =
-      union match {
-        case UnionNow(x) => Some(x)
-        case _ => None
-      }
-  }
 
 
 }

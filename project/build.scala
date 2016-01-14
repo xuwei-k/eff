@@ -38,6 +38,7 @@ object build extends Build {
   lazy val compilationSettings: Seq[Settings] = Seq(
     javacOptions ++= Seq("-Xmx3G", "-Xms512m", "-Xss4m"),
     maxErrors := 20,
+    triggeredMessage := Watched.clearWhenTriggered,
     scalacOptions ++= Seq("-Xfatal-warnings",
             "-Xlint",
             "-Yno-adapted-args",
