@@ -1,11 +1,11 @@
 package org.specs2.control.eff
 
+
+import cats.data._, Xor._
+import cats.syntax.functor._
 import Eff._
 import Interpret._
-
-import cats.data.Xor, Xor._
-import cats.syntax.functor._
-//import org.specs2.control.eff.Effects.|:
+import Effects.|:
 
 /**
  * Effect for computation which can fail
@@ -45,10 +45,7 @@ object DisjunctionEffect {
   def runDisjunctionEither[R <: Effects, U <: Effects, E, A](r: Eff[R, A])(implicit m: Member.Aux[(E Xor ?), R, U]): Eff[U, Either[E, A]] =
     runDisjunction(r).map(_.fold(util.Left.apply, util.Right.apply))
 
-//  implicit def DisjunctionMemberZero[E]: Member.Aux[(E Xor ?), (E Xor ?) |: NoEffect, NoEffect] =
-//    Member.infer[(E Xor ?), (E Xor ?) |: NoEffect, NoEffect, Zero](MemberNat.ZeroMemberNat[(E Xor ?), NoEffect], P[Zero])
-//
-//  implicit def DisjunctionMemberN[R <: Effects, E]: Member.Aux[(E Xor ?), (E Xor ?) |: R, R] =
-//    Member.infer[(E Xor ?), (E Xor ?) |: R, R, Zero](MemberNat.ZeroMemberNat[(E Xor ?), R], P[Zero])
+  implicit def DisjunctionMemberInfer[E, R <: Effects]: Member.Aux[Xor[E, ?], Xor[E, ?] |: R, R] =
+    Member.ZeroMember[Xor[E, ?], R]
 
 }

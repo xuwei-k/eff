@@ -1,12 +1,12 @@
 package org.specs2.control.eff
 
-import Eff._
-import cats._, state._, std.all._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import Tag._
 import Interpret._
-import org.specs2.control.eff.Effects.|:
+import Eff._
+import cats._, state._, std.all._
+import Effects.|:
 
 /**
  * Effect for passing state along computations
@@ -126,12 +126,9 @@ trait StateEffect {
   }
 }
 
-object StateEffect extends StateEffect {
-
-//  implicit def StateMemberZero[S]: Member.Aux[State[S, ?], State[S, ?] |: NoEffect, NoEffect] =
-//    Member.infer[State[S, ?], State[S, ?] |: NoEffect, NoEffect, Zero](MemberNat.ZeroMemberNat[State[S, ?], NoEffect], P[Zero])
-//
-//  implicit def StateMemberN[R <: Effects, S]: Member.Aux[State[S, ?], State[S, ?] |: R, R] =
-//    Member.infer[State[S, ?], State[S, ?] |: R, R, Zero](MemberNat.ZeroMemberNat[State[S, ?], R], P[Zero])
-
+trait StateEffectImplicits {
+  implicit def StateMemberInfer[S, R <: Effects]: Member.Aux[State[S, ?], State[S, ?] |: R, R] =
+    Member.ZeroMember[State[S, ?], R]
 }
+
+object StateEffectImplicits extends StateEffectImplicits

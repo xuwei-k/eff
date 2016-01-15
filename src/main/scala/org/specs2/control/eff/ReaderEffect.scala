@@ -1,9 +1,10 @@
 package org.specs2.control.eff
 
-import Eff._
 import cats._, data._, Xor._
 import Interpret._
 import Tag._
+import Eff._
+import Effects.|:
 
 /**
  * Effect for computations depending on an environment.
@@ -52,25 +53,11 @@ object ReaderEffect {
 
     interpret1[R, U, ({type l[X] = Reader[A, X] @@ T})#l, B, B]((b: B) => b)(recurse)(r)
   }
-
-
-//  implicit def ReaderMemberX[R <: Effects, U <: Effects, A]: Member.Aux[Reader[A, ?], R, U] =
-//    Member.infer[Reader[A, ?], R, U] //(MemberNat.infer[Reader[A, ?], R, U])
-
-//  implicit def ReaderMemberN[R <: Effects, A]: Member.Aux[Reader[A, ?], Reader[A, ?] |: R, R] =
-//    Member.infer[Reader[A, ?], Reader[A, ?] |: R, R, Zero](MemberNat.ZeroMemberNat[Reader[A, ?], R], P[Zero])
-//
-//
-//  implicit def ReaderMemberZero[A]: Member.Aux[Reader[A, ?], Reader[A, ?] |: NoEffect, NoEffect] =
-//    Member.infer[Reader[A, ?], Reader[A, ?] |: NoEffect, NoEffect, Zero](MemberNat.ZeroMemberNat[Reader[A, ?], NoEffect], P[Zero])
-//
-//  implicit def ReaderMemberN[R <: Effects, A]: Member.Aux[Reader[A, ?], Reader[A, ?] |: R, R] =
-//    Member.infer[Reader[A, ?], Reader[A, ?] |: R, R, Zero](MemberNat.ZeroMemberNat[Reader[A, ?], R], P[Zero])
-
-//  implicit def TaggedReaderMemberZero[A, T]: Member.Aux[({type l[X] = Reader[A, X] @@ T})#l, ({type l[X] = Reader[A, X] @@ T})#l |: NoEffect, NoEffect] =
-//    Member.infer[({type l[X] = Reader[A, X] @@ T})#l, ({type l[X] = Reader[A, X] @@ T})#l |: NoEffect, NoEffect, Zero](MemberNat.ZeroMemberNat[({type l[X] = Reader[A, X] @@ T})#l, NoEffect], P[Zero])
-//
-//  implicit def TaggedReaderMemberN[R <: Effects, A, T]: Member.Aux[({type l[X] = Reader[A, X] @@ T})#l, ({type l[X] = Reader[A, X] @@ T})#l |: R, R] =
-//    Member.infer[({type l[X] = Reader[A, X] @@ T})#l, ({type l[X] = Reader[A, X] @@ T})#l |: R, R, Zero](MemberNat.ZeroMemberNat[({type l[X] = Reader[A, X] @@ T})#l, R], P[Zero])
-
 }
+
+trait ReaderImplicits {
+  implicit def ReaderMemberInfer[A, R <: Effects]: Member.Aux[Reader[A, ?], Reader[A, ?] |: R, R] =
+    Member.ZeroMember[Reader[A, ?], R]
+}
+
+object ReaderImplicits extends ReaderImplicits

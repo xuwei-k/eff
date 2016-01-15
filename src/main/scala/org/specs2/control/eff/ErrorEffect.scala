@@ -1,12 +1,11 @@
 package org.specs2.control.eff
 
-//import org.specs2.control.eff.Effects._
-
 import scala.util.control.NonFatal
 import cats.data._, Xor._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import Eff._
+import Effects.|:
 import Member.{<=}
 import Interpret._
 
@@ -102,12 +101,8 @@ trait ErrorEffect[F] { outer =>
         catch { case NonFatal(t) => onError(Left(t)) }
     })
 
-//  implicit def ErrorMemberZero[A]: Member[ErrorOrOk, ErrorOrOk |: NoEffect] =
-//    Member.infer[ErrorOrOk, ErrorOrOk |: NoEffect, NoEffect, Zero](MemberNat.ZeroMemberNat[ErrorOrOk, NoEffect], P[Zero])
-//
-//  implicit def ErrorOrOkMemberN[R <: Effects, A]: Member[ErrorOrOk, ErrorOrOk |: R] =
-//    Member.infer[ErrorOrOk, ErrorOrOk |: R, R, Zero](MemberNat.ZeroMemberNat[ErrorOrOk, R], P[Zero])
-//
+  implicit def ErrorMemberInfer[R <: Effects]: Member.Aux[ErrorOrOk, ErrorOrOk |: R, R] =
+    Member.ZeroMember[ErrorOrOk, R]
 }
 
 /**

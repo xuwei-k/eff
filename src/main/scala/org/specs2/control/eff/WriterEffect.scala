@@ -1,12 +1,11 @@
 package org.specs2.control.eff
 
-//import org.specs2.control.eff.Effects._
-
 import scala.collection.mutable._
 import cats._, data._
 import cats.syntax.semigroup._
 import Tag._
 import Eff._
+import Effects.|:
 import Interpret._
 
 /**
@@ -100,11 +99,11 @@ object WriterEffect {
     def fold(a: A, s: S) = a |+| s
     def finalize(s: S) = s
   }
-
-//  implicit def WriterMemberZero[A]: Member.Aux[Writer[A, ?], Writer[A, ?] |: NoEffect, NoEffect] =
-//    Member.infer[Writer[A, ?], Writer[A, ?] |: NoEffect, NoEffect, Zero](MemberNat.ZeroMemberNat[Writer[A, ?], NoEffect], P[Zero])
-//
-//  implicit def WriterMemberN[R <: Effects, A]: Member.Aux[Writer[A, ?], Writer[A, ?] |: R, R] =
-//    Member.infer[Writer[A, ?], Writer[A, ?] |: R, R, Zero](MemberNat.ZeroMemberNat[Writer[A, ?], R], P[Zero])
-
 }
+
+trait WriterImplicits {
+  implicit def WriterMemberInfer[O, R <: Effects]: Member.Aux[Writer[O, ?], Writer[O, ?] |: R, R] =
+    Member.ZeroMember[Writer[O, ?], R]
+}
+
+object WriterImplicits extends WriterImplicits

@@ -47,7 +47,7 @@ object build extends Build {
             "-Ywarn-unused-import",
             "-Ywarn-dead-code",
             "-deprecation:false", "-Xcheckinit", "-unchecked", "-feature", "-language:_"),
-    scalacOptions in Test ++= Seq("-Yrangepos"),
+    scalacOptions in Test ++= Seq("-Yrangepos"), //, "-Xlog-implicits"),
     scalacOptions in Test ~= (_.filterNot(Set("-Ywarn-dead-code"))),
     addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
   )

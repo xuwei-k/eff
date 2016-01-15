@@ -1,5 +1,5 @@
 package org.specs2.control.eff
-/*
+
 import org.specs2.Specification
 import Eff._
 import Effects._
@@ -34,4 +34,4 @@ class EvalEffectSpec extends Specification { def is = s2"""
     run(attemptEval(action)) ==== Right(list)
   }
 }
-*/
+

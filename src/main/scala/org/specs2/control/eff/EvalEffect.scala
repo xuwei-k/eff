@@ -1,7 +1,5 @@
 package org.specs2.control.eff
 
-import org.specs2.control.eff.Effects.|:
-
 import scala.util.control.NonFatal
 import cats.data._, Xor._
 import Eff._
@@ -41,10 +39,5 @@ object EvalEffect {
     interpret1((a: A) => Right(a): Throwable Xor A)(recurse)(r)
   }
 
-//  implicit def EvalMemberZero[A]: Member.Aux[Eval, Eval |: NoEffect, NoEffect] =
-//    Member.infer
-//
-//  implicit def EvalMemberN[R <: Effects]: Member.Aux[Eval, Eval |: R, R] =
-//    Member.infer
 }
 

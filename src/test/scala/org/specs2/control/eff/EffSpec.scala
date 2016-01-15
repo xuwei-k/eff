@@ -8,32 +8,33 @@ import Effects._
 import ReaderEffect._
 import WriterEffect._
 import org.specs2.{ScalaCheck, Specification}
-
 import cats.data._
 import cats.syntax.all._
 import cats.std.all._
 
 class EffSpec extends Specification with ScalaCheck { def is = s2"""
 
- The Eff monad respects the laws            $$laws
+ The Eff monad respects the laws            $laws
 
  run the reader monad with a pure operation $readerMonadPure
  run the reader monad with a bind operation $readerMonadBind
  run the writer monad twice                 $writerTwice
 
- run a reader/writer action $readerWriter
+ run a reader/writer action $$readerWriter
 
- The Eff monad is stack safe with Writer                 $stacksafeWriter
- The Eff monad is stack safe with Reader                 $stacksafeReader
- The Eff monad is stack safe with both Reader and Writer $stacksafeReaderWriter
+ The Eff monad is stack safe with Writer                 $$stacksafeWriter
+ The Eff monad is stack safe with Reader                 $$stacksafeReader
+ The Eff monad is stack safe with both Reader and Writer $$stacksafeReaderWriter
 
 """
 
-  //def laws = monad.laws[F]
+  def laws = pending //cats.laws.discipline.MonadTests[F].monad[Int, Int, Int]
 
   def readerMonadPure = prop { (initial: Int) =>
     type R[A] = Reader[Int, A]
     type S = R |: NoEffect
+
+   // import ReaderImplicits._
 
     run(runReader(initial)(ask[S, Int])) === initial
   }
@@ -41,6 +42,8 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
   def readerMonadBind = prop { (initial: Int) =>
     type R[A] = Reader[Int, A]
     type S = R |: NoEffect
+
+    import ReaderImplicits._
 
     val read: Eff[S, Int] =
       for {
@@ -54,6 +57,7 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
   def writerTwice = prop { _ : Int =>
     type W[A] = Writer[String, A]
     type S = W |: NoEffect
+    //import WriterImplicits._
 
     val write: Eff[S, Unit] =
       for {
@@ -63,13 +67,16 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
 
     run(runWriter(write)) ==== (((), List("hello", "world")))
   }
-
+/*
   def readerWriter = prop { init: PositiveIntSmall =>
 
     // define a Reader / Writer stack
     type W[A] = Writer[String, A]
     type R[A] = Reader[Int, A]
     type S = W |: R |: NoEffect
+
+    object SImplicits extends MemberImplicits with ReaderImplicits with WriterImplicits
+    import SImplicits._
 
     // create actions
     val readWrite: Eff[S, Int] =
@@ -99,6 +106,7 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
   def stacksafeReader = {
     type ReaderString[A] = Reader[String, A]
     type E = ReaderString |: NoEffect
+    import ReaderImplicits._
 
     val list = (1 to 5000).toList
     val action = list.traverseU(i => ReaderEffect.ask[E, String])
@@ -117,7 +125,7 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
 
     run(WriterEffect.runWriter(ReaderEffect.runReader("h")(action))) ==== ((list.as(()), list.as("h")))
   }
-
+*/
   /**
    * Helpers
    */
@@ -134,4 +142,4 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
      Arbitrary(arbitrary[Int => Int].map(f => EffMonad[NoEffect].pure(f)))
 
 }
-*/
+                   */

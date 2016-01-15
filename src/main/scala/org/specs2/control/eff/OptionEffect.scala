@@ -3,7 +3,6 @@ package org.specs2.control.eff
 import cats.data._, Xor._
 import Interpret._
 import Eff._
-//import org.specs2.control.eff.Effects._
 
 /**
  * Effect for optional computations
@@ -38,12 +37,6 @@ object OptionEffect {
 
     interpret1[R, U, Option, A, Option[A]]((a: A) => Option(a))(recurse)(r)
   }
-
-//  implicit def OptionMemberZero[A]: Member.Aux[Option, Option |: NoEffect, NoEffect] =
-//    Member.infer
-//
-//  implicit def OptionMemberN[R <: Effects]: Member.Aux[Option, Option |: R, R] =
-//    Member.infer
 
 }
 

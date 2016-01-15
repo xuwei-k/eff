@@ -1,6 +1,6 @@
 package org.specs2.control.eff
 
-import cats.Eval
+import cats.{Unapply, Eval}
 import com.ambiata.disorder._
 import org.specs2.{ScalaCheck, Specification}
 import Eff._
@@ -94,43 +94,69 @@ object test {
   def eval2[R, A](a: A)(implicit member: Member2[Eval, R]): Eff[R, A] =
     send2[Eval, R, A](Eval.later(a))
 
-  def ask2[R, A](implicit member: Member2[Reader[A  , ?], R]): Eff[R, A] =
+  def tell2[R, A](a: A)(implicit member: Member2[Writer[A, ?], R]): Eff[R, Unit] =
+    send2[Writer[A, ?], R, Unit](Writer(a, ()))(???)
+
+  def ask2[R, A](implicit member: Member2[Reader[A, ?], R]): Eff[R, A] =
     send2[Reader[A, ?], R, A](Reader(identity _))
 
   def some2[R, A](a: A)(implicit member: Member2[Option, R]): Eff[R, A] =
     send2[Option, R, A](Option(a))
 
-  def runReader2[R <: Effects, U <: Effects, A, B](env: A)(r: Eff[R, B])(implicit m: Member2.Aux[Reader[A, ?], R, U]): Eff[U, B] =
-   ???
-
+  def runReader2[R <: Effects, U <: Effects, A, B](env: A)(r: Eff[R, B])(implicit m: Member2.Aux[Reader[A, ?], R, U]): Eff[U, B] = ???
+  def runWriter2[R <: Effects, U <: Effects, A, B](r: Eff[R, B])(implicit m: Member2.Aux[Writer[A, ?], R, U]): Eff[U, B] = ???
   def runEval2[R <: Effects, U <: Effects, A](r: Eff[R, A])(implicit m: Member2.Aux[Eval, R, U]): Eff[U, Option[A]] = ???
   def runOption2[R <: Effects, U <: Effects, A](r: Eff[R, A])(implicit m: Member2.Aux[Option, R, U]): Eff[U, Option[A]] = ???
 
   type RI[A] = Reader[Int, A]
-  type S = RI |: Option |: NoEffect
+  type WI[A] = Writer[Int, A]
+  type S = WI |: RI |: NoEffect
 
 
 import ReaderImplicits._
+import WriterImplicits._
 
+
+//implicit val oo: Member2.Aux[Option, S, WI |: NoEffect] =
+//  Member2.zero
+//
+//implicit val ww: Member2.Aux[WI, S, Option |: NoEffect] =
+//  Member2.inc[WI, Option, WI |: NoEffect, NoEffect]//(Member2.zero[WI, NoEffect])
+
+//import Member2._
 
    val readOption: Eff[S, Int] =
       for {
-        j <- ask2[S, Int]
-        i <- some2[S, Int](2)
-      } yield i + j
+        _ <- ask2[S, Int] //(WriterU.WriterInt)
+        _ <- tell2[S, Int](1) //(WriterU.WriterInt)
+//        i <- some2(2)
+      } yield 1
 
 
-    run(
-      runReader2(10)(
-        runOption2(readOption) //(oo)
-      ) //(rr)
-    )
-
-
+//    run(
+//      runReader2(3)(
+        runWriter2(readOption)
+//      )
+//    )
 
 }
 
+trait WriterU[X] {
+  type W
+  type TA[x] = Writer[W, x]
+}
+
+object WriterU {
+
+
+
+//  implicit def WriterMemberUInfer[R <: Effects, A]: Member.Aux[WriterU, WriterU |: R, R] =
+//    Member.ZeroMember[WriterU, R]
+}
+
+
 trait Member2[T[_], R] {
+  // the resulting effect type
   type Out <: Effects
 
   def inject[V](tv: T[V]): Union[R, V]
@@ -138,16 +164,14 @@ trait Member2[T[_], R] {
   def project[V](u: Union[R, V]): Option[T[V]]
 }
 
+
+
 object Member2 {
 
   type Aux[T[_], R, U] = Member2[T, R] { type Out = U }
 
-  implicit def ZeroMemberInfer[T[_], R <: Effects]: Member2.Aux[T, T |: R, R] =
-    Member2.ZeroMember[T, R]
-
-
-  implicit def SuccessorMemberInfer[T[_], O[_], R <: Effects, U <: Effects](implicit o: Member2.Aux[O, O |: R, R], m: Member2.Aux[T, R, U]): Member2.Aux[T, O |: R, O |: U] =
-    Member2.SuccessorMember[T, O, R, U](o, m)
+  implicit def zero[T[_], R <: Effects]: Member2.Aux[T, T |: R, R] =
+    ZeroMember[T, R]
 
   def ZeroMember[T[_], R <: Effects]: Member2.Aux[T, T |: R, R] = new Member2[T, T |: R] {
     type Out = R
@@ -162,7 +186,7 @@ object Member2 {
       }
   }
 
-  def SuccessorMember[T[_], O[_], R <: Effects, U <: Effects](implicit o: Member2.Aux[O, O |: R, R], m: Member2.Aux[T, R, U]): Member2.Aux[T, O |: R, O |: U] = new Member2[T, O |: R] {
+  def SuccessorMember[T[_], O[_], R <: Effects, U <: Effects](implicit m: Member2.Aux[T, R, U]): Member2.Aux[T, O |: R, O |: U] = new Member2[T, O |: R] {
     type Out = O |: U
 
     def inject[V](effect: T[V]) =
@@ -175,11 +199,25 @@ object Member2 {
       }
   }
 
+  implicit def inc[T[_], O[_], R <: Effects, U <: Effects](implicit m: Member2.Aux[T, R, U]): Member2.Aux[T, O |: R, O |: U] =
+    Member2.SuccessorMember(m)
+
 }
 
 object ReaderImplicits extends ReaderImplicits
 
 trait ReaderImplicits {
-  implicit def ReaderMemberInfer[A, R <: Effects]: Member2.Aux[Reader[A, ?], Reader[A, ?] |: R, R] =
-    Member2.ZeroMember[Reader[A, ?], R]
+  implicit def ReaderMember[R <: Effects, U <: Effects, A]: Member2.Aux[Reader[A, ?], R, U] = {
+    type W[X] = Reader[A, X]
+    implicitly[Member2.Aux[W, R, U]]
+  }
+}
+
+object WriterImplicits extends WriterImplicits
+
+trait WriterImplicits {
+  implicit def WriterMember[R <: Effects, U <: Effects, A]: Member2.Aux[Writer[A, ?], R, U] = {
+    type W[X] = Writer[A, X]
+    implicitly[Member2.Aux[W, R, U]]
+  }
 }

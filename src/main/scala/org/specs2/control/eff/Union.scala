@@ -1,5 +1,6 @@
 package org.specs2.control.eff
 
+import cats.arrow.NaturalTransformation
 import cats.data._
 import Effects._
 import Tag._
@@ -64,58 +65,12 @@ trait Member[T[_], R] {
   def project[V](u: Union[R, V]): Option[T[V]]
 }
 
-object Member extends Lower {
+object Member extends MemberImplicits {
 
   type Aux[T[_], R, U] = Member[T, R] { type Out = U }
 
-  /**
-   * Implicits for determining if an effect T is member of a stack R
-   *
-   * Member uses MemberNat which tracks the "depth" of the effect in the stack R
-   * using type-level naturals
-   */
-//  implicit def infer[T[_], R <: Effects, U <: Effects](implicit m: MemberNat.Aux[T, R, U]): Member.Aux[T, R, U] =
-//    MemberNatIsMember[T, R, U](m)
-//
-//  def MemberNatIsMember[T[_], R <: Effects, U <: Effects](implicit m: MemberNat.Aux[T, R, U]): Member.Aux[T, R, U] = new Member[T, R] {
-//    type Out = U
-//
-//    def inject[V](tv: T[V]): Union[R, V] =
-//      m.inject(tv)
-//
-//    def project[V](u: Union[R, V]): Option[T[V]] =
-//      m.project(u)
-//  }
-//  implicit def ZeroMember2[T[_,_], A]: Member.Aux[T[A,?], T[A,?] |: NoEffect, NoEffect] = new Member[T[A,?], T[A,?] |: NoEffect] {
-//   type Out = NoEffect
-//type TA[V] = T[A, V]
-//    def inject[V](effect: TA[V]): Union[TA |: NoEffect, V] =
-//      Union.now(effect)
-//
-//    def project[V](union: Union[TA |: NoEffect, V]): Option[TA[V]] =
-//      union match {
-//        case UnionNow(x) => Some(x)
-//        case _ => None
-//      }
-//  }
-
-
-  implicit def ZeroMember[T[_]]: Member.Aux[T, T |: NoEffect, NoEffect] = new Member[T, T |: NoEffect] {
-   type Out = NoEffect
-
-    def inject[V](effect: T[V]): Union[T |: NoEffect, V] =
-      Union.now(effect)
-
-    def project[V](union: Union[T |: NoEffect, V]): Option[T[V]] =
-      union match {
-        case UnionNow(x) => Some(x)
-        case _ => None
-      }
-  }
-}
-trait Lower {
-  implicit def ZeroMemberR[T[_], R <: Effects]: Member.Aux[T, T |: R, R] = new Member[T, T |: R] {
-   type Out = R
+  def ZeroMember[T[_], R <: Effects]: Member.Aux[T, T |: R, R] = new Member[T, T |: R] {
+    type Out = R
 
     def inject[V](effect: T[V]): Union[T |: R, V] =
       Union.now(effect)
@@ -127,8 +82,8 @@ trait Lower {
       }
   }
 
-  implicit def SuccessorMember[T[_], O[_], R <: Effects](implicit o: Member[O, O |: R], m: Member[T, R]): Member.Aux[T, O |: R, O |: m.Out] = new Member[T, O |: R] {
-    type Out = O |: m.Out
+  def SuccessorMember[T[_], O[_], R <: Effects, U <: Effects](implicit o: Member.Aux[O, O |: R, R], m: Member.Aux[T, R, U]): Member.Aux[T, O |: R, O |: U] = new Member[T, O |: R] {
+    type Out = O |: U
 
     def inject[V](effect: T[V]) =
       Union.next(m.inject[V](effect))
@@ -143,7 +98,7 @@ trait Lower {
   /**
    * helper method to untag a tagged effect
    */
-  def untagMember[T[_], R, TT](m: Member[({type X[A]=T[A] @@ TT})#X, R]): Member[T, R] =
+  def untagMember[T[_], R, TT](m: Member[({type X[A]=T[A] @@ TT})#X, R]): Member.Aux[T, R, m.Out] =
     new Member[T, R] {
       type Out = m.Out
 
@@ -154,84 +109,13 @@ trait Lower {
         m.project(u).map(Tag.unwrap)
     }
 
-  /**
-   * Syntactic sugar for the Member type
-   *
-   * implicit m: Member[M, R]
-   * implicit m: M <= R
-   *
-   */
   type <=[M[_], R] = Member[M, R]
-
 }
 
+trait MemberImplicits {
+  implicit def ZeroMemberInfer[T[_], R <: Effects]: Member.Aux[T, T |: R, R] =
+    Member.ZeroMember[T, R]
 
-/**
- * The rank of a member effects is modelled as a type-level natural
- * and modelled by a value of that type
- */
-trait MemberNat[T[_], R <: Effects] {
-  type Out <: Effects
-
-  def inject[V](effect: T[V]): Union[R, V]
-
-  def project[V](union: Union[R, V]): Option[T[V]]
+  implicit def SuccessorMemberInfer[T[_], O[_], R <: Effects, U <: Effects](implicit o: Member.Aux[O, O |: R, R], m: Member.Aux[T, R, U]): Member.Aux[T, O |: R, O |: U] =
+    Member.SuccessorMember[T, O, R, U](o, m)
 }
-
-object MemberNat {
-
-  type Aux[T[_], R <: Effects, U <: Effects] = MemberNat[T, R] { type Out = U }
-
-  def infer[T[_], R <: Effects, U <: Effects](implicit m: MemberNat.Aux[T, R, U]): MemberNat.Aux[T, R, U] =
-    m
-
-  implicit def ZeroMemberNat[T[_], R <: Effects]: MemberNat.Aux[T, T |: R, R] = new MemberNat[T, T |: R] {
-   type Out = R
-
-    def inject[V](effect: T[V]): Union[T |: R, V] =
-      Union.now(effect)
-
-    def project[V](union: Union[T |: R, V]): Option[T[V]] =
-      union match {
-        case UnionNow(x) => Some(x)
-        case _ => None
-      }
-  }
-
-  implicit def SuccessorMemberNat[T[_], O[_], R <: Effects](implicit m: MemberNat[T, R]): MemberNat.Aux[T, O |: R, O |: m.Out] = new MemberNat[T, O |: R] {
-    type Out = O |: m.Out
-
-    def inject[V](effect: T[V]) =
-      Union.next(m.inject[V](effect))
-
-    def project[V](union: Union[O |: R, V]) =
-      union match {
-        case UnionNow(_) => None
-        case UnionNext(u) => m.project[V](u)
-      }
-  }
-
-}
-
-/**
- * type level naturals
- */
-sealed trait Nat
-
-trait Zero extends Nat
-trait Succ[N <: Nat] extends Nat
-
-/**
- * values with a phantom type representing a type-level natural
- */
-case class P[N <: Nat]()
-
-object P {
-
-  implicit def ZeroPredicate: P[Zero] =
-    P[Zero]
-
-  implicit def SuccPredicate[N <: Nat](implicit prev: P[N]): P[Succ[N]] =
-    P[Succ[N]]
-}
-
