@@ -1,8 +1,7 @@
 package org.specs2.control.eff
-/*
+
 import org.specs2._
 import Eff._
-import Member.<=
 import Effects._
 import ListEffect._
 
@@ -18,9 +17,6 @@ class ListSpec extends Specification { def is = s2"""
 """
 
   type L = List |: NoEffect
-
-  implicit def ListMember: List <= L =
-    Member.infer
 
   def listEffect = {
     val action: Eff[L, Int] = for {
@@ -43,4 +39,4 @@ class ListSpec extends Specification { def is = s2"""
   }
 
 }
-*/
+

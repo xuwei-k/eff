@@ -1,6 +1,5 @@
 package org.specs2.example
 
-/*
 import org.specs2.Specification
 import org.specs2.control.eff._
 import cats.syntax.all._
@@ -9,8 +8,9 @@ import ReaderEffect._
 import WriterEffect._
 import EvalEffect._
 import Effects._
-import Member._
+import Member.<=
 import Eff._
+
 class ReadmeSpec extends Specification { def is = s2"""
 
  run the first example $firstExample
@@ -21,6 +21,8 @@ class ReadmeSpec extends Specification { def is = s2"""
   def firstExample = {
 
     object StackEffects {
+      type ReaderInt[A] = Reader[Int, A]
+      type WriterString[A] = Writer[String, A]
       type Stack = ReaderInt |: WriterString |: Eval |: NoEffect
     }
 
@@ -35,7 +37,7 @@ class ReadmeSpec extends Specification { def is = s2"""
       _ <- tell[Stack, String]("START: the start value is "+init)
 
       // compute the nth power of 2
-      a <- delay(powerOfTwo(init))
+      a <- delay[Stack, Int](powerOfTwo(init))
 
       // log an end message
       _ <- tell[Stack, String]("END")
@@ -73,12 +75,9 @@ class ReadmeSpec extends Specification { def is = s2"""
 
     type F = Fut |: NoEffect
 
-    implicit def FutMember: Fut <= F =
-      Member.infer
-
     val action: Eff[F, Int] = for {
-      a <- future(1)
-      b <- future(2)
+      a <- future[F, Int](1)
+      b <- future[F, Int](2)
     } yield a + b
 
     run(runFuture(3.seconds)(action)) ==== 3
@@ -87,4 +86,4 @@ class ReadmeSpec extends Specification { def is = s2"""
   def powerOfTwo(n: Int): Int =
     math.pow(2, n.toDouble).toInt
 }
-*/
+

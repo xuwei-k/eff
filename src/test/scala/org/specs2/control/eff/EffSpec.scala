@@ -1,5 +1,5 @@
 package org.specs2.control.eff
-/*
+
 import com.ambiata.disorder.PositiveIntSmall
 import org.scalacheck.Arbitrary._
 import org.scalacheck._
@@ -11,6 +11,7 @@ import org.specs2.{ScalaCheck, Specification}
 import cats.data._
 import cats.syntax.all._
 import cats.std.all._
+
 
 class EffSpec extends Specification with ScalaCheck { def is = s2"""
 
@@ -34,9 +35,7 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type R[A] = Reader[Int, A]
     type S = R |: NoEffect
 
-   // import ReaderImplicits._
-
-    run(runReader(initial)(ask[S, Int])) === initial
+    run(runReader(initial)(ask[S, Int](ReaderMemberFirst))) === initial
   }
 
   def readerMonadBind = prop { (initial: Int) =>
@@ -57,17 +56,16 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
   def writerTwice = prop { _ : Int =>
     type W[A] = Writer[String, A]
     type S = W |: NoEffect
-    //import WriterImplicits._
 
     val write: Eff[S, Unit] =
       for {
-        _ <- tell[S, String]("hello")
-        _ <- tell[S, String]("world")
+        _ <- tell("hello")
+        _ <- tell("world")
       } yield ()
 
     run(runWriter(write)) ==== (((), List("hello", "world")))
   }
-/*
+
   def readerWriter = prop { init: PositiveIntSmall =>
 
     // define a Reader / Writer stack
@@ -125,7 +123,7 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
 
     run(WriterEffect.runWriter(ReaderEffect.runReader("h")(action))) ==== ((list.as(()), list.as("h")))
   }
-*/
+
   /**
    * Helpers
    */
@@ -142,4 +140,3 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
      Arbitrary(arbitrary[Int => Int].map(f => EffMonad[NoEffect].pure(f)))
 
 }
-                   */

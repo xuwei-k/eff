@@ -13,10 +13,17 @@ import Effects.|:
  *
  * Several state effects can be used in the same stack if they are tagged
  *
- * Internally backed up by scalaz.State
+ * Internally backed up by cats.state.State
  *
  */
-trait StateEffect {
+trait StateEffect extends
+  StateCreation with
+  StateInterpretation with
+  StateImplicits
+
+object StateEffect extends StateEffect
+
+trait StateCreation {
 
   /** store a new state value */
   def put[R, S](s: S)(implicit member: Member[State[S, ?], R]): Eff[R, Unit] =
@@ -50,6 +57,9 @@ trait StateEffect {
   def modifyTagged[R, U, T, S](f: S => S)(implicit member: Member[({type l[X] = State[S, X] @@ U})#l, R]): Eff[R, Unit] =
     getTagged >>= ((s: S) => putTagged(f(s)))
 
+}
+
+trait StateInterpretation {
   /** run a state effect, with a Monoidal state */
   def evalZero[R <: Effects, U <: Effects, S : Monoid, A](w: Eff[R, A])(implicit m: Member.Aux[State[S, ?], R, U]): Eff[U, A] =
     eval(Monoid[S].empty)(w)
@@ -126,9 +136,22 @@ trait StateEffect {
   }
 }
 
-trait StateEffectImplicits {
-  implicit def StateMemberInfer[S, R <: Effects]: Member.Aux[State[S, ?], State[S, ?] |: R, R] =
-    Member.ZeroMember[State[S, ?], R]
+trait StateImplicits extends StateImplicits1 {
+  implicit def StateMemberZero[A]: Member.Aux[State[A, ?], State[A, ?] |: NoEffect, NoEffect] = {
+    type T[X] = State[A, X]
+    Member.zero[T]
+  }
+  implicit def StateMemberFirst[R <: Effects, A]: Member.Aux[State[A, ?], State[A, ?] |: R, R] = {
+    type T[X] = State[A, X]
+    Member.first[T, R]
+  }
+}
+trait StateImplicits1 {
+  implicit def StateMemberSuccessor[O[_], R <: Effects, U <: Effects, A](implicit m: Member.Aux[State[A, ?], R, U]): Member.Aux[State[A, ?], O |: R, O |: U] = {
+    type T[X] = State[A, X]
+    Member.successor[T, O, R, U]
+  }
 }
 
-object StateEffectImplicits extends StateEffectImplicits
+object StateImplicits extends StateImplicits
+

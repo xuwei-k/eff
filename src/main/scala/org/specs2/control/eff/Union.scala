@@ -82,7 +82,7 @@ object Member extends MemberImplicits {
       }
   }
 
-  def SuccessorMember[T[_], O[_], R <: Effects, U <: Effects](implicit o: Member.Aux[O, O |: R, R], m: Member.Aux[T, R, U]): Member.Aux[T, O |: R, O |: U] = new Member[T, O |: R] {
+  def SuccessorMember[T[_], O[_], R <: Effects, U <: Effects](implicit m: Member.Aux[T, R, U]): Member.Aux[T, O |: R, O |: U] = new Member[T, O |: R] {
     type Out = O |: U
 
     def inject[V](effect: T[V]) =
@@ -112,10 +112,17 @@ object Member extends MemberImplicits {
   type <=[M[_], R] = Member[M, R]
 }
 
-trait MemberImplicits {
-  implicit def ZeroMemberInfer[T[_], R <: Effects]: Member.Aux[T, T |: R, R] =
-    Member.ZeroMember[T, R]
+trait MemberImplicits extends MemberImplicits1 {
+  implicit def zero[T[_]]: Member.Aux[T, T |: NoEffect, NoEffect] =
+    Member.ZeroMember[T, NoEffect]
+}
 
-  implicit def SuccessorMemberInfer[T[_], O[_], R <: Effects, U <: Effects](implicit o: Member.Aux[O, O |: R, R], m: Member.Aux[T, R, U]): Member.Aux[T, O |: R, O |: U] =
-    Member.SuccessorMember[T, O, R, U](o, m)
+trait MemberImplicits1 extends MemberImplicits2 {
+  implicit def first[T[_], R <: Effects]: Member.Aux[T, T |: R, R] =
+    Member.ZeroMember[T, R]
+}
+
+trait MemberImplicits2 {
+  implicit def successor[T[_], O[_], R <: Effects, U <: Effects](implicit m: Member.Aux[T, R, U]): Member.Aux[T, O |: R, O |: U] =
+    Member.SuccessorMember[T, O, R, U](m)
 }

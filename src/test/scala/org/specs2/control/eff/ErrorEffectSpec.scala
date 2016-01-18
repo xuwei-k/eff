@@ -1,9 +1,12 @@
 package org.specs2.control.eff
-/*
+
 import org.specs2.Specification
 import Eff._
 import Effects._
 import ErrorEffect.{ok => OK, _}
+import EvalEffect._
+import WriterEffect._
+
 import scala.collection.mutable.ListBuffer
 import syntax.error._
 import cats.syntax.all._
@@ -82,9 +85,6 @@ class ErrorEffectSpec extends Specification { def is = s2"""
   }
 
   def logException = {
-    import ErrorEffect._
-    import EvalEffect._
-    import WriterEffect._
 
     type WriterString[A] = Writer[String, A]
 
@@ -104,4 +104,4 @@ class ErrorEffectSpec extends Specification { def is = s2"""
   }
 
 }
-*/
+

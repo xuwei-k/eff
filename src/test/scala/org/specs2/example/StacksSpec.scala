@@ -1,17 +1,18 @@
 package org.specs2.example
 
-/*
 import org.specs2._
 import control.eff._
 import Effects._
 import EvalEffect._
-import Eff._
-import Member.{<=}
 import WriterEffect._
+import ReaderEffect._
+import Eff._
+import Member.<=
 import cats.syntax.all._
 import cats.data._
 import Tag._
 import control.eff.syntax.eff._
+
 class StacksSpec extends Specification { def is = s2"""
 
  Some domains may use different effect stacks sharing some common effects.
@@ -88,7 +89,7 @@ class StacksSpec extends Specification { def is = s2"""
     def readFile[R](path: String)(implicit r: HadoopReader <= R, w: WriterString <= R): Eff[R, String] =
       for {
         c <- askHadoopConf(r)
-        _ <- tell("Reading from "+path)(w)
+        _ <- tell[R, String]("Reading from "+path)(w)
       } yield c.mappers.toString
 
     def runHadoopReader[R <: Effects, A](conf: HadoopConf): Eff[HadoopReader |: R, A] => Eff[R, A] =
@@ -111,7 +112,7 @@ class StacksSpec extends Specification { def is = s2"""
     def writeFile[R](key: String, content: String)(implicit r: S3Reader <= R, w: WriterString <= R): Eff[R, Unit] =
       for {
         c <- askS3Conf(r)
-        _ <- tell("Writing to bucket "+c.bucket+": "+content)(w)
+        _ <- tell[R, String]("Writing to bucket "+c.bucket+": "+content)(w)
       } yield ()
 
     def runS3Reader[R <: Effects, A](conf: S3Conf): Eff[S3Reader |: R, A] => Eff[R, A] =
@@ -132,7 +133,7 @@ class StacksSpec extends Specification { def is = s2"""
     def readFile(path: String): Eff[Hadoop, String] =
       for {
         c <- askHadoopConf
-        _ <- tell("Reading from "+path)
+        _ <- tell[Hadoop, String]("Reading from "+path)
       } yield c.mappers.toString
 
     def runHadoopReader[R <: Effects, A](conf: HadoopConf): Eff[HadoopReader |: R, A] => Eff[R, A] =
@@ -155,7 +156,7 @@ class StacksSpec extends Specification { def is = s2"""
     def writeFile(key: String, content: String): Eff[S3, Unit] =
       for {
         c <- askS3Conf
-        _ <- tell("Writing to bucket "+c.bucket+": "+content)
+        _ <- tell[S3, String]("Writing to bucket "+c.bucket+": "+content)
       } yield ()
 
     def runS3Reader[R <: Effects, A](conf: S3Conf): Eff[S3Reader |: R, A] => Eff[R, A] =
@@ -163,4 +164,3 @@ class StacksSpec extends Specification { def is = s2"""
   }
 
 }
-*/

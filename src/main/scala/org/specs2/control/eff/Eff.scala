@@ -7,7 +7,8 @@ import cats._
 import cats.data._, Xor._
 import Union._
 import Effects._
-import Member.{<=}
+import Member.<=
+import Eff._
 
 /**
  * Effects of type R, returning a value of type A
@@ -130,26 +131,29 @@ object Eff {
    */
   def effInto[R <: Effects, U, A](e: Eff[R, A])(implicit f: IntoPoly[R, U, A]): Eff[U, A] =
     f(e)
+}
 
-  /**
-   * Trait for polymorphic recursion into Eff[?, A]
-   *
-   * The idea is to deal with one effect at the time:
-   *
-   *  - if the effect stack is M |: R and if U contains M
-   *    we transform each "Union[R, X]" in the Impure case into a Union for U
-   *    and we try to recurse on other effects present in R
-   *
-   *  - if the effect stack is M |: NoEffect and if U contains M we
-   *    just "inject" the M[X] effect into Eff[U, A] using the Member typeclass
-   *    if M is not present when we decompose we throw an exception. This case
-   *    should never happen because if there is no other effect in the stack
-   *    there should be at least something producing a value of type A
-   *
-   */
-  trait IntoPoly[R <: Effects, U, A] {
-    def apply(e: Eff[R, A]): Eff[U, A]
-  }
+/**
+ * Trait for polymorphic recursion into Eff[?, A]
+ *
+ * The idea is to deal with one effect at the time:
+ *
+ *  - if the effect stack is M |: R and if U contains M
+ *    we transform each "Union[R, X]" in the Impure case into a Union for U
+ *    and we try to recurse on other effects present in R
+ *
+ *  - if the effect stack is M |: NoEffect and if U contains M we
+ *    just "inject" the M[X] effect into Eff[U, A] using the Member typeclass
+ *    if M is not present when we decompose we throw an exception. This case
+ *    should never happen because if there is no other effect in the stack
+ *    there should be at least something producing a value of type A
+ *
+ */
+trait IntoPoly[R <: Effects, U, A] {
+  def apply(e: Eff[R, A]): Eff[U, A]
+}
+
+object IntoPoly extends IntoPolyLower {
 
   implicit def intoNoEff[M[_], U, A](implicit m: Member[M, M |: NoEffect], mu: Member[M, U]): IntoPoly[M |: NoEffect, U, A] =
     new IntoPoly[M |: NoEffect, U, A] {
@@ -167,7 +171,8 @@ object Eff {
         }
       }
     }
-
+}
+trait IntoPolyLower {
   implicit def intoEff[M[_], R <: Effects, U, A](implicit m: Member[M, M |: R], mu: Member[M, U], recurse: IntoPoly[R, U, A]): IntoPoly[M |: R, U, A] =
     new IntoPoly[M |: R, U, A] {
       def apply(e: Eff[M |: R, A]): Eff[U, A] = {
@@ -185,7 +190,6 @@ object Eff {
       }
     }
 }
-
 
 /**
  * Sequence of monadic functions from A to B: A => Eff[B]

@@ -20,7 +20,12 @@ import Interpret._
  * Several writer effects can be used in the same stack if they are tagged.
  *
  */
-object WriterEffect {
+object WriterEffect extends
+  WriterCreation with
+  WriterInterpretation with
+  WriterImplicits
+
+trait WriterCreation {
 
   /** write a given value */
   def tell[R, O](o: O)(implicit member: Member[Writer[O, ?], R]): Eff[R, Unit] =
@@ -29,6 +34,10 @@ object WriterEffect {
   /** write a given value */
   def tellTagged[R, T, O](o: O)(implicit member: Member[({type l[X] = Writer[O, X] @@ T})#l, R]): Eff[R, Unit] =
     send[({type l[X] = Writer[O, X] @@ T})#l, R, Unit](Tag(Writer(o, ())))
+
+}
+
+trait WriterInterpretation {
 
   /**
    * run a writer effect and return the list of written values
@@ -101,9 +110,22 @@ object WriterEffect {
   }
 }
 
-trait WriterImplicits {
-  implicit def WriterMemberInfer[O, R <: Effects]: Member.Aux[Writer[O, ?], Writer[O, ?] |: R, R] =
-    Member.ZeroMember[Writer[O, ?], R]
+trait WriterImplicits extends WriterImplicits1 {
+  implicit def WriterMemberZero[A]: Member.Aux[Writer[A, ?], Writer[A, ?] |: NoEffect, NoEffect] = {
+    type T[X] = Writer[A, X]
+    Member.zero[T]
+  }
+  implicit def WriterMemberFirst[R <: Effects, A]: Member.Aux[Writer[A, ?], Writer[A, ?] |: R, R] = {
+    type T[X] = Writer[A, X]
+    Member.first[T, R]
+  }
+}
+
+trait WriterImplicits1 {
+  implicit def WriterMemberSuccessor[O[_], R <: Effects, U <: Effects, A](implicit m: Member.Aux[Writer[A, ?], R, U]): Member.Aux[Writer[A, ?], O |: R, O |: U] = {
+    type T[X] = Writer[A, X]
+    Member.successor[T, O, R, U]
+  }
 }
 
 object WriterImplicits extends WriterImplicits

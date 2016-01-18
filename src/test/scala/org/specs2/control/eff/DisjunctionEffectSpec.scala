@@ -2,6 +2,7 @@ package org.specs2.control.eff
 
 import com.ambiata.disorder.{PositiveIntSmall, PositiveLongSmall}
 import DisjunctionEffect._
+import ReaderEffect._
 import Eff._
 import Effects._
 import org.specs2.{ScalaCheck, Specification}
@@ -45,24 +46,24 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
   }
 
   def disjunctionReader = prop { (init: PositiveLongSmall, someValue: PositiveIntSmall) =>
-//
-//    // define a Reader / Disjunction stack
-//    type ReaderLong[A] = Reader[Long, A]
-//    type S = DisjunctionString |: ReaderLong |: NoEffect
-//
-//    // create actions
-//    val readDisjunction: Eff[S, Int] =
-//      for {
-//        j <- DisjunctionEffect.right[S, String, Int](someValue.value)
-//        i <- ask[S, Long]
-//      } yield i.toInt + j
-//
-//    // run effects
-//    val initial = init.value
-//
-//    run(runReader(initial)(runDisjunction(readDisjunction))) must_==
-//      Right(initial.toInt + someValue.value)
-ok
+
+    // define a Reader / Disjunction stack
+    type ReaderLong[A] = Reader[Long, A]
+    type S = DisjunctionString |: ReaderLong |: NoEffect
+
+    // create actions
+    val readDisjunction: Eff[S, Int] =
+      for {
+        j <- DisjunctionEffect.right[S, String, Int](someValue.value)
+        i <- ask[S, Long]
+      } yield i.toInt + j
+
+    // run effects
+    val initial = init.value
+
+    run(runReader(initial)(runDisjunction(readDisjunction))) must_==
+      Right(initial.toInt + someValue.value)
+
   }
 
   type DisjunctionString[A] = String Xor A

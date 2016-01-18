@@ -16,8 +16,12 @@ import Effects.|:
  * A tagged Reader effect can be run with runTaggedReader
  *
  */
-object ReaderEffect {
+object ReaderEffect extends
+  ReaderCreation with
+  ReaderInterpretation with
+  ReaderImplicits
 
+trait ReaderCreation {
   /** get the environment */
   def ask[R, T](implicit member: Member[Reader[T, ?], R]): Eff[R, T] =
     local[R, T, T](identity)
@@ -33,7 +37,9 @@ object ReaderEffect {
   /** modify the environment */
   def localTagged[R, Tg, T, U](f: T => U)(implicit member: Member[({type l[X] = Reader[T, X] @@ Tg})#l, R]): Eff[R, U] =
     send[({type l[X] = Reader[T, X] @@ Tg})#l, R, U](Tag(Reader(f)))
+}
 
+trait ReaderInterpretation {
   /** interpret the Reader effect by providing an environment when required */
   def runReader[R <: Effects, U <: Effects, A, B](env: A)(r: Eff[R, B])(implicit m: Member.Aux[Reader[A, ?], R, U]): Eff[U, B] = {
     val recurse = new Recurse[Reader[A, ?], U, B] {
@@ -55,9 +61,37 @@ object ReaderEffect {
   }
 }
 
-trait ReaderImplicits {
-  implicit def ReaderMemberInfer[A, R <: Effects]: Member.Aux[Reader[A, ?], Reader[A, ?] |: R, R] =
-    Member.ZeroMember[Reader[A, ?], R]
+trait ReaderImplicits extends ReaderImplicits1 {
+  implicit def ReaderMemberZero[A]: Member.Aux[Reader[A, ?], Reader[A, ?] |: NoEffect, NoEffect] = {
+    type T[X] = Reader[A, X]
+    Member.zero[T]
+  }
+
+  implicit def ReaderMemberFirst[R <: Effects, A]: Member.Aux[Reader[A, ?], Reader[A, ?] |: R, R] = {
+    type T[X] = Reader[A, X]
+    Member.first[T, R]
+  }
+
+  implicit def TaggedReaderMemberZero[Tg, A]: Member.Aux[({type l[X] = Reader[A, X] @@ Tg})#l, ({type l[X] = Reader[A, X] @@ Tg})#l |: NoEffect, NoEffect] = {
+    type T[X] = Reader[A, X] @@ Tg
+    Member.zero[T]
+  }
+
+  implicit def TaggedReaderMemberFirst[R <: Effects, Tg, A]: Member.Aux[({type l[X] = Reader[A, X] @@ Tg})#l, ({type l[X] = Reader[A, X] @@ Tg})#l |: R, R] = {
+    type T[X] = Reader[A, X] @@ Tg
+    implicitly[Member.Aux[T, T |: R, R]]
+  }
 }
 
+trait ReaderImplicits1 {
+  implicit def ReaderMemberSuccessor[O[_], R <: Effects, U <: Effects, A](implicit m: Member.Aux[Reader[A, ?], R, U]): Member.Aux[Reader[A, ?], O |: R, O |: U] = {
+    type T[X] = Reader[A, X]
+    Member.successor[T, O, R, U]
+  }
+
+  implicit def TaggedReaderMemberSuccessor[O[_], R <: Effects, U <: Effects, Tg, A](implicit m: Member.Aux[({type l[X] = Reader[A, X] @@ Tg})#l, R, U]): Member.Aux[({type l[X] = Reader[A, X] @@ Tg})#l, O |: R, O |: U] = {
+    type T[X] = Reader[A, X] @@ Tg
+    Member.successor[T, O, R, U]
+  }
+}
 object ReaderImplicits extends ReaderImplicits

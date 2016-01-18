@@ -10,7 +10,12 @@ import Effects.|:
 /**
  * Effect for computation which can fail
  */
-object DisjunctionEffect {
+object DisjunctionEffect extends
+  DisjunctionCreation with
+  DisjunctionInterpretation with
+  DisjunctionImplicits
+
+trait DisjunctionCreation {
 
   /** create a Disjunction effect from a single Option value */
   def fromOption[R, E, A](option: Option[A], e: E)(implicit member: Member[(E Xor ?), R]): Eff[R, A] =
@@ -27,7 +32,9 @@ object DisjunctionEffect {
   /** create a correct value */
   def right[R, E, A](a: A)(implicit member: Member[(E Xor ?), R]): Eff[R, A] =
     send[E Xor ?, R, A](Right(a))
+}
 
+trait DisjunctionInterpretation {
   /** run the disjunction effect, yielding E Xor A */
   def runDisjunction[R <: Effects, U <: Effects, E, A](r: Eff[R, A])(implicit m: Member.Aux[(E Xor ?), R, U]): Eff[U, E Xor A] = {
     val recurse = new Recurse[(E Xor ?), U, E Xor A] {
@@ -45,7 +52,24 @@ object DisjunctionEffect {
   def runDisjunctionEither[R <: Effects, U <: Effects, E, A](r: Eff[R, A])(implicit m: Member.Aux[(E Xor ?), R, U]): Eff[U, Either[E, A]] =
     runDisjunction(r).map(_.fold(util.Left.apply, util.Right.apply))
 
-  implicit def DisjunctionMemberInfer[E, R <: Effects]: Member.Aux[Xor[E, ?], Xor[E, ?] |: R, R] =
-    Member.ZeroMember[Xor[E, ?], R]
-
 }
+
+trait DisjunctionImplicits extends DisjunctionImplicitsLower {
+  implicit def DisjunctionMemberZero[R, A]: Member.Aux[Xor[A, ?], Xor[A, ?] |: NoEffect, NoEffect] = {
+    type T[X] = Xor[A, X]
+    Member.zero[T]
+  }
+
+  implicit def DisjunctionMemberFirst[R <: Effects, A]: Member.Aux[Xor[A, ?], Xor[A, ?] |: R, R] = {
+    type T[X] = Xor[A, X]
+    Member.first[T, R]
+  }
+}
+
+trait DisjunctionImplicitsLower {
+  implicit def DisjunctionMemberSuccessor[O[_], R <: Effects, U <: Effects, A](implicit m: Member.Aux[Xor[A, ?], R, U]): Member.Aux[Xor[A, ?], O |: R, O |: U] = {
+    type T[X] = Xor[A, X]
+    Member.successor[T, O, R, U]
+  }
+}
+object DisjunctionImplicits extends DisjunctionImplicits

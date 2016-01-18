@@ -1,12 +1,12 @@
 package org.specs2.control.eff
-/*
+
 import Eff._
 import Effects._
 import org.specs2.{ScalaCheck, Specification}
 import StateEffect._
 import cats.syntax.all._
 import cats.std.int._
-import cats.std.list._
+import cats.std.list.listInstance
 import cats.state._
 
 class StateEffectSpec extends Specification with ScalaCheck { def is = s2"""
@@ -22,7 +22,7 @@ class StateEffectSpec extends Specification with ScalaCheck { def is = s2"""
     val action: Eff[E, String] = for {
       a <- get[E, Int]
       h <- EffMonad[E].pure("hello")
-      _ <- put[E, Int](a + 5)
+      _ <- put(a + 5)
       b <- get[E, Int]
       _ <- put(b + 10)
       w <- EffMonad[E].pure("world")
@@ -35,7 +35,7 @@ class StateEffectSpec extends Specification with ScalaCheck { def is = s2"""
     val action: Eff[E, String] = for {
        a <- get[E, Int]
        _ <- put(a + 1)
-       _ <- modify[E, Int](_ + 10)
+       _ <- modify((_:Int) + 10)
     } yield a.toString
 
     run(execZero(action)) ==== 11
@@ -53,4 +53,3 @@ class StateEffectSpec extends Specification with ScalaCheck { def is = s2"""
   type E = StateInt |: NoEffect
 
 }
-*/
