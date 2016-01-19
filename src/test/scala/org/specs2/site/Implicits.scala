@@ -6,7 +6,7 @@ import cats.state._
 import cats.data._
 import cats.syntax.all._
 
-object OpenClosed extends UserGuidePage { def is = "Open vs Closed".title ^ s2"""
+object Implicits extends UserGuidePage { def is = "Implicits".title ^ s2"""
 
 There are 2 ways to create effectful computations for a given effect `M`.
 The first one is to specify the stack which contains the effect:${snippet{

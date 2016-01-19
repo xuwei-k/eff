@@ -40,6 +40,7 @@ type ReaderInt[X] = Reader[Int, X]
 type WriterString[X] = Writer[String, X]
 
 type Stack = ReaderInt |: WriterString |: Eval |: NoEffect
+
 }}
 The stack `Stack` above declares 3 effects:
 
@@ -74,10 +75,10 @@ import WriterEffect._
 
 // run the action with all the interpreters
 // each interpreter running one effect
-run(runEval(runWriter(runReader(6)(program))))
+run(runWriter(runEval(runReader(6)(program))))
 }.eval}
 
-As you can see, the effects are being run in the same order as their declaration in the `Stack` type:
+As you can see, all the effects of the `Stack` type are being executed one by one:
 
  1. the `Reader` effect, needing a value to inject
  2. the `Writer` effect, which logs values
@@ -85,7 +86,15 @@ As you can see, the effects are being run in the same order as their declaration
  4. finally the `NoEffect` effect (provided by the `Eff` object) to get the final value out of `Eff[Stack, Int]`
 
 <br/>
-Now you can learn about ${"other effects" ~/ OutOfTheBox} supported by this library.
+Maybe you noticed that the effects are not being executed in the same order as their order in the stack declaration.
+The effects can indeed be executed in any order. This doesn't mean though that the results will be the same. For example
+running `Writer` then `Disjunction` returns `String Xor (A, List[String])` whereas running `Disjunction` then `Writer` returns
+`(String Xor A, List[String])`.
+
+This is only possible because of pretty specific implicits definitions in the library to guide Scala type inference towards the
+right return types. You can learn more on implicits in the ${"implicits" ~/ Implicits} section.
+
+Otherwise you can also learn about ${"other effects" ~/ OutOfTheBox} supported by this library.
 """
 
   type ReaderInt[X] = Reader[Int, X]
@@ -101,5 +110,6 @@ Now you can learn about ${"other effects" ~/ OutOfTheBox} supported by this libr
 
   implicit val EvalMember =
     Member.aux[Eval, Stack, ReaderInt |: WriterString |: NoEffect]
+
 }
 

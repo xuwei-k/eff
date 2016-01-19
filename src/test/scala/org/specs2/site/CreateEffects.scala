@@ -1,5 +1,7 @@
 package org.specs2.site
 
+import cats.data.Reader
+
 import scala.concurrent.duration, duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.specs2.control.eff._
@@ -9,6 +11,8 @@ import snippets._, FutureEffectSnippet._, FutureEffect._
 import cats.syntax.all._
 
 object CreateEffects extends UserGuidePage { def is = "Creating effects".title ^ s2"""
+
+### Creation
 
 New effects can be added to the library pretty easily. Let's create an Effect for `scala.concurrent.Future` for example.
 
@@ -34,6 +38,12 @@ them. In this case, the interpretation doesn't need to pass state around so we c
 implementation is shared by many different monads, like `Reader`, `Eval`, `Option` but not `Writer`, `State` or `List` for
 example.
 
+The `runFuture` method needs an implicit `Member.Aux[Fut, R, U]`. This must be read in the following way:
+
+ - `Fut` must be member of the effect stack `R` and its removal from `R` should be the effect stack `U`
+
+<br/>
+
 Then we can use this effect in a computation:${snippet{
 
 type F = Fut |: NoEffect
@@ -45,6 +55,34 @@ val action: Eff[F, Int] = for {
 
 run(runFuture(3.seconds)(action))
 }.eval}
+
+### Implicits
+
+You should also note that some effects take 2 type variables, like `Reader` or `Writer`. Those effects need some specific
+implicit declarations in order for type resolution to work when running effects in any order. Here is the "template" used for
+the `Reader` effect: ${snippet{
+
+// define "Member" implicits by using a type T with only one type variable
+// instead of Reader which has 2
+trait ReaderImplicits extends ReaderImplicits1 {
+  implicit def ReaderMemberZero[A]: Member.Aux[Reader[A, ?], Reader[A, ?] |: NoEffect, NoEffect] = {
+    type T[X] = Reader[A, X]
+    Member.zero[T]
+  }
+
+  implicit def ReaderMemberFirst[R <: Effects, A]: Member.Aux[Reader[A, ?], Reader[A, ?] |: R, R] = {
+    type T[X] = Reader[A, X]
+    Member.first[T, R]
+  }
+}
+
+trait ReaderImplicits1 {
+  implicit def ReaderMemberSuccessor[O[_], R <: Effects, U <: Effects, A](implicit m: Member.Aux[Reader[A, ?], R, U]): Member.Aux[Reader[A, ?], O |: R, O |: U] = {
+    type T[X] = Reader[A, X]
+    Member.successor[T, O, R, U]
+  }
+}
+}}
 
 """
 

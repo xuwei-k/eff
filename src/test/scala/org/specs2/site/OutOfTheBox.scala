@@ -13,7 +13,7 @@ object OutOfTheBox extends UserGuidePage { def is = "Out of the box".title ^ s2"
 This library comes with a few available effects:
 
  Name                | Description
- ------------------- | ----------
+ ---------           | --------------------------------------------
  `EvalEffect`        | an effect for delayed computations
  `OptionEffect`      | an effect for optional computations, stopping when there's no available value
  `DisjunctionEffect` | an effect for computations with failures, stopping when there is a failure
@@ -236,7 +236,7 @@ The `List` effect is used for non-deterministic computations, that is computatio
 
 
 <br/>
-Now you can learn about ${"open/closed effect stacks" ~/ OpenClosed}.
+Now you can learn about ${"open/closed effect stacks" ~/ Implicits}.
 
 """
 
