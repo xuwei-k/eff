@@ -1,6 +1,6 @@
 // 8<---
 package org.specs2.site.snippets
-/*
+
 import cats.data.Xor
 import cats.data.Xor.Left
 import org.specs2.control.eff.Effects._
@@ -35,4 +35,4 @@ object FutureEffect {
 }
 
 object FutureEffectSnippet extends FutureEffectSnippet
-*/
+

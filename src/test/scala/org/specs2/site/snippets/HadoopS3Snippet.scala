@@ -1,6 +1,6 @@
 // 8<---
 package org.specs2.site.snippets
-/*
+
 import HadoopS3Snippet._
 import HadoopStack._
 import S3Stack.{WriterString=>_,_}
@@ -12,7 +12,7 @@ import org.specs2.control.eff._
 import Eff._
 import Effects._
 import EvalEffect._
-import WriterEffect._
+import WriterCreation._
 import cats.data._
 import cats.syntax.all._
 import Tag._
@@ -25,6 +25,15 @@ object HadoopStack {
   type WriterString[A] = Writer[String, A]
   type Hadoop = HadoopReader |: WriterString |: Eval |: NoEffect
 
+  implicit val HadoopReaderMember =
+    Member.aux[HadoopReader, Hadoop, WriterString |: Eval |: NoEffect]
+
+  implicit val WriterStringMember =
+    Member.aux[WriterString, Hadoop, HadoopReader |: Eval |: NoEffect]
+
+  implicit val EvalMember =
+    Member.aux[Eval, Hadoop, HadoopReader |: WriterString |: NoEffect]
+
   def askHadoopConf: Eff[Hadoop, HadoopConf] =
     ReaderEffect.askTagged
 
@@ -33,6 +42,8 @@ object HadoopStack {
       c <- askHadoopConf
       _ <- tell("Reading from "+path)
     } yield c.mappers.toString
+
+  import ReaderImplicits._
 
   def runHadoopReader[R <: Effects, A](conf: HadoopConf): Eff[HadoopReader |: R, A] => Eff[R, A] =
     (e: Eff[HadoopReader |: R, A]) => ReaderEffect.runTaggedReader(conf)(e)
@@ -48,6 +59,16 @@ object S3Stack {
 
   type S3 = S3Reader |: WriterString |: Eval |: NoEffect
 
+  implicit val S3ReaderMember =
+    Member.aux[S3Reader, S3, WriterString |: Eval |: NoEffect]
+
+  implicit val WriterStringMember =
+    Member.aux[WriterString, S3, S3Reader |: Eval |: NoEffect]
+
+  implicit val EvalMember =
+    Member.aux[Eval, S3, S3Reader |: WriterString |: NoEffect]
+
+
   def askS3Conf: Eff[S3, S3Conf] =
     ReaderEffect.askTagged
 
@@ -56,6 +77,8 @@ object S3Stack {
       c <- askS3Conf
       _ <- tell("Writing to bucket "+c.bucket+": "+content)
     } yield ()
+
+  import ReaderImplicits._
 
   def runS3Reader[R <: Effects, A](conf: S3Conf): Eff[S3Reader |: R, A] => Eff[R, A] =
     (e: Eff[S3Reader |: R, A]) => ReaderEffect.runTaggedReader(conf)(e)
@@ -68,4 +91,4 @@ object S3Stack {
 }
 
 object HadoopS3Snippet extends HadoopS3Snippet
-*/
+

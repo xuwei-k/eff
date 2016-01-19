@@ -20,10 +20,12 @@ import Interpret._
  * Several writer effects can be used in the same stack if they are tagged.
  *
  */
-object WriterEffect extends
+trait WriterEffect extends
   WriterCreation with
   WriterInterpretation with
   WriterImplicits
+
+object WriterEffect extends WriterEffect
 
 trait WriterCreation {
 
@@ -36,6 +38,8 @@ trait WriterCreation {
     send[({type l[X] = Writer[O, X] @@ T})#l, R, Unit](Tag(Writer(o, ())))
 
 }
+
+object WriterCreation extends WriterCreation
 
 trait WriterInterpretation {
 
@@ -109,6 +113,8 @@ trait WriterInterpretation {
     def finalize(s: S) = s
   }
 }
+
+object WriterInterpretation extends WriterInterpretation
 
 trait WriterImplicits extends WriterImplicits1 {
   implicit def WriterMemberZero[A]: Member.Aux[Writer[A, ?], Writer[A, ?] |: NoEffect, NoEffect] = {

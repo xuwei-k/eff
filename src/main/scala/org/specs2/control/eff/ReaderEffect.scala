@@ -16,10 +16,12 @@ import Effects.|:
  * A tagged Reader effect can be run with runTaggedReader
  *
  */
-object ReaderEffect extends
+trait ReaderEffect extends
   ReaderCreation with
   ReaderInterpretation with
   ReaderImplicits
+
+object ReaderEffect extends ReaderEffect
 
 trait ReaderCreation {
   /** get the environment */
@@ -38,6 +40,8 @@ trait ReaderCreation {
   def localTagged[R, Tg, T, U](f: T => U)(implicit member: Member[({type l[X] = Reader[T, X] @@ Tg})#l, R]): Eff[R, U] =
     send[({type l[X] = Reader[T, X] @@ Tg})#l, R, U](Tag(Reader(f)))
 }
+
+object ReaderCreation extends ReaderCreation
 
 trait ReaderInterpretation {
   /** interpret the Reader effect by providing an environment when required */
@@ -60,6 +64,8 @@ trait ReaderInterpretation {
     interpret1[R, U, ({type l[X] = Reader[A, X] @@ T})#l, B, B]((b: B) => b)(recurse)(r)
   }
 }
+
+object ReaderInterpretation extends ReaderInterpretation
 
 trait ReaderImplicits extends ReaderImplicits1 {
   implicit def ReaderMemberZero[A]: Member.Aux[Reader[A, ?], Reader[A, ?] |: NoEffect, NoEffect] = {
@@ -94,4 +100,5 @@ trait ReaderImplicits1 {
     Member.successor[T, O, R, U]
   }
 }
+
 object ReaderImplicits extends ReaderImplicits

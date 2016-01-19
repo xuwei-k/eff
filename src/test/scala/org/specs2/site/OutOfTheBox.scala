@@ -1,5 +1,5 @@
 package org.specs2.site
-/*
+
 import org.specs2.control.eff._
 import Eff._
 import Effects._
@@ -55,9 +55,6 @@ import cats.syntax.all._
  */
 type S = Option |: NoEffect
 
-implicit def OptionMember: Member[Option, S] =
-  Member.infer
-
 // compute with this stack
 val map: Map[String, Int] =
   Map("key1" -> 10, "key2" -> 20)
@@ -86,9 +83,6 @@ import cats.data.Xor
  */
 type XorString[A] = String Xor A
 type S = XorString |: NoEffect
-
-implicit def XorStringMember: Member[XorString, S] =
-  Member.infer
 
 // compute with this stack
 val map: Map[String, Int] =
@@ -145,10 +139,7 @@ type R2[A] = Reader[Int, A] @@ Port2
 
 type S = R1 |: R2 |: NoEffect
 
-implicit def R1Member: Member[R1, S] = Member.infer
-implicit def R2Member: Member[R2, S] = Member.infer
-
-val getPorts: Eff[S, String] = for {
+  val getPorts: Eff[S, String] = for {
   p1 <- askTagged[S, Port1, Int]
   p2 <- askTagged[S, Port2, Int]
 } yield "port1 is "+p1+", port2 is "+p2
@@ -178,8 +169,6 @@ import WriterEffect._
 
 type W[A] = Writer[String, A]
 type S = W |: NoEffect
-
-implicit def WMember: Member[W, S] = Member.infer
 
 val action: Eff[S, Int] = for {
  a <- EffMonad[S].pure(1)
@@ -225,9 +214,6 @@ type S2[A] = State[Int, A] @@ Var2
 
 type S = S1 |: S2 |: NoEffect
 
-implicit def S1Member: Member[S1, S] = Member.infer
-implicit def S2Member: Member[S2, S] = Member.infer
-
 val swapVariables: Eff[S, String] = for {
   v1 <- getTagged[S, Var1, Int]
   v2 <- getTagged[S, Var2, Int]
@@ -262,8 +248,6 @@ import ListEffect._
 
 type S = List |: NoEffect
 
-implicit def ListMember: Member[List, S] = Member.infer
-
 // create all the possible pairs for a given list
 // where the sum is greater than a value
 def pairsBiggerThan(list: List[Int], n: Int): Eff[S, (Int, Int)] = for {
@@ -277,4 +261,4 @@ run(runList(pairsBiggerThan(List(1, 2, 3, 4), 5)))
 }.eval
 
 }
-*/
+

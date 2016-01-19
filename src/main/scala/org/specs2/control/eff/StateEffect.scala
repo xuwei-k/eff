@@ -59,6 +59,8 @@ trait StateCreation {
 
 }
 
+object StateCreation extends StateCreation
+
 trait StateInterpretation {
   /** run a state effect, with a Monoidal state */
   def evalZero[R <: Effects, U <: Effects, S : Monoid, A](w: Eff[R, A])(implicit m: Member.Aux[State[S, ?], R, U]): Eff[U, A] =
@@ -136,21 +138,41 @@ trait StateInterpretation {
   }
 }
 
+object StateInterpretation extends StateInterpretation
+
 trait StateImplicits extends StateImplicits1 {
   implicit def StateMemberZero[A]: Member.Aux[State[A, ?], State[A, ?] |: NoEffect, NoEffect] = {
     type T[X] = State[A, X]
     Member.zero[T]
   }
+  
   implicit def StateMemberFirst[R <: Effects, A]: Member.Aux[State[A, ?], State[A, ?] |: R, R] = {
     type T[X] = State[A, X]
     Member.first[T, R]
   }
+
+  implicit def TaggedStateMemberZero[Tg, A]: Member.Aux[({type l[X] = State[A, X] @@ Tg})#l, ({type l[X] = State[A, X] @@ Tg})#l |: NoEffect, NoEffect] = {
+    type T[X] = State[A, X] @@ Tg
+    Member.zero[T]
+  }
+
+  implicit def TaggedStateMemberFirst[R <: Effects, Tg, A]: Member.Aux[({type l[X] = State[A, X] @@ Tg})#l, ({type l[X] = State[A, X] @@ Tg})#l |: R, R] = {
+    type T[X] = State[A, X] @@ Tg
+    implicitly[Member.Aux[T, T |: R, R]]
+  }
+
 }
 trait StateImplicits1 {
   implicit def StateMemberSuccessor[O[_], R <: Effects, U <: Effects, A](implicit m: Member.Aux[State[A, ?], R, U]): Member.Aux[State[A, ?], O |: R, O |: U] = {
     type T[X] = State[A, X]
     Member.successor[T, O, R, U]
   }
+
+  implicit def TaggedStateMemberSuccessor[O[_], R <: Effects, U <: Effects, Tg, A](implicit m: Member.Aux[({type l[X] = State[A, X] @@ Tg})#l, R, U]): Member.Aux[({type l[X] = State[A, X] @@ Tg})#l, O |: R, O |: U] = {
+    type T[X] = State[A, X] @@ Tg
+    Member.successor[T, O, R, U]
+  }
+
 }
 
 object StateImplicits extends StateImplicits

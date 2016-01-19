@@ -1,11 +1,10 @@
 package org.specs2.site
-/*
-import scala.concurrent.{duration}, duration._
+
+import scala.concurrent.duration, duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.specs2.control.eff._
 import Eff._
 import Effects._
-import Member.<=
 import snippets._, FutureEffectSnippet._, FutureEffect._
 import cats.syntax.all._
 
@@ -37,10 +36,7 @@ example.
 
 Then we can use this effect in a computation:${snippet{
 
-  type F = Fut |: NoEffect
-
-implicit def FutMember: Fut <= F =
-  Member.infer
+type F = Fut |: NoEffect
 
 val action: Eff[F, Int] = for {
   a <- future(2)
@@ -54,4 +50,4 @@ run(runFuture(3.seconds)(action))
 
 
 }
-*/
+

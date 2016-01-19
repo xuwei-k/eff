@@ -1,5 +1,5 @@
 package org.specs2.site
-/*
+
 import org.specs2.control.eff._
 import Eff._
 import Effects._
@@ -16,7 +16,7 @@ object TransformStack extends UserGuidePage { def is = "Transforming stacks".tit
 
 Once you get a `Eff[R, A]` action you might want to act on one of the effects, for example to transform `Option` effects
 into `Disjunction` effects:${snippet{
-import OptionEffect.runOption
+import OptionEffect._
 import DisjunctionEffect.runDisjunction
 import syntax.eff._
 import cats.data._
@@ -26,16 +26,19 @@ type XorString[A] = String Xor A
 
 type S = Option |: XorString |: NoEffect
 
-implicit def OptionMember: Member[Option, S] = Member.infer
-implicit def XorStringMember: Member[XorString, S] = Member.infer
+implicit val OptionMember =
+  Member.aux[Option, S, XorString |: NoEffect]
+
+implicit val XorStringMember =
+  Member.aux[XorString, S, Option |: NoEffect]
 
 val map: Map[String, Int] =
   Map("key1" -> 10, "key2" -> 20)
 
 // get 2 keys from the map and add the corresponding values
 def addKeys(key1: String, key2: String): Eff[S, Int] = for {
-  a <- OptionEffect.fromOption(map.get(key1))
-  b <- OptionEffect.fromOption(map.get(key2))
+  a <- fromOption(map.get(key1))
+  b <- fromOption(map.get(key2))
 } yield a + b
 
 // provide a default error message
@@ -43,6 +46,8 @@ def addKeysWithDefaultMessage(key1: String, key2: String, message: String): Eff[
   addKeys(key1, key2).transform[Option, XorString](new NaturalTransformation[Option, XorString] {
     def apply[A](o: Option[A]) = o.fold(Xor.left[String, A](message))(Xor.right[String, A])
   })
+
+import DisjunctionImplicits._
 
 (run(runDisjunction(runOption(addKeys("key1", "missing")))),
  run(runDisjunction(runOption(addKeysWithDefaultMessage("key1", "missing", "Key not found")))))
@@ -55,17 +60,20 @@ import EvalEffect._
 
 type S = Eval |: Option |: NoEffect
 
-implicit def OptionMember: Member[Option, S] = Member.infer
-implicit def EvalMember: Member[Eval, S] = Member.infer
+implicit val EvalMember =
+  Member.aux[Eval, S, Option |: NoEffect]
+
+implicit val OptionMember =
+  Member.aux[Option, S, Eval |: NoEffect]
 
 val map: Map[String, Int] =
   Map("key1" -> 10, "key2" -> 20)
 
 // get 2 keys from the map and add the corresponding values
 def addKeys(key1: String, key2: String): Eff[S, Int] = for {
-  a <- OptionEffect.fromOption(map.get(key1))
+  a <- fromOption(map.get(key1))
   c <- delay(a)
-  b <- OptionEffect.fromOption(map.get(key2))
+  b <- fromOption(map.get(key2))
   d <- delay(b)
 } yield c + d
 
@@ -108,6 +116,3 @@ You can find a fully working example of this approach in `src/test/org/specs2/ex
 """
 
 }
-
-
-*/

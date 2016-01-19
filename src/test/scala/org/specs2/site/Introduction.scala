@@ -1,5 +1,5 @@
 package org.specs2.site
-/*
+
 import cats.data._
 import org.specs2.control.eff._
 import Effects._
@@ -51,9 +51,9 @@ The stack `Stack` above declares 3 effects:
 
 Now we can write a program with those 3 effects, using the primitive operations provided by `ReaderEffect`, `WriterEffect` and `EvalEffect`:${snippet{
 import Eff._
-import ReaderEffect._
-import WriterEffect._
 import cats.syntax.all._
+import ReaderCreation._
+import WriterCreation._
 
 val program: Eff[Stack, Int] = for {
   // get the configuration
@@ -68,6 +68,9 @@ val program: Eff[Stack, Int] = for {
   // log the result
   _ <- tell("the result is "+a)
 } yield a
+
+import ReaderEffect._
+import WriterEffect._
 
 // run the action with all the interpreters
 // each interpreter running one effect
@@ -90,5 +93,13 @@ Now you can learn about ${"other effects" ~/ OutOfTheBox} supported by this libr
 
   type Stack = ReaderInt |: WriterString |: Eval |: NoEffect
 
+  implicit val ReaderIntMember =
+    Member.aux[ReaderInt, Stack, WriterString |: Eval |: NoEffect]
+
+  implicit val WriterStringMember =
+    Member.aux[WriterString, Stack, ReaderInt |: Eval |: NoEffect]
+
+  implicit val EvalMember =
+    Member.aux[Eval, Stack, ReaderInt |: WriterString |: NoEffect]
 }
-*/
+

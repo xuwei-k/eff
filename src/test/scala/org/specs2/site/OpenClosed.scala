@@ -1,34 +1,33 @@
 package org.specs2.site
-/*
+
 import org.specs2.control.eff._
-import Eff._
 import Effects._
-import StateEffect._
-import WriterEffect._
-import cats.syntax.all._
 import cats.state._
 import cats.data._
+import cats.syntax.all._
 
 object OpenClosed extends UserGuidePage { def is = "Open vs Closed".title ^ s2"""
 
 There are 2 ways to create effectful computations for a given effect `M`.
 The first one is to specify the stack which contains the effect:${snippet{
 import org.specs2.control.eff._
-import Eff._
 import Effects._
-import StateEffect._
-import WriterEffect._
 import cats.syntax.all._
 import cats.state._
 import cats.data._
+import StateCreation._
+import WriterCreation._
 
 type StateInt[A] = State[Int, A]
 type WriterString[A] = Writer[String, A]
 
 type S = StateInt |: WriterString |: NoEffect
 
-implicit def StateIntMember: Member[StateInt, S] = Member.infer
-implicit def WriterStringMember: Member[WriterString, S] = Member.infer
+implicit val StateIntMember =
+  Member.aux[StateInt, S, WriterString |: NoEffect]
+
+implicit val WriterStringMember =
+  Member.aux[WriterString, S, StateInt |: NoEffect]
 
 def putAndTell(i: Int): Eff[S, Int] =
   for {
@@ -54,11 +53,13 @@ On the other hand we lose some flexibility:
 The remedy is to use the `Member` typeclass to create an **open** union of effects:${snippet{
 // '<=' reads 'is member of'
 import Member.<=
+import StateCreation._
+import WriterCreation._
 
 def putAndTell[R](i: Int)(implicit s: StateInt <= R, w: WriterString <= R): Eff[R, Int] =
   for {
-    _ <- put[R, Int](i)
-    _ <- tell[R, String]("stored "+i)
+    _ <- put(i)
+    _ <- tell("stored "+i)
   } yield i
 }}
 
@@ -69,15 +70,11 @@ effects are members of that stack. However we have to add some type annotations 
 Now you can learn ${"how to create effects" ~/ CreateEffects}
 
 """
+
   type StateInt[A] = State[Int, A]
   type WriterString[A] = Writer[String, A]
 
   type S = StateInt |: WriterString |: NoEffect
 
-  implicit def StateIntMember: Member[StateInt, S] = Member.infer
-  implicit def WriterStringMember: Member[WriterString, S] = Member.infer
-
 
 }
-
-*/
