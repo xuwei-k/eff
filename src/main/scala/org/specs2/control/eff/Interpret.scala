@@ -134,8 +134,11 @@ trait Interpret {
 
             case None =>
               union match {
-                case UnionNext(n) =>
-                  Impure(n.asInstanceOf[Union[R, union.X]], continuation).asInstanceOf[Eff[U, B]]
+                case UnionNext(UnionNow(mx)) =>
+                  Impure[U, union.X, B](UnionNow(mx).asInstanceOf[Union[U, union.X]], Arrs.singleton(x => go(continuation(x), s)))
+
+                case UnionNext(UnionNext(n)) =>
+                  Impure[U, union.X, B](UnionNext(n).asInstanceOf[Union[U, union.X]], Arrs.singleton(x => go(continuation(x), s)))
 
                 case UnionNow(mx) =>
                   Impure[U, union.X, B](union.asInstanceOf[Union[U, union.X]], Arrs.singleton(x => go(continuation(x), s))).asInstanceOf[Eff[U, B]]

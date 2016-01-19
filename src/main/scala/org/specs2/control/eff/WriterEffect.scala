@@ -121,10 +121,22 @@ trait WriterImplicits extends WriterImplicits1 {
     type T[X] = Writer[A, X]
     Member.zero[T]
   }
+
   implicit def WriterMemberFirst[R <: Effects, A]: Member.Aux[Writer[A, ?], Writer[A, ?] |: R, R] = {
     type T[X] = Writer[A, X]
     Member.first[T, R]
   }
+
+  implicit def TaggedWriterMemberZero[Tg, A]: Member.Aux[({type l[X] = Writer[A, X] @@ Tg})#l, ({type l[X] = Writer[A, X] @@ Tg})#l |: NoEffect, NoEffect] = {
+    type T[X] = Writer[A, X] @@ Tg
+    Member.zero[T]
+  }
+
+  implicit def TaggedWriterMemberFirst[R <: Effects, Tg, A]: Member.Aux[({type l[X] = Writer[A, X] @@ Tg})#l, ({type l[X] = Writer[A, X] @@ Tg})#l |: R, R] = {
+    type T[X] = Writer[A, X] @@ Tg
+    Member.first[T, R]
+  }
+
 }
 
 trait WriterImplicits1 {
@@ -132,6 +144,12 @@ trait WriterImplicits1 {
     type T[X] = Writer[A, X]
     Member.successor[T, O, R, U]
   }
+
+  implicit def TaggedWriterMemberSuccessor[O[_], R <: Effects, U <: Effects, Tg, A](implicit m: Member.Aux[({type l[X] = Writer[A, X] @@ Tg})#l, R, U]): Member.Aux[({type l[X] = Writer[A, X] @@ Tg})#l, O |: R, O |: U] = {
+    type T[X] = Writer[A, X] @@ Tg
+    Member.successor[T, O, R, U]
+  }
+
 }
 
 object WriterImplicits extends WriterImplicits

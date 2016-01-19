@@ -15,7 +15,7 @@ import cats.data._, Xor._
  * corresponds to the place of the effect in a type E1 |: E2 |: E3 |: .. |: NoEffect
  *
  */
-trait Union[R, A] {
+sealed trait Union[+R, A] {
   type X = A
 }
 

@@ -85,7 +85,7 @@ trait ReaderImplicits extends ReaderImplicits1 {
 
   implicit def TaggedReaderMemberFirst[R <: Effects, Tg, A]: Member.Aux[({type l[X] = Reader[A, X] @@ Tg})#l, ({type l[X] = Reader[A, X] @@ Tg})#l |: R, R] = {
     type T[X] = Reader[A, X] @@ Tg
-    implicitly[Member.Aux[T, T |: R, R]]
+    Member.first[T, R]
   }
 }
 

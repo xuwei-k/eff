@@ -158,7 +158,7 @@ trait StateImplicits extends StateImplicits1 {
 
   implicit def TaggedStateMemberFirst[R <: Effects, Tg, A]: Member.Aux[({type l[X] = State[A, X] @@ Tg})#l, ({type l[X] = State[A, X] @@ Tg})#l |: R, R] = {
     type T[X] = State[A, X] @@ Tg
-    implicitly[Member.Aux[T, T |: R, R]]
+    Member.first[T, R]
   }
 
 }
