@@ -1,10 +1,12 @@
 package org.atnos.eff
 
-import cats._, data._, Xor._
+import cats._
+import data._
+import Xor._
 import Interpret._
 import Tag._
 import Eff._
-import Effects.|:
+import org.atnos.eff.Effects.|:
 
 /**
  * Effect for computations depending on an environment.
@@ -68,16 +70,6 @@ trait ReaderInterpretation {
 object ReaderInterpretation extends ReaderInterpretation
 
 trait ReaderImplicits extends ReaderImplicits1 {
-  implicit def ReaderMemberZero[A]: Member.Aux[Reader[A, ?], Reader[A, ?] |: NoEffect, NoEffect] = {
-    type T[X] = Reader[A, X]
-    Member.zero[T]
-  }
-
-  implicit def ReaderMemberFirst[R <: Effects, A]: Member.Aux[Reader[A, ?], Reader[A, ?] |: R, R] = {
-    type T[X] = Reader[A, X]
-    Member.first[T, R]
-  }
-
   implicit def TaggedReaderMemberZero[Tg, A]: Member.Aux[({type l[X] = Reader[A, X] @@ Tg})#l, ({type l[X] = Reader[A, X] @@ Tg})#l |: NoEffect, NoEffect] = {
     type T[X] = Reader[A, X] @@ Tg
     Member.zero[T]
@@ -90,11 +82,6 @@ trait ReaderImplicits extends ReaderImplicits1 {
 }
 
 trait ReaderImplicits1 {
-  implicit def ReaderMemberSuccessor[O[_], R <: Effects, U <: Effects, A](implicit m: Member.Aux[Reader[A, ?], R, U]): Member.Aux[Reader[A, ?], O |: R, O |: U] = {
-    type T[X] = Reader[A, X]
-    Member.successor[T, O, R, U]
-  }
-
   implicit def TaggedReaderMemberSuccessor[O[_], R <: Effects, U <: Effects, Tg, A](implicit m: Member.Aux[({type l[X] = Reader[A, X] @@ Tg})#l, R, U]): Member.Aux[({type l[X] = Reader[A, X] @@ Tg})#l, O |: R, O |: U] = {
     type T[X] = Reader[A, X] @@ Tg
     Member.successor[T, O, R, U]

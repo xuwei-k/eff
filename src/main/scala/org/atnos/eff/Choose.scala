@@ -78,7 +78,7 @@ trait ChooseEffectImplicits {
   /**
    * MonadCombine implementation for the Eff[R, ?] type if R contains the Choose effect
    */
-  implicit def EffMonadCombine[R](implicit m: Member[Choose, R]): MonadCombine[Eff[R, ?]] = new MonadCombine[Eff[R, ?]] {
+  def EffMonadCombine[R](implicit m: Member[Choose, R]): MonadCombine[Eff[R, ?]] = new MonadCombine[Eff[R, ?]] {
     def pure[A](a: A): Eff[R, A] =
       EffMonad[R].pure(a)
 

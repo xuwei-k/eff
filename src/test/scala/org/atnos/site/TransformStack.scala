@@ -47,8 +47,6 @@ def addKeysWithDefaultMessage(key1: String, key2: String, message: String): Eff[
     def apply[A](o: Option[A]) = o.fold(Xor.left[String, A](message))(Xor.right[String, A])
   })
 
-import DisjunctionImplicits._
-
 (run(runDisjunction(runOption(addKeys("key1", "missing")))),
  run(runDisjunction(runOption(addKeysWithDefaultMessage("key1", "missing", "Key not found")))))
 

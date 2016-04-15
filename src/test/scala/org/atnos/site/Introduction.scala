@@ -36,17 +36,14 @@ import org.atnos.eff._
 import Effects._
 import EvalEffect._
 
-type ReaderInt[X] = Reader[Int, X]
-type WriterString[X] = Writer[String, X]
-
-type Stack = ReaderInt |: WriterString |: Eval |: NoEffect
+type Stack = Reader[Int, ?] |: Writer[String, ?] |: Eval |: NoEffect
 
 }}
 The stack `Stack` above declares 3 effects:
 
- - a `ReaderInt` effect to access some configuration number of type `Int`
+ - a `Reader[Int, ?]` effect to access some configuration number of type `Int`
 
- - a `WriterString` effect to log string messages
+ - a `Writer[String, ?]` effect to log string messages
 
  - an `Eval` effect to only compute values on demand (a bit like lazy values)
 
@@ -55,6 +52,8 @@ import Eff._
 import cats.syntax.all._
 import ReaderCreation._
 import WriterCreation._
+
+import Stack._
 
 val program: Eff[Stack, Int] = for {
   // get the configuration
@@ -97,19 +96,20 @@ right return types. You can learn more on implicits in the ${"implicits" ~/ Open
 Otherwise you can also learn about ${"other effects" ~/ OutOfTheBox} supported by this library.
 """
 
-  type ReaderInt[X] = Reader[Int, X]
-  type WriterString[X] = Writer[String, X]
+  type Stack = Reader[Int, ?] |: Writer[String, ?] |: Eval |: NoEffect
 
-  type Stack = ReaderInt |: WriterString |: Eval |: NoEffect
+  object Stack {
 
-  implicit val ReaderIntMember =
-    Member.aux[ReaderInt, Stack, WriterString |: Eval |: NoEffect]
+    implicit lazy val ReaderMember: Member.Aux[Reader[Int, ?], Stack, Writer[String, ?] |: Eval |: NoEffect] =
+      Member.ZeroMember
 
-  implicit val WriterStringMember =
-    Member.aux[WriterString, Stack, ReaderInt |: Eval |: NoEffect]
+    implicit lazy val WriterMember: Member.Aux[Writer[String, ?], Stack, Reader[Int, ?] |: Eval |: NoEffect] =
+      Member.SuccessorMember
 
-  implicit val EvalMember =
-    Member.aux[Eval, Stack, ReaderInt |: WriterString |: NoEffect]
+    implicit lazy val EvalMember: Member.Aux[Eval, Stack, Reader[Int, ?] |: Writer[String, ?] |: NoEffect] =
+      Member.SuccessorMember
+
+  }
 
 }
 

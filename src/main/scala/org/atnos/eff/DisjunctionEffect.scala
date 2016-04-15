@@ -1,19 +1,16 @@
 package org.atnos.eff
 
-
 import cats.data._, Xor._
 import cats.syntax.functor._
 import Eff._
 import Interpret._
-import Effects.|:
 
 /**
  * Effect for computation which can fail
  */
 object DisjunctionEffect extends
   DisjunctionCreation with
-  DisjunctionInterpretation with
-  DisjunctionImplicits
+  DisjunctionInterpretation
 
 trait DisjunctionCreation {
 
@@ -72,23 +69,3 @@ trait DisjunctionInterpretation {
 }
 
 object DisjunctionInterpretation extends DisjunctionInterpretation
-
-trait DisjunctionImplicits extends DisjunctionImplicitsLower {
-  implicit def DisjunctionMemberZero[R, A]: Member.Aux[Xor[A, ?], Xor[A, ?] |: NoEffect, NoEffect] = {
-    type T[X] = Xor[A, X]
-    Member.zero[T]
-  }
-
-  implicit def DisjunctionMemberFirst[R <: Effects, A]: Member.Aux[Xor[A, ?], Xor[A, ?] |: R, R] = {
-    type T[X] = Xor[A, X]
-    Member.first[T, R]
-  }
-}
-
-trait DisjunctionImplicitsLower {
-  implicit def DisjunctionMemberSuccessor[O[_], R <: Effects, U <: Effects, A](implicit m: Member.Aux[Xor[A, ?], R, U]): Member.Aux[Xor[A, ?], O |: R, O |: U] = {
-    type T[X] = Xor[A, X]
-    Member.successor[T, O, R, U]
-  }
-}
-object DisjunctionImplicits extends DisjunctionImplicits

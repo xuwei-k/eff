@@ -41,14 +41,12 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type R[A] = Reader[Int, A]
     type S = R |: NoEffect
 
-    run(runReader(initial)(ask[S, Int](ReaderMemberFirst))) === initial
+    run(runReader(initial)(ask[S, Int])) === initial
   }
 
   def readerMonadBind = prop { (initial: Int) =>
     type R[A] = Reader[Int, A]
     type S = R |: NoEffect
-
-    import ReaderImplicits._
 
     val read: Eff[S, Int] =
       for {
@@ -79,7 +77,7 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type R[A] = Reader[Int, A]
     type S = W |: R |: NoEffect
 
-    object SImplicits extends MemberImplicits with ReaderImplicits with WriterImplicits
+    object SImplicits extends MemberImplicits
     import SImplicits._
 
     // create actions
@@ -109,10 +107,9 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
   def stacksafeReader = {
     type ReaderString[A] = Reader[String, A]
     type E = ReaderString |: NoEffect
-    import ReaderImplicits._
 
     val list = (1 to 5000).toList
-    val action = list.traverseU(i => ReaderEffect.ask[E, String])
+    val action = list.traverse(i => ReaderEffect.ask[E, String])
 
     run(ReaderEffect.runReader("h")(action)) ==== list.as("h")
   }
@@ -124,7 +121,7 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     type E = ReaderString |: WriterString |: NoEffect
 
     val list = (1 to 5000).toList
-    val action = list.traverseU(i => ReaderEffect.ask[E, String] >>= WriterEffect.tell[E, String])
+    val action = list.traverse(i => ReaderEffect.ask[E, String] >>= WriterEffect.tell[E, String])
 
     run(WriterEffect.runWriter(ReaderEffect.runReader("h")(action))) ==== ((list.as(()), list.as("h")))
   }
@@ -160,8 +157,8 @@ class EffSpec extends Specification with ScalaCheck { def is = s2"""
     def eqv(x: F[(Int, Int, Int)], y:F[(Int, Int, Int)]): Boolean =
       runOption(x).run == runOption(y).run
   }
-  implicit def iso[R]: Isomorphisms[Eff[R, ?]] =
-    Isomorphisms.invariant[Eff[R, ?]]
+//  implicit def iso[R]: Isomorphisms[Eff[R, ?]] =
+//    Isomorphisms.invariant[Eff[R, ?]]
 
 
 }
