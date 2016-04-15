@@ -1,9 +1,7 @@
 package org.atnos.site
 
 import cats.data._
-import org.atnos.eff._
-import Effects._
-import EvalEffect._
+import org.atnos.eff._, all._
 
 object Introduction extends UserGuidePage { def is = "Introduction".title ^ s2"""
 
