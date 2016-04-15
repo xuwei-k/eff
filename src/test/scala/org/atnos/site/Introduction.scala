@@ -32,9 +32,7 @@ returned by the computation, possibly triggering some effects when evaluated.
 
 The effects `R` are modelled by a type-level list of "effect constructors", for example:${snippet{
 import cats.data._
-import org.atnos.eff._
-import Effects._
-import EvalEffect._
+import org.atnos.eff._, all._
 
 type Stack = Reader[Int, ?] |: Writer[String, ?] |: Eval |: NoEffect
 
@@ -48,11 +46,8 @@ The stack `Stack` above declares 3 effects:
  - an `Eval` effect to only compute values on demand (a bit like lazy values)
 
 Now we can write a program with those 3 effects, using the primitive operations provided by `ReaderEffect`, `WriterEffect` and `EvalEffect`:${snippet{
-import Eff._
 import cats.syntax.all._
-import ReaderCreation._
-import WriterCreation._
-
+import org.atnos.eff.all._
 import Stack._
 
 val program: Eff[Stack, Int] = for {
@@ -68,9 +63,6 @@ val program: Eff[Stack, Int] = for {
   // log the result
   _ <- tell("the result is "+a)
 } yield a
-
-import ReaderEffect._
-import WriterEffect._
 
 // run the action with all the interpreters
 // each interpreter running one effect

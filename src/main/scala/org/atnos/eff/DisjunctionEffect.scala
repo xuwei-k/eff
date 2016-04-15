@@ -8,9 +8,11 @@ import Interpret._
 /**
  * Effect for computation which can fail
  */
-object DisjunctionEffect extends
+trait DisjunctionEffect extends
   DisjunctionCreation with
   DisjunctionInterpretation
+
+object DisjunctionEffect extends DisjunctionEffect
 
 trait DisjunctionCreation {
 

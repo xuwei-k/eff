@@ -25,13 +25,14 @@ case object ChoosePlus extends Choose[Boolean]
  *
  * If F is Option then:
  *  - no results is the None
- *  - the result for a or b is Some(a) or Some(b)
-
+ *  - the result for a or b is Some(a) or Some(b
  */
-object ChooseEffect extends
+trait ChooseEffect extends
   ChooseEffectCreation with
   ChooseEffectInterpretation with
   ChooseEffectImplicits
+
+object ChooseEffect extends ChooseEffect
 
 trait ChooseEffectCreation {
   def zero[R, A](implicit m: Choose <= R): Eff[R, A] =
