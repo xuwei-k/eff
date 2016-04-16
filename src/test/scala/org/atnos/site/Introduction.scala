@@ -46,6 +46,7 @@ The stack `Stack` above declares 3 effects:
 Now we can write a program with those 3 effects, using the primitive operations provided by `ReaderEffect`, `WriterEffect` and `EvalEffect`:${snippet{
 import cats.syntax.all._
 import org.atnos.eff.all._
+import org.atnos.eff.syntax.all._
 import Stack._
 
 val program: Eff[Stack, Int] = for {
@@ -64,7 +65,7 @@ val program: Eff[Stack, Int] = for {
 
 // run the action with all the interpreters
 // each interpreter running one effect
-run(runWriter(runEval(runReader(6)(program))))
+program.runReader(6).runWriter.runEval.run
 }.eval}
 
 As you can see, all the effects of the `Stack` type are being executed one by one:

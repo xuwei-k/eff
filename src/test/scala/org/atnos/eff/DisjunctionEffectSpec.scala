@@ -1,15 +1,13 @@
 package org.atnos.eff
 
 import org.scalacheck.Gen.posNum
-import DisjunctionEffect._
-import ReaderEffect._
-import Eff._
-import Effects._
 import org.specs2.{ScalaCheck, Specification}
 
 import cats.data._, Xor._
 import cats.syntax.all._
 import cats.std.all._
+import org.atnos.eff.all._
+import org.atnos.eff.syntax.all._
 
 class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"""
 
@@ -31,7 +29,7 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
         j <- DisjunctionEffect.right[S, String, Int](2)
       } yield i + j
 
-    run(runDisjunction(disjunction)) === Right(3)
+    disjunction.runXor.run === Right(3)
   }
 
   def disjunctionWithKoMonad = {
@@ -43,7 +41,7 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
         j <- DisjunctionEffect.left[S, String, Int]("error!")
       } yield i + j
 
-    run(runDisjunction(disjunction)) === Left("error!")
+    disjunction.runXor.run === Left("error!")
   }
 
   def disjunctionReader = prop { (init: Long, someValue: Int) =>
@@ -60,7 +58,7 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
       } yield i.toInt + j
 
     // run effects
-    run(runReader(init)(runDisjunction(readDisjunction))) must_==
+    readDisjunction.runXor.runReader(init).run must_==
       Right(init.toInt + someValue)
 
   }.setGens(posNum[Long], posNum[Int])
@@ -73,7 +71,7 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
     val list = (1 to 5000).toList
     val action = list.traverseU(i => DisjunctionEffect.right[E, String, String](i.toString))
 
-    run(DisjunctionEffect.runDisjunction(action)) ==== Right(list.map(_.toString))
+    action.runXor.run ==== Right(list.map(_.toString))
   }
 
   def leftToRight = {
@@ -92,7 +90,7 @@ class DisjunctionEffectSpec extends Specification with ScalaCheck { def is = s2"
       else        DisjunctionEffect.left[E, TooBig, Int](TooBig(k))
     }
 
-    run(runDisjunction(action)) ==== Right(7)
+    action.runXor.run ==== Right(7)
   }
 }
 

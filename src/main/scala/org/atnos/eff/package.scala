@@ -2,6 +2,8 @@ package org.atnos
 
 package object eff {
 
+  type <=[M[_], R] = Member.<=[M, R]
+
   object all extends
     ReaderEffect with
     WriterEffect with
@@ -16,4 +18,6 @@ package object eff {
     EffImplicits with
     Effects
 
+  object interpret extends
+    Interpret
 }

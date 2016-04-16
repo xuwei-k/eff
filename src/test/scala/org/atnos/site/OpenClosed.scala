@@ -1,18 +1,18 @@
 package org.atnos.site
 
-import org.atnos.eff._, all._
 import cats.data._
-import cats.syntax.all._
 
 object OpenClosed extends UserGuidePage { def is = ("Open - Closed").title ^ s2"""
 
 There are 2 ways to create effectful computations for a given effect `M`.
 
 You can create an **open** union of effects:${snippet {
-// '<= ' reads 'is member of '
-import Member.<=
-import StateEffect._
-import WriterEffect._
+import cats.syntax.all._
+import org.atnos.eff._
+import org.atnos.eff.all._
+
+type StateInt[A] = State[Int, A]
+type WriterString[A] = Writer[String, A]
 
 def putAndTell[R](i: Int)(implicit s: State[Int, ?] <= R, w: Writer[String, ?] <= R): Eff[R, Int] =
   for {
@@ -35,23 +35,25 @@ On the other hand:
 
  - this is verbose if you have lots of methods like this, always operating on the same stack of effects
 
- - you might want to "seal" the stack to declare exactly with which set of effects you want to be working
+ - you might want to "seal" the stack to declare exactly with which set of effects you want to be working with
 
 In that case you can specify an effect stack:${snippet{
-import org.atnos.eff._, all._
-import cats.syntax.all._
 import cats.data._
-
-type S = State[Int, ?] |: Writer[String, ?] |: NoEffect
+import cats.syntax.all._
+import org.atnos.eff._
+import org.atnos.eff.all._
 
 object S {
+  type StateInt[A] = State[Int, A]
+  type WriterString[A] = Writer[String, A]
 
-  implicit val StateIntMember: Member.Aux[State[Int, ?], S, Writer[String, ?] |: NoEffect] =
-    Member.ZeroMember
+  type S = StateInt |: WriterString |: NoEffect
 
-  implicit val WriterStringMember: Member.Aux[Writer[String, ?], S, State[Int, ?] |: NoEffect] =
-    Member.SuccessorMember
+  implicit val StateIntMember: Member.Aux[StateInt, S, WriterString |: NoEffect] =
+    Member.first
 
+  implicit val WriterStringMember: Member.Aux[WriterString, S, StateInt |: NoEffect] =
+    Member.successor
 }
 
 import S._
@@ -74,8 +76,5 @@ The implicit `StateIntMember` for example declares that:
 Now you can learn ${"how to create effects" ~/ CreateEffects}
 
 """
-
-  type S = State[Int, ?] |: Writer[String, ?] |: NoEffect
-
 
 }
