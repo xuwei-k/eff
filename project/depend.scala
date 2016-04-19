@@ -4,7 +4,7 @@ import Keys._
 object depend {
 
   val catsVersion     = "0.4.0"
-  val specs2Version   = "3.7.3"
+  val specs2Version   = "3.7.3-scalacheck-1.12"
 
   val cats = Seq(
       "org.typelevel" %% "cats"

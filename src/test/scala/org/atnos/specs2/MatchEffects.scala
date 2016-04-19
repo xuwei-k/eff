@@ -10,17 +10,19 @@ import org.specs2.matcher._
 import org.specs2.execute._
 import syntax.all._
 import cats.syntax.all._
+import MatchStack._
 
 class MatchEffects extends Specification { def is = s2"""
 
- effects and interpreters can be used to nest checks $test
+ effects and interpreters can be used to nest checks $withEff
+
+ without eff $withoutEff
 
 """
 
-  import MatchStack._
+  val e = Option(List[Either[String, Int]](Right(2), Right(3)))
 
-  def test = {
-    val e = Option(List[Either[String, Int]](Right(2), Right(3)))
+  def withEff = {
 
     runResult {
       for {
@@ -30,8 +32,17 @@ class MatchEffects extends Specification { def is = s2"""
         _ <- (i must be_>(0)).check
       } yield ()
     }
-
   }
+
+  def withoutEff =
+    e must beSome { ss: List[Either[String, Int]] =>
+      ss must contain { s: Either[String, Int] =>
+        s must beRight { i: Int =>
+          i must be_>(0)
+        }
+      }.forall
+    }
+
 }
 
 import ResultLogicalCombinators._
