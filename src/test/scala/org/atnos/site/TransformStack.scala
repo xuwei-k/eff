@@ -1,8 +1,6 @@
 package org.atnos.site
 
 import snippets._, HadoopS3Snippet._
-import HadoopStack._
-import S3Stack.{WriterString=>_,_}
 import cats.syntax.all._
 
 object TransformStack extends UserGuidePage { def is = "Transforming stacks".title ^ s2"""
@@ -57,31 +55,34 @@ ${definition[HadoopS3Snippet]}
 
 So what happens when you want to both use S3 and Hadoop? As you can see from the definition above those 2 stacks share
 some common effects, so the resulting stack we want to work with is:${snippet{
-import org.atnos.eff._, Effects._
-import cats.Eval
-import HadoopStack._
-import S3Stack.{WriterString=>_,_}
+import org.atnos.eff._, all._
+import cats.data._
+import HadoopStack.Hadoop._
+import S3Stack.S3._
 
-type HadoopS3 = S3Reader |: HadoopReader |: WriterString |: Eval |: NoEffect
+type HadoopS3 = S3Reader |: HadoopReader |: Writer[String, ?] |: Eval |: NoEffect
 }}
 
 Then we can use the `into` method to inject effects from each stack into this common stack:${snippet{
 
 // this imports the `into` and runXXX syntax
 import org.atnos.eff.syntax.all._
+import org.atnos.eff._, all._
+import HadoopStack._, Hadoop._
+import S3Stack._, S3._
+import HadoopS3._
 
 val action = for {
   // read a file from hadoop
   s <- readFile("/tmp/data").into[HadoopS3]
 
   // write a file on S3
-  _ <- writeFile("key", s)  .into[HadoopS3]
+  _ <- writeFile("key", s).into[HadoopS3]
 } yield ()
 
-import HadoopS3._
 
 // and we can run the composite action
-action.runReaderTagged(S3Conf("bucket")).runReaderTagged(HadoopConf(10)).runWriter.runEval.run
+  action.runReaderTagged(S3Conf("bucket")).runReaderTagged(HadoopConf(10)).runWriter.runEval.run
 }.eval}
 
 You can find a fully working example of this approach in `src/test/org/atnos/example/StacksSpec`.
