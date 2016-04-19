@@ -4,7 +4,7 @@ import org.specs2.Specification
 import org.atnos.eff._
 import all._
 import cats.arrow.NaturalTransformation
-import cats.data._//, Xor._
+import cats.data._
 import cats.~>
 import org.specs2.matcher._
 import org.specs2.execute._
@@ -20,13 +20,14 @@ class MatchEffects extends Specification { def is = s2"""
   import MatchStack._
 
   def test = {
-    val e = Option(List(2, 3))
+    val e = Option(List[Either[String, Int]](Right(2), Right(3)))
 
     runResult {
       for {
-        as <- (e must beSome).continue
+        as <- (e must beSome).opt
         a <- fromList(as)
-        _ <- (a must be_>=(3)).continue
+        i <- (a must beRight).opt
+        _ <- (i must be_>(0)).check
       } yield ()
     }
 
@@ -41,19 +42,17 @@ object MatchStack {
 
   type S = Option |: List |: WS |: SM |: NoEffect
 
-  implicit def oo: Member.Aux[Option, S, List |: WS |: SM |: NoEffect] =
+  implicit def OptionMember: Member.Aux[Option, S, List |: WS |: SM |: NoEffect] =
     Member.first
 
-  implicit def ll: Member.Aux[List, S, Option |: WS |: SM |: NoEffect] =
+  implicit def ListMember: Member.Aux[List, S, Option |: WS |: SM |: NoEffect] =
     Member.successor
 
-  implicit def ss: Member.Aux[SM, S, Option |: List |: WS |: NoEffect] =
+  implicit def StateMember: Member.Aux[SM, S, Option |: List |: WS |: NoEffect] =
     Member.successor
 
-  implicit def ws: Member.Aux[WS, S, Option |: List |: SM |: NoEffect] =
+  implicit def WriterMember: Member.Aux[WS, S, Option |: List |: SM |: NoEffect] =
     Member.successor
-
-  import org.atnos.eff.implicits._
 
   def runResult[T](eff: Eff[S, T]): Result = {
     val ((_, ls), r) =
@@ -80,12 +79,12 @@ object MatchStack {
   }
 
   implicit class LiftedSimple[T](mr: MatchResult[T]) {
-    def continue[R](implicit o: Option <= R, s: State[Result, ?] <= R, w: WS <= R): Eff[R, T] =
+    def check[R](implicit o: Option <= R, s: State[Result, ?] <= R, w: WS <= R): Eff[R, T] =
       liftOption(mr, Option(mr.expectable.value))
   }
 
   implicit class Lifted[M[_], T](mr: MatchResult[M[T]])(implicit nat: M ~> Option) {
-    def continue[R](implicit o: Option <= R, s: State[Result, ?] <= R, w: WS <= R): Eff[R, T] =
+    def opt[R](implicit o: Option <= R, s: State[Result, ?] <= R, w: WS <= R): Eff[R, T] =
       lift(mr)
   }
 
