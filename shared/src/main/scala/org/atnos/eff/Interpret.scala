@@ -235,6 +235,41 @@ trait Interpret {
 
     go(r)
   }
+
+  /**
+   * trait for translating one effect into other ones in the same stack
+   */
+  trait Translate[T[_], U] {
+    def apply[X](kv: T[X]): Eff[U, X]
+  }
+
+  /**
+   * Translate one effect of the stack into some of the other effects in the stack
+   */
+  def translate[R <: Effects, U <: Effects, T[_], O[_], A](effects: Eff[R, A])
+                                                    (tr: Translate[T, U])
+                                                    (implicit m: Member.Aux[T, R, U]): Eff[U, A] = {
+    def go(eff: Eff[R, A]): Eff[U, A] = {
+      eff match {
+        case Pure(a) => Pure(a)
+
+        case Impure(union, c) =>
+          m.project(union) match {
+            case Xor.Right(kv) =>
+              val effectsU: Eff[U, union.X] = tr(kv)
+              effectsU.flatMap(r => go(c(r)))
+
+            case Xor.Left(u1) =>
+              Impure(u1, Arrs.singleton((x: union.X) => go(c(x))))
+          }
+
+        case ap @ ImpureAp(_,_) =>
+          go(ap.toMonadic)
+      }
+    }
+
+    go(effects)
+  }
 }
 
 object Interpret extends Interpret
