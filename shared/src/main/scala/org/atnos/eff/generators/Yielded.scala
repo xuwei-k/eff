@@ -34,18 +34,8 @@ object Yielded {
       consumer(e)
   }
 
-  def runGen[R, E, A](producer: Generator[E, A])(consumer: Consumer[R, E]): Eff[R, A] =
-    producer.run(consumer)
-
-  def foldG[R <: Effects, S, E](producer: Producer[E])(fold: (S, E) => Eff[R, S])(initial: S): Eff[R, S] = {
-
-    type RS = State[S, ?] |: R
-
-    def consumer(e: E): Eff[RS, Unit] =
-      get[RS, S] >>= (s => fold(s, e).into[RS]) >>= put[RS, S]
-
-    execState(initial)(runGen[RS, E, Unit](producer)(e => consumer(e).into[RS]))
-  }
+  def foldG[R <: Effects, S, E](producer: Producer[E])(fold: (S, E) => Eff[R, S])(initial: S): Eff[R, S] =
+    foldEff(producer)(FoldEff.fromFoldLeftEff(initial)(fold))
 
   def foldEff[R <: Effects, E, A](producer: Producer[E])(fold: FoldEff[R, E, A]): Eff[R, A] = {
     type RS = State[fold.S, ?] |: R
@@ -94,5 +84,19 @@ object FoldEff {
     def start = Eff.pure(new scala.collection.mutable.ListBuffer[T])
     def fold = (s: S, t: T) => { s.append(t); s }
     def end(s: S) = Eff.pure(s.toList)
+  }
+
+  def fromFoldLeft[R, T, U](u: U)(f: (U, T) => U) = new FoldEff[R, T, U] {
+    type S = U
+    def start = Eff.pure(u)
+    def fold = f
+    def end(s: S) = Eff.pure(s)
+  }
+
+  def fromFoldLeftEff[R, T, U](u: U)(f: (U, T) => Eff[R, U]) = new FoldEff[R, T, U] {
+    type S = Eff[R, U]
+    def start = Eff.pure(Eff.pure(u))
+    def fold = (s, t) => s.flatMap(u => f(u, t))
+    def end(s: S) = s
   }
 }
