@@ -116,10 +116,7 @@ trait XorInterpretation {
 
 trait XorImplicits {
 
-  implicit def errorTranslate[R, E1, E2](implicit m: MemberIn[E1 Xor ?, R], map: E2 => E1): MemberIn[E2 Xor ?, R] =
-    m.transform(errorTranslateNat(map))
-
-  def errorTranslateNat[E1, E2](map: E2 => E1): (E2 Xor ?) ~> (E1 Xor ?) = new ((E2 Xor ?) ~> (E1 Xor ?)) {
+  implicit def errorTranslate[E1, E2](implicit map: E2 => E1): (E2 Xor ?) ~> (E1 Xor ?) = new ((E2 Xor ?) ~> (E1 Xor ?)) {
     def apply[X](x2: E2 Xor X): E1 Xor X = x2.leftMap(map)
   }
 

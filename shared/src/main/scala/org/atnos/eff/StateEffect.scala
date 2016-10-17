@@ -40,18 +40,12 @@ trait StateCreation {
 
 trait StateImplicits {
 
-  implicit def stateMemberInToReaderMemberIn[E, S](implicit m: MemberIn[State[S, ?], E]): MemberIn[Reader[S, ?], E] =
-    m.transform(readerToStateNat)
-
-  implicit def stateMemberInLens[E, S, T](implicit m: MemberIn[State[S, ?], E], get: S => T, set: T => S => S): MemberIn[State[T, ?], E] =
-    m.transform(via(get, set))
-
-  def readerToStateNat[S1] = new (Reader[S1, ?] ~> State[S1, ?]) {
-    def apply[X](r: Reader[S1, X]): State[S1, X] =
-      State((s: S1) => (s, r.run(s)))
+  implicit def readerToStateNat[S1] = new (State[S1, ?] ~> Reader[S1, ?]) {
+    def apply[X](r: State[S1, X]): Reader[S1, X] =
+      Reader((s: S1) => r.runA(s).value)
   }
 
-  def via[S, T](get: S => T, set: T => S => S): (State[T, ?] ~> State[S, ?]) =
+  implicit def via[S, T](implicit get: S => T, set: T => S => S): (State[T, ?] ~> State[S, ?]) =
     new (State[T, ?] ~> State[S, ?]) {
       def apply[X](s: State[T, X]) =
         State[S, X] { s1 =>

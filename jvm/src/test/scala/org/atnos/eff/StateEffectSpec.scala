@@ -74,30 +74,33 @@ class StateEffectSpec extends Specification with ScalaCheck { def is = s2"""
   }
 
   def stateImplicitLens = {
-    import state._
+    //import state._
 
     case class Address(s: String)
     case class Person(address: Address)
 
-    implicit val getAddress: Person => Address = (p: Person) => p.address
-    implicit val setAddress: Address => Person => Person = (a: Address) => (p: Person) => p.copy(address = a)
+    val getAddress: Person => Address = (p: Person) => p.address
+    val setAddress: Address => Person => Person = (a: Address) => (p: Person) => p.copy(address = a)
 
     type PerS[E] = State[Person, ?] |= E
     type PerR[E] = Reader[Person, ?] |= E
     type Add[E] = State[Address, ?] |= E
     type Err[E] = Xor[String, ?] |= E
 
-    def isBadPerson[E: PerR: Err]: Eff[E, Boolean] =
+    def isBadPerson[E: Err : PerR]: Eff[E, Boolean] =
       ask.map(_.hashCode % 13 == 0)
 
-    def updateAddress[E: Add: Err]: Eff[E, Unit] =
+    def updateAddress[E: Err : Add]: Eff[E, Unit] =
       get.void
 
-    def updatePerson[E: PerS: Err]: Eff[E, Unit] =
+    def updatePerson[E: PerS: Err]: Eff[E, Unit] = {
+      implicit val viaState: State[Address, ?] ~> State[Person, ?] = state.via(getAddress, setAddress)
+
       for {
         bad <- isBadPerson
         _   <- updateAddress
       } yield ()
+    }
 
     updatePerson[Fx.fx2[String Xor ?, State[Person, ?]]].evalState(Person(Address("here"))).runXor.run ==== Xor.Right(())
   }

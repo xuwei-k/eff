@@ -8,7 +8,7 @@ import org.atnos.eff.syntax.monix._
 
 import scala.concurrent._
 import duration._
-import cats.data.{Reader, Xor}
+import cats.data._
 import cats.Eval
 import cats.implicits._
 import _root_.monix.execution.Scheduler.Implicits.global
@@ -171,4 +171,47 @@ class TaskEffectSpec extends Specification with ScalaCheck with ThrownExpectatio
     i
   }
 
+}
+
+object test {
+  case class Person(address: String)
+
+  object Main {
+    import cats.~>
+
+    implicit def viaState[S, T](implicit get: S => T, set: T => S => S): (State[T, ?] ~> State[S, ?]) =
+      via(get, set)
+
+    def readerToStateNat[S1] = new (Reader[S1, ?] ~> State[S1, ?]) {
+      def apply[X](r: Reader[S1, X]): State[S1, X] =
+        State((s: S1) => (s, r.run(s)))
+    }
+
+    def via[S, T](get: S => T, set: T => S => S): (State[T, ?] ~> State[S, ?]) =
+      new (State[T, ?] ~> State[S, ?]) {
+        def apply[X](s: State[T, X]) =
+          State[S, X] { s1 =>
+            val (t, x) = s.run(get(s1)).value
+            (set(t)(s1), x)
+          }
+      }
+
+    type PerS[E] = State[Person, ?] |= E
+    type Err[E] = Xor[String, ?] |= E
+
+    def test[E](implicit s: State[Person, ?] |= E) = {
+      implicit val get: Person => String = (p: Person) => p.address
+      implicit val set: String => (Person => Person) = (s: String) => (p: Person) => p.copy(address = s)
+      implicit val vs:  (State[String, ?] ~> State[Person, ?]) = viaState[Person, String]
+      implicitly[State[String, ?] |= E]
+    }
+
+    def runEvent[E: PerS: Err]: Eff[E, Option[Unit]] = {
+      type E1 = Fx.prepend[Option, E]
+
+      opt[E1]().runOption
+    }
+
+    def opt[E: PerS: Err: _Option](): Eff[E, Unit] = ().pureEff
+  }
 }
