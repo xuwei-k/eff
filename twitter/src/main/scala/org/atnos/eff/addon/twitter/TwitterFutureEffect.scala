@@ -1,7 +1,5 @@
 package org.atnos.eff.addon.twitter
 
-import java.util.concurrent.ScheduledExecutorService
-
 import cats._
 import cats.implicits._
 import org.atnos.eff.all._
@@ -15,51 +13,57 @@ import com.twitter.util._
 
 object TwitterFutureCreation extends TwitterFutureCreation
 
-final case class TwitterTimedFuture[A](callback: (ScheduledExecutorService) => Future[A], timeout: Option[FiniteDuration] = None) {
-  @inline def runNow(sexs: ScheduledExecutorService): Future[A] = {
+final case class TwitterTimedFuture[A](callback: ExecutorServices => Future[A], timeout: Option[FiniteDuration] = None) {
+  @inline def runNow(ex: ExecutorServices): Future[A] = {
     timeout.fold {
-      callback(sexs)
+      callback(ex)
     } { t =>
       val promise = Promise[A]
       val timeout = new Runnable {
-        override def run(): Unit = {
+        def run(): Unit = {
           val _ = promise.updateIfEmpty(Throw(new TimeoutException))
         }
       }
-      sexs.schedule(timeout, t.length, t.unit)
-      callback(sexs).onFailure { e => val _ = promise.updateIfEmpty(Throw(e)) }.onSuccess { a => val _ = promise.updateIfEmpty(Return(a)) }
+      ex.scheduledExecutorService.schedule(timeout, t.length, t.unit)
+      callback(ex).onFailure { e => val _ = promise.updateIfEmpty(Throw(e)) }.onSuccess { a => val _ = promise.updateIfEmpty(Return(a)) }
       promise
     }
   }
 }
 
-final object TwitterTimedFuture {
+object TwitterTimedFuture {
 
   final def ApplicativeTwitterTimedFuture: Applicative[TwitterTimedFuture] = new Applicative[TwitterTimedFuture] {
-    override def pure[A](x: A) = TwitterTimedFuture(_ => Future.value(x))
-    override def ap[A, B](ff: TwitterTimedFuture[(A) => B])(fa: TwitterTimedFuture[A]): TwitterTimedFuture[B] = {
-      val newCallback = { sexs: ScheduledExecutorService =>
-        val ffRan = ff.runNow(sexs)
-        val faRan = fa.runNow(sexs)
-        faRan.flatMap(a => ffRan.map(f => f(a)))
+    def pure[A](x: A): TwitterTimedFuture[A] =
+      TwitterTimedFuture(_ => Future.value(x))
+
+    def ap[A, B](ff: TwitterTimedFuture[A => B])(fa: TwitterTimedFuture[A]): TwitterTimedFuture[B] = {
+      TwitterTimedFuture { ex: ExecutorServices =>
+        val ffRan = ff.runNow(ex)
+        val faRan = fa.runNow(ex)
+        ffRan.joinWith(faRan)(_(_))
       }
-      TwitterTimedFuture(newCallback)
     }
+
     override def toString = "Applicative[TwitterTimedFuture]"
   }
 
   implicit final def MonadTwitterTimedFuture: Monad[TwitterTimedFuture] = new Monad[TwitterTimedFuture] {
-    override def pure[A](x: A) = TwitterTimedFuture(_ => Future.value(x))
-    override def flatMap[A, B](fa: TwitterTimedFuture[A])(f: (A) => TwitterTimedFuture[B]): TwitterTimedFuture[B] =
-      TwitterTimedFuture[B](sexs => fa.runNow(sexs).flatMap(f(_).runNow(sexs)))
-    override def tailRecM[A, B](a: A)(f: (A) => TwitterTimedFuture[Either[A, B]]): TwitterTimedFuture[B] =
-      TwitterTimedFuture[B]({ sexs =>
-        def loop(va: A): Future[B] = f(va).runNow(sexs).flatMap {
+    def pure[A](x: A): TwitterTimedFuture[A] =
+      TwitterTimedFuture(_ => Future.value(x))
+
+    def flatMap[A, B](fa: TwitterTimedFuture[A])(f: A => TwitterTimedFuture[B]): TwitterTimedFuture[B] =
+      TwitterTimedFuture[B](ex => fa.runNow(ex).flatMap(f(_).runNow(ex)))
+
+    def tailRecM[A, B](a: A)(f: A => TwitterTimedFuture[Either[A, B]]): TwitterTimedFuture[B] =
+      TwitterTimedFuture[B]({ ex =>
+        def loop(va: A): Future[B] = f(va).runNow(ex).flatMap {
           case Left(na) => loop(na)
           case Right(nb) => Future.value(nb)
         }
         loop(a)
       })
+
     override def toString = "Monad[TwitterTimedFuture]"
   }
 }
@@ -73,13 +77,13 @@ trait TwitterFutureTypes {
 
 trait TwitterFutureCreation extends TwitterFutureTypes {
 
-  final def futureWithExecutors[R: _future, A](c: ScheduledExecutorService => Future[A], timeout: Option[FiniteDuration] = None): Eff[R, A] =
+  final def futureWithExecutors[R: _future, A](c: ExecutorServices => Future[A], timeout: Option[FiniteDuration] = None): Eff[R, A] =
     send[TwitterTimedFuture, R, A](TwitterTimedFuture(c, timeout))
 
   final def future[R: _future, A](c: => Future[A], timeout: Option[FiniteDuration] = None): Eff[R, A] =
     send[TwitterTimedFuture, R, A](TwitterTimedFuture(_ => c, timeout))
 
-  final def futureCB[R: _future, A](c: ScheduledExecutorService => Future[A],
+  final def futureCB[R: _future, A](c: ExecutorServices => Future[A],
                                     timeout: Option[FiniteDuration] = None): Eff[R, A] =
     send[TwitterTimedFuture, R, A](TwitterTimedFuture(c, timeout))
 
@@ -90,8 +94,10 @@ trait TwitterFutureCreation extends TwitterFutureTypes {
     e.fold(futureFailed[R, A], Eff.pure[R, A])
 
   final def futureDelay[R: _future, A](a: => A, timeout: Option[FiniteDuration] = None): Eff[R, A] =
-    send[TwitterTimedFuture, R, A](TwitterTimedFuture(_ => Future(a), timeout))
+    send[TwitterTimedFuture, R, A](TwitterTimedFuture(_ => Future.apply(a), timeout))
 
+  final def futureFork[R: _future, A](a: => A, timeout: Option[FiniteDuration] = None): Eff[R, A] =
+    send[TwitterTimedFuture, R, A](TwitterTimedFuture(c => FuturePool(c.executorService)(a), timeout))
 }
 
 trait TwitterFutureInterpretation extends TwitterFutureTypes {
@@ -145,8 +151,8 @@ trait TwitterFutureInterpretation extends TwitterFutureTypes {
   }
 
   final def attempt[A](a: TwitterTimedFuture[A]): TwitterTimedFuture[Throwable Either A] = {
-    TwitterTimedFuture[Throwable Either A](callback = sexs => {
-      a.runNow(sexs).liftToTry.map {
+    TwitterTimedFuture[Throwable Either A](callback = ex => {
+      a.runNow(ex).liftToTry.map {
         case Throw(ex) => Either.left(ex)
         case Return(v) => Either.right(v)
       }
@@ -154,10 +160,10 @@ trait TwitterFutureInterpretation extends TwitterFutureTypes {
   }
 
   final def memoize[A](key: AnyRef, cache: Cache, future: TwitterTimedFuture[A]): TwitterTimedFuture[A] =
-    TwitterTimedFuture { sexs =>
+    TwitterTimedFuture { ex =>
       val prom = Promise[A]()
       cache.get[A](key).fold {
-        future.runNow(sexs).map { v => val _ = cache.put(key, v); v }.proxyTo(prom)
+        future.runNow(ex).map { v => val _ = cache.put(key, v); v }.proxyTo(prom)
       } { v => prom.setValue(v) }
       prom
     }

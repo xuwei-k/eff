@@ -65,7 +65,7 @@ class FutureEffectSpec(implicit ee: ExecutionEnv) extends Specification with Sca
       }
 
     val run = Eff.traverseA(ls)(action)
-    eventually(retries = 1, sleep = 2.second) {
+    eventually(retries = 5, sleep = 2.second) {
       messages.clear
       Await.result(run.runOption.detachA(TimedFuture.ApplicativeTimedFuture).runNow(ee.ses, ee.ec), 1 seconds)
 
