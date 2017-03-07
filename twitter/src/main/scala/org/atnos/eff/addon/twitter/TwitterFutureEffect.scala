@@ -1,8 +1,5 @@
 package org.atnos.eff.addon.twitter
 
-import java.util.concurrent.TimeUnit
-import java.util.{Timer, TimerTask}
-
 import cats._
 import cats.implicits._
 import org.atnos.eff.all._
@@ -14,24 +11,19 @@ import com.twitter.util._
 
 object TwitterFutureCreation extends TwitterFutureCreation
 
-final case class TwitterTimedFuture[A](callback: (FuturePool, Timer) => Future[A], timeout: Option[FiniteDuration] = None) {
-  @inline def runNow(pool: FuturePool, timer: Timer): Future[A] = {
-    timeout.fold {
-      callback(pool, timer)
-    } { t =>
+final case class TwitterTimedFuture[A](callback: (FuturePool, Scheduler) => Future[A], timeout: Option[FiniteDuration] = None) {
+  @inline
+  def runNow(pool: FuturePool, scheduler: Scheduler): Future[A] =
+    timeout.fold(callback(pool, scheduler)) { t =>
       val promise = Promise[A]
-      val timeout = new TimerTask {
-        override def run(): Unit = {
-          val _ = promise.updateIfEmpty(Throw(new TimeoutException))
-        }
-      }
-      timer.schedule(timeout, TimeUnit.MILLISECONDS.convert(t.length, t.unit))
-      callback(pool, timer)
-        .onFailure { e => val _ = promise.updateIfEmpty(Throw(e)) }
-        .onSuccess { a => val _ = promise.updateIfEmpty(Return(a)) }
+      val cancelTimeout = scheduler.schedule({ promise.updateIfEmpty(Throw(new TimeoutException)); () }, t)
+      callback(pool, scheduler)
+          .onFailure { e => cancelTimeout(); val _ = promise.updateIfEmpty(Throw(e)) }
+          .onSuccess { a => cancelTimeout(); val _ = promise.updateIfEmpty(Return(a)) }
       promise
+
     }
-  }
+
 }
 
 object TwitterTimedFuture {
@@ -41,9 +33,9 @@ object TwitterTimedFuture {
       TwitterTimedFuture((_, _) => Future.value(x))
 
     def ap[A, B](ff: TwitterTimedFuture[(A) => B])(fa: TwitterTimedFuture[A]): TwitterTimedFuture[B] = {
-      val newCallback = { (pool: FuturePool, timer: Timer) =>
-        val ffRan = ff.runNow(pool, timer)
-        val faRan = fa.runNow(pool, timer)
+      val newCallback = { (pool: FuturePool, scheduler: Scheduler) =>
+        val ffRan = ff.runNow(pool, scheduler)
+        val faRan = fa.runNow(pool, scheduler)
         ffRan.joinWith(faRan)(_(_))
       }
       TwitterTimedFuture(newCallback)
@@ -57,11 +49,11 @@ object TwitterTimedFuture {
       TwitterTimedFuture((_, _) => Future.value(x))
 
     def flatMap[A, B](fa: TwitterTimedFuture[A])(f: (A) => TwitterTimedFuture[B]): TwitterTimedFuture[B] =
-      TwitterTimedFuture[B]((pool, timer) => fa.runNow(pool, timer).flatMap(f(_).runNow(pool, timer)))
+      TwitterTimedFuture[B]((pool, scheduler) => fa.runNow(pool, scheduler).flatMap(f(_).runNow(pool, scheduler)))
 
     def tailRecM[A, B](a: A)(f: (A) => TwitterTimedFuture[Either[A, B]]): TwitterTimedFuture[B] =
-      TwitterTimedFuture[B]({ (pool, timer) =>
-        def loop(va: A): Future[B] = f(va).runNow(pool, timer).flatMap {
+      TwitterTimedFuture[B]({ (pool, scheduler) =>
+        def loop(va: A): Future[B] = f(va).runNow(pool, scheduler).flatMap {
           case Left(na) => loop(na)
           case Right(nb) => Future.value(nb)
         }
@@ -74,7 +66,7 @@ object TwitterTimedFuture {
   implicit val twitterFutureSequenceCached: SequenceCached[TwitterTimedFuture] =
     new SequenceCached[TwitterTimedFuture] {
       def apply[X](cache: Cache, key: AnyRef, sequenceKey: Int, tx: =>TwitterTimedFuture[X]): TwitterTimedFuture[X] =
-        TwitterTimedFuture((pool, timer) => cache.memo((key, sequenceKey), tx.runNow(pool, timer)))
+        TwitterTimedFuture((pool, scheduler) => cache.memo((key, sequenceKey), tx.runNow(pool, scheduler)))
     }
 
 }
@@ -86,7 +78,7 @@ trait TwitterFutureTypes {
 
 trait TwitterFutureCreation extends TwitterFutureTypes {
 
-  final def fromFutureWithExecutors[R :_future, A](c: (FuturePool, Timer) => Future[A], timeout: Option[FiniteDuration] = None): Eff[R, A] =
+  final def fromFutureWithExecutors[R :_future, A](c: (FuturePool, Scheduler) => Future[A], timeout: Option[FiniteDuration] = None): Eff[R, A] =
     send[TwitterTimedFuture, R, A](TwitterTimedFuture(c, timeout))
 
   final def fromFuture[R :_future, A](c: => Future[A], timeout: Option[FiniteDuration] = None): Eff[R, A] =
@@ -108,11 +100,11 @@ trait TwitterFutureCreation extends TwitterFutureTypes {
 
 trait TwitterFutureInterpretation extends TwitterFutureTypes {
 
-  def runAsync[R, A](e: Eff[R, A])(implicit pool: FuturePool, timer: Timer, m: Member.Aux[TwitterTimedFuture, R, NoFx]): Future[A] =
-    Eff.detachA(e)(TwitterTimedFuture.MonadTwitterTimedFuture, TwitterTimedFuture.ApplicativeTwitterTimedFuture, m).runNow(pool, timer)
+  def runAsync[R, A](e: Eff[R, A])(implicit pool: FuturePool, scheduler: Scheduler, m: Member.Aux[TwitterTimedFuture, R, NoFx]): Future[A] =
+    Eff.detachA(e)(TwitterTimedFuture.MonadTwitterTimedFuture, TwitterTimedFuture.ApplicativeTwitterTimedFuture, m).runNow(pool, scheduler)
 
-  def runSequential[R, A](e: Eff[R, A])(implicit pool: FuturePool, timer: Timer, m: Member.Aux[TwitterTimedFuture, R, NoFx]): Future[A] =
-    Eff.detach(e)(Monad[TwitterTimedFuture], m).runNow(pool, timer)
+  def runSequential[R, A](e: Eff[R, A])(implicit pool: FuturePool, scheduler: Scheduler, m: Member.Aux[TwitterTimedFuture, R, NoFx]): Future[A] =
+    Eff.detach(e)(Monad[TwitterTimedFuture], m).runNow(pool, scheduler)
 
   import interpret.of
 
@@ -133,11 +125,11 @@ trait TwitterFutureInterpretation extends TwitterFutureTypes {
 
   /** memoize future result using a cache */
   final def memoize[A](key: AnyRef, cache: Cache, future: TwitterTimedFuture[A]): TwitterTimedFuture[A] =
-    TwitterTimedFuture { (pool, timer) =>
+    TwitterTimedFuture { (pool, scheduler) =>
       val promise = Promise[A]()
 
       cache.get[A](key).fold {
-        future.runNow(pool, timer).map { v => val _ = cache.put(key, v); v }.proxyTo(promise)
+        future.runNow(pool, scheduler).map { v => val _ = cache.put(key, v); v }.proxyTo(promise)
       } { v => promise.setValue(v) }
 
       promise

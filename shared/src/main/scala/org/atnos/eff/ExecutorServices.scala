@@ -1,10 +1,11 @@
 package org.atnos.eff
 
-import java.util.{Collections, Date, Timer, TimerTask}
+import java.util.Collections
 import java.util.concurrent._
 
 import cats.Eval
 
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService}
 
 case class ExecutorServices(executorServiceEval:   Eval[ExecutorService],
@@ -27,6 +28,9 @@ case class ExecutorServices(executorServiceEval:   Eval[ExecutorService],
   implicit lazy val executionContext: ExecutionContext =
     executionContextEval.value
 
+  implicit lazy val scheduler: Scheduler =
+    ExecutorServices.schedulerFromScheduledExecutorService(scheduledExecutorService)
+
   /** convenience method to shutdown the services when the final future has completed */
   def shutdownOnComplete[A](future: scala.concurrent.Future[A]): ExecutorServices = {
     future.onComplete(_ => shutdown.value)
@@ -35,7 +39,7 @@ case class ExecutorServices(executorServiceEval:   Eval[ExecutorService],
 
 }
 
-object ExecutorServices {
+object ExecutorServices extends Schedulers {
 
   lazy val threadsNb = Runtime.getRuntime.availableProcessors
 
@@ -91,53 +95,23 @@ object ExecutorServices {
       }
     }
 
-  def timerTaskToRunnable(timerTask: TimerTask): Runnable = new Runnable {
-    override def run(): Unit = {
-      timerTask.run()
-    }
-  }
-
-  def timerFromScheduledExecutorService(ses: ScheduledExecutorService): Timer = new Timer {
-    override def schedule(task: TimerTask, delay: Long): Unit = {
-      val _ = ses.schedule(timerTaskToRunnable(task), delay, TimeUnit.MILLISECONDS)
-    }
-
-    override def schedule(task: TimerTask, time: Date): Unit = {
-      val delay = new Date().getTime - time.getTime
-      schedule(task, delay)
-    }
-
-    override def schedule(task: TimerTask, delay: Long, period: Long): Unit = {
-      val _ = ses.scheduleWithFixedDelay(timerTaskToRunnable(task), delay, period, TimeUnit.MILLISECONDS)
-    }
-
-    override def schedule(task: TimerTask, firstTime: Date, period: Long): Unit = {
-      val delay = new Date().getTime - firstTime.getTime
-      schedule(task, delay, period)
-    }
-
-    override def scheduleAtFixedRate(task: TimerTask, delay: Long, period: Long): Unit = {
-      val _ = ses.scheduleAtFixedRate(timerTaskToRunnable(task), delay, period, TimeUnit.MILLISECONDS)
-    }
-
-    override def scheduleAtFixedRate(task: TimerTask, firstTime: Date,
-                                     period: Long): Unit = {
-      val delay = new Date().getTime - firstTime.getTime
-      scheduleAtFixedRate(task, delay, period)
-    }
-
-    override def cancel(): Unit = {
-    }
-
-    override def purge(): Int = {
-      0
-    }
-
-  }
-
-  /** create an ExecutionEnv from Scala global execution context */
+  /** create an ExecutorServices from Scala global execution context */
   def fromGlobalExecutionContext: ExecutorServices =
     fromExecutionContext(scala.concurrent.ExecutionContext.global)
+
+  /** create a Scheduler from Scala global execution context */
+  def schedulerFromGlobalExecutionContext: Scheduler =
+    schedulerFromScheduledExecutorService(fromGlobalExecutionContext.scheduledExecutorService)
+
+  def schedulerFromScheduledExecutorService(s: ScheduledExecutorService): Scheduler =
+    new Scheduler {
+      def schedule(timedout: =>Unit, duration: FiniteDuration): () => Unit = {
+        val scheduled = s.schedule(new Runnable { def run(): Unit = timedout }, duration.toNanos, TimeUnit.NANOSECONDS)
+        () => { scheduled.cancel(false); () }
+      }
+
+      override def toString = "Scheduler"
+    }
 
 }
 
