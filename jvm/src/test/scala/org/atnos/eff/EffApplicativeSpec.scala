@@ -14,7 +14,7 @@ import org.atnos.eff.syntax.future._
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.ThrownExpectations
 
-import scala.concurrent._
+import scala.concurrent.{Batchable => _, _}
 import duration._
 import scala.collection.mutable.ListBuffer
 
