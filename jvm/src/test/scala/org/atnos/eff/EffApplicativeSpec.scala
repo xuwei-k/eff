@@ -6,6 +6,7 @@ import org.specs2.{ScalaCheck, Specification}
 import cats.syntax.all._
 import cats.instances.all._
 import cats.Eq
+import org.atnos.eff.Batchable
 import org.atnos.eff.all._
 import org.atnos.eff.concurrent.Scheduler
 import org.atnos.eff.future._
@@ -14,7 +15,7 @@ import org.atnos.eff.syntax.future._
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.ThrownExpectations
 
-import scala.concurrent.{Batchable => _, _}
+import scala.concurrent._
 import duration._
 import scala.collection.mutable.ListBuffer
 
