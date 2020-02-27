@@ -103,13 +103,20 @@ lazy val scoverageSettings = Seq(
 lazy val buildSettings = Seq(
   organization := "org.atnos",
   scalaVersion := "2.12.10",
-  crossScalaVersions := Seq(scalaVersion.value, "2.13.1")
+  crossScalaVersions := Seq(scalaVersion.value, "2.13.1", "0.22.0-RC1")
 )
 
 lazy val commonSettings = Seq(
   scalacOptions ++= commonScalacOptions.value,
   scalacOptions in (Compile, doc) := (scalacOptions in (Compile, doc)).value.filter(_ != "-Xfatal-warnings"),
-  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
+  libraryDependencies ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, _)) =>
+        Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full))
+      case _ =>
+        Nil
+    }
+  }
 ) ++ warnUnusedImport ++ prompt
 
 lazy val commonJsSettings = Seq(
@@ -130,7 +137,8 @@ lazy val commonJvmSettings = Seq(
   cancelable in Global := true,
   (scalacOptions in Test) ~= (_.filterNot(_ == "-Xfatal-warnings")),
   libraryDependencies ++= catsJvm,
-  libraryDependencies ++= specs2
+  libraryDependencies ++= specs2,
+  libraryDependencies := libraryDependencies.value.map(_.withDottyCompat(scalaVersion.value))
 ) ++ Seq(scalacOptions in Test ++= Seq("-Yrangepos"))
 
 lazy val effSettings =
@@ -163,30 +171,42 @@ lazy val noPublishSettings = Seq(
 
 lazy val commonScalacOptions = Def.setting {
   Seq(
-    "-deprecation",
-    "-encoding", "UTF-8",
-    "-feature",
-    "-language:_",
-    "-unchecked",
-    "-Xlint",
-    "-Xlint:-nullary-unit",
-    "-Ywarn-numeric-widen",
-    "-Ywarn-value-discard"
-  ) ++ {
+    Seq(
+      "-deprecation",
+      "-encoding", "UTF-8",
+      "-feature",
+      "-language:_",
+      "-unchecked",
+    ),
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, v)) if v >= 13 =>
         Seq(
           "-Ymacro-annotations"
         )
-      case _ =>
+      case Some((2, _)) =>
         Seq(
           "-Xfatal-warnings",
           "-Yno-adapted-args",
           "-Ypartial-unification",
           "-Xfuture"
         )
+      case _ =>
+        Nil
+    },
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((0 | 3, _)) =>
+        Seq(
+          "-Ykind-projector"
+        )
+      case _ =>
+        Seq(
+          "-Xlint",
+          "-Xlint:-nullary-unit",
+          "-Ywarn-numeric-widen",
+          "-Ywarn-value-discard"
+        )
     }
-  }
+  ).flatten
 }
 
 lazy val sharedPublishSettings = Seq(
