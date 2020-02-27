@@ -38,7 +38,7 @@ class EffMacros(val c: blackbox.Context) {
       case Some(q"$_ trait ${tpname:TypeName}[..$_] extends { ..$earlydefns } with ..$parents { $self => ..$stats }") =>
         val (typeAlias: TypeDef, freeSType) =
           stats.collectFirst {
-            case typeDef @ q"type $_[..$_] = MemberIn[${Ident(s)}, $_]" => (typeDef, s)
+            case typeDef @ q"type $_[..$_] = _root_.org.atnos.eff.MemberIn[${Ident(s)}, $_]" => (typeDef, s)
             case typeDef @ q"type $_[..$_] = |=[${Ident(s)}, $_]" => (typeDef, s)
             case typeDef @ q"type $_[..$_] = /=[${Ident(s)}, $_]" => (typeDef, s)
             case typeDef @ q"type $_[..$_] = <=[${Ident(s)}, $_]" => (typeDef, s)
@@ -108,7 +108,7 @@ class EffMacros(val c: blackbox.Context) {
             val args = paramssToArgs(nonStackParams(paramss)).flatten
             val rhs = q"Eff.send[${sealedTrait.name}, $effectType, $returnType](${adt(name)}(..$args))"
             val params = (if (paramss.isEmpty) List.empty else paramss)
-            q"def $name[..$tparams](...$params): Eff[$effectType, $returnType] = $rhs".asInstanceOf[DefDef]
+            q"def $name[..$tparams](...$params): _root_.org.atnos.eff.Eff[$effectType, $returnType] = $rhs".asInstanceOf[DefDef]
         }
 
         val injectOpsObj = liftedOps
@@ -141,12 +141,12 @@ class EffMacros(val c: blackbox.Context) {
 
         val sideEffectTrait = {
           val methodsToBeImpl: Seq[DefDef] = absValsDefsOps.map {
-            case q"..$mods def $name[..$tparams](...$paramss): Eff[$_, $returnType]" =>
+            case q"..$mods def $name[..$tparams](...$paramss): _root_.org.atnos.eff.Eff[$_, $returnType]" =>
               DefDef(mods, name, tparams.dropRight(1), nonStackParams(paramss), returnType, EmptyTree)
           }
 
           q"""
-              trait SideEffect extends org.atnos.eff.SideEffect[${sealedTrait.name}] {
+              trait SideEffect extends _root_.org.atnos.eff.SideEffect[${sealedTrait.name}] {
                 def apply[A](fa: ${sealedTrait.name}[A]): A = fa match {
                   case ..${absValsDefsOps.map {
                     case DefDef(_, name, _, paramss, rt, _) =>
@@ -158,10 +158,10 @@ class EffMacros(val c: blackbox.Context) {
                       cq"${adt(name)} => $name"
                   }}
                 }
-                def applicative[X, Tr[_]](ms: Tr[${sealedTrait.name}[X]])(implicit traverse: cats.Traverse[Tr]): Tr[X] =
+                def applicative[X, Tr[_]](ms: Tr[${sealedTrait.name}[X]])(implicit traverse: _root_.cats.Traverse[Tr]): Tr[X] =
                   traverse.map(ms)(apply)
-                def run[R, A](effects: Eff[R, A])(implicit m: ${sealedTrait.name} <= R): Eff[m.Out, A] =
-                  org.atnos.eff.interpret.interpretUnsafe(effects)(this)(m)
+                def run[R, A](effects: _root_.org.atnos.eff.Eff[R, A])(implicit m: ${sealedTrait.name} <= R): _root_.org.atnos.eff.Eff[m.Out, A] =
+                  _root_.org.atnos.eff.interpret.interpretUnsafe(effects)(this)(m)
                 ..$methodsToBeImpl
               }
         """
@@ -169,21 +169,21 @@ class EffMacros(val c: blackbox.Context) {
 
         val translateTrait =  {
           val methodsToBeImpl: Seq[DefDef] = absValsDefsOps.map {
-            case q"..$mods def $name[..$tparams](...$paramss): Eff[$_, $returnType]" =>
+            case q"..$mods def $name[..$tparams](...$paramss): _root_.org.atnos.eff.Eff[$_, $returnType]" =>
               DefDef(mods, name, tparams.dropRight(1), nonStackParams(paramss), tq"Eff[U, $returnType]", EmptyTree)
           }
 
           q"""
-              trait Translate[R, U] extends org.atnos.eff.Translate[${sealedTrait.name}, U] {
-                def apply[X](fa: ${sealedTrait.name}[X]): Eff[U, X] = fa match {
+              trait Translate[R, U] extends _root_.org.atnos.eff.Translate[${sealedTrait.name}, U] {
+                def apply[X](fa: ${sealedTrait.name}[X]): _root_.org.atnos.eff.Eff[U, X] = fa match {
                   case ..${absValsDefsOps.map {
                     case DefDef(_, name, _, paramss, rt, _) =>
                       val binds = nonStackParams(paramss).flatMap(_.collect { case t:ValDef => Bind (t.name, Ident(termNames.WILDCARD))})
                       val args = nonStackParams(paramss).map(_.collect { case t:ValDef => Ident(t.name.toTermName) })
                       val rhs = if (args.isEmpty) q"$name" else q"$name(...${args})"
-                      cq"${adt(name)}(..$binds) => $rhs.asInstanceOf[Eff[U, X]]"
+                      cq"${adt(name)}(..$binds) => $rhs.asInstanceOf[_root_.org.atnos.eff.Eff[U, X]]"
                     case ValDef(_, name, _, _) =>
-                      cq"${adt(name)} => $name.asInstanceOf[Eff[U, X]]"
+                      cq"${adt(name)} => $name.asInstanceOf[_root_.org.atnos.eff.Eff[U, X]]"
                   }}
                 }
                 ..$methodsToBeImpl
@@ -199,46 +199,46 @@ class EffMacros(val c: blackbox.Context) {
           val typeU = TypeDef(Modifiers(Flag.PARAM), TypeName("U"), List(), TypeBoundsTree(tq"scala.Nothing", tq"scala.Any"))
 
           val methodsToBeImpl: Seq[DefDef] = absValsDefsOps.map {
-            case q"..$mods def $name[..$tparams](...$paramss): Eff[$_, $returnType]" =>
-              DefDef(mods, name, tparams.dropRight(1) :+ typeU, addImplicits(effectImplicitParams, nonStackParams(paramss)), tq"Eff[U, $returnType]", EmptyTree)
+            case q"..$mods def $name[..$tparams](...$paramss): _root_.org.atnos.eff.Eff[$_, $returnType]" =>
+              DefDef(mods, name, tparams.dropRight(1) :+ typeU, addImplicits(effectImplicitParams, nonStackParams(paramss)), tq"_root_.org.atnos.eff.Eff[U, $returnType]", EmptyTree)
           }
           val runMethod = TermName("run" + sealedTrait.name)
           val cases = absValsDefsOps.map {
-            case q"..$mods def $name[..$tparams](...$paramss): Eff[$_, $returnType]" =>
+            case q"..$mods def $name[..$tparams](...$paramss): _root_.org.atnos.eff.Eff[$_, $returnType]" =>
               val binds = nonStackParams(paramss).flatMap(_.collect { case t:ValDef => Bind(t.name, Ident(termNames.WILDCARD))})
               val args = addImplicits(effectImplicitParams, nonStackParams(paramss)).map(_.collect { case t:ValDef => t.name })
               val rhs = q"$name(...$args)"
-              cq"${adt(name)}(..$binds) => $rhs.asInstanceOf[Eff[U, X]]"
+              cq"${adt(name)}(..$binds) => $rhs.asInstanceOf[_root_.org.atnos.eff.Eff[U, X]]"
 
             case ValDef(_, name, _, _) =>
-              cq"${adt(name)} => $name.asInstanceOf[Eff[U, X]]"
+              cq"${adt(name)} => $name.asInstanceOf[_root_.org.atnos.eff.Eff[U, X]]"
           }
           q"""
               trait $factoryTrait[..${(1 to numOutEffects).map(i => TypeDef(Modifiers(Flag.PARAM), TypeName(s"R$i"), List(TypeDef(Modifiers(Flag.PARAM), typeNames.WILDCARD, List(), TypeBoundsTree(TypeTree(), TypeTree()))), TypeBoundsTree(TypeTree(), TypeTree()))
 )}] {
 
-                implicit class ${TypeName("Rich" + sealedTrait.name)}[R, A](val effects: Eff[R, A]) {
+                implicit class ${TypeName("Rich" + sealedTrait.name)}[R, A](val effects: _root_.org.atnos.eff.Eff[R, A]) {
                   def $runMethod[U](
-                    implicit m: Member.Aux[${sealedTrait.name}, R, U],
+                    implicit m: _root_.org.atnos.eff.Member.Aux[${sealedTrait.name}, R, U],
                     ..$effectImplicitParams
-                  ): Eff[U, A] = {
+                  ): _root_.org.atnos.eff.Eff[U, A] = {
                     $factoryTrait.this.$runMethod(effects)(m, ..$effectImplicitArgs)
                   }
                 }
 
-                def $runMethod[R, U, A](effects: Eff[R, A])(
-                  implicit m: Member.Aux[${sealedTrait.name}, R, U],
+                def $runMethod[R, U, A](effects: _root_.org.atnos.eff.Eff[R, A])(
+                  implicit m: _root_.org.atnos.eff.Member.Aux[${sealedTrait.name}, R, U],
                     ..$effectImplicitParams
-                ): Eff[U, A] = {
+                ): _root_.org.atnos.eff.Eff[U, A] = {
                   val tr = translator[R, U](m, ..$effectImplicitArgs)
-                  org.atnos.eff.interpret.translate(effects)(tr)
+                  _root_.org.atnos.eff.interpret.translate(effects)(tr)
                 }
 
                 def translator[R, U](
-                  implicit m: Member.Aux[${sealedTrait.name}, R, U],
+                  implicit m: _root_.org.atnos.eff.Member.Aux[${sealedTrait.name}, R, U],
                     ..$effectImplicitParams
-                ): org.atnos.eff.Translate[${sealedTrait.name}, U] = new org.atnos.eff.Translate[${sealedTrait.name}, U] {
-                    def apply[X](fa: ${sealedTrait.name}[X]): Eff[U, X] = fa match {
+                ): _root_.org.atnos.eff.Translate[${sealedTrait.name}, U] = new _root_.org.atnos.eff.Translate[${sealedTrait.name}, U] {
+                    def apply[X](fa: ${sealedTrait.name}[X]): _root_.org.atnos.eff.Eff[U, X] = fa match {
                       case ..$cases
                     }
                   }
@@ -251,12 +251,12 @@ class EffMacros(val c: blackbox.Context) {
 
         val functionKTrait =  {
           val methodsToBeImpl: Seq[DefDef] = absValsDefsOps.map {
-            case q"..$mods def $name[..$tparams](...$paramss): Eff[$_, $returnType]" =>
+            case q"..$mods def $name[..$tparams](...$paramss): _root_.org.atnos.eff.Eff[$_, $returnType]" =>
               DefDef(mods, name, tparams.dropRight(1), nonStackParams(paramss), tq"M[$returnType]", EmptyTree)
           }
 
           q"""
-              trait FunctionK[M[_]] extends cats.~>[${sealedTrait.name}, M] {
+              trait FunctionK[M[_]] extends _root_.cats.~>[${sealedTrait.name}, M] {
                 def apply[X](fa: ${sealedTrait.name}[X]): M[X] = fa match {
                   case ..${absValsDefsOps.map {
                     case DefDef(_, name, _, paramss, rt, _) =>
