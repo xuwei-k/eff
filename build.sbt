@@ -108,7 +108,7 @@ lazy val scoverageSettings = Seq(
 
 lazy val buildSettings = Seq(
   organization := "org.atnos",
-  scalaVersion := "2.13.2", //0.24.0-RC1",
+  scalaVersion := dottyLatestNightlyBuild.get,
   crossScalaVersions := Seq(scalaVersion.value, "2.13.2")
 )
 
@@ -206,7 +206,7 @@ lazy val commonScalacOptions = Def.setting {
     "-deprecation",
     "-encoding", "UTF-8",
     "-feature",
-    "-language:implicitConversions,higherKinds,existentials",
+    "-language:implicitConversions,higherKinds,existentials,experimental.macros",
     "-unchecked"
   ) ++ {
     CrossVersion.partialVersion(scalaVersion.value) match {

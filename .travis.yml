@@ -11,6 +11,6 @@ cache:
     - $HOME/.coursier
 
 script:
-  - sbt '++ 0.24.0-RC1!' coreJVM/compile
+  - sbt coreJVM/compile
   - find $HOME/.sbt -name "*.lock" | xargs rm
   - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs --no-run-if-empty rm
