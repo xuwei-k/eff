@@ -108,7 +108,7 @@ lazy val scoverageSettings = Seq(
 
 lazy val buildSettings = Seq(
   organization := "org.atnos",
-  scalaVersion := "2.12.11",
+  scalaVersion := "2.13.2", //0.24.0-RC1",
   crossScalaVersions := Seq(scalaVersion.value, "2.13.2")
 )
 
@@ -123,7 +123,15 @@ lazy val commonSettings = Seq(
     )
   },
   scalacOptions in (Compile, doc) := (scalacOptions in (Compile, doc)).value.filter(_ != "-Xfatal-warnings"),
-  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
+  libraryDependencies ++= {
+    if (isDotty.value) {
+      Nil
+    } else {
+      Seq(
+        compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
+      )
+    }
+  }
 ) ++ warnUnusedImport ++ prompt
 
 lazy val commonJsSettings = Seq(
@@ -148,8 +156,8 @@ lazy val commonJvmSettings = Seq(
   fork in Test := true,
   cancelable in Global := true,
   (scalacOptions in Test) ~= (_.filterNot(_ == "-Xfatal-warnings")),
-  libraryDependencies ++= catsJvm,
-  libraryDependencies ++= specs2
+  libraryDependencies ++= catsJvm.map(_.withDottyCompat(scalaVersion.value)),
+  libraryDependencies ++= specs2.map(_.withDottyCompat(scalaVersion.value))
 ) ++ Seq(scalacOptions in Test ++= Seq("-Yrangepos"))
 
 lazy val effSettings =
@@ -181,29 +189,39 @@ lazy val noPublishSettings = Seq(
 )
 
 lazy val commonScalacOptions = Def.setting {
-  Seq(
+  {
+    if (isDotty.value) {
+      Seq(
+        "-Ykind-projector"
+      )
+    } else {
+      Seq(
+        "-Xlint",
+        "-Xlint:-nullary-unit",
+        "-Ywarn-numeric-widen",
+        "-Ywarn-value-discard"
+      )
+    }
+  } ++ Seq(
     "-deprecation",
     "-encoding", "UTF-8",
     "-feature",
-    "-language:_",
-    "-unchecked",
-    "-Xlint",
-    "-Xlint:-nullary-unit",
-    "-Ywarn-numeric-widen",
-    "-Ywarn-value-discard"
+    "-language:implicitConversions,higherKinds,existentials",
+    "-unchecked"
   ) ++ {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, v)) if v >= 13 =>
         Seq(
           "-Ymacro-annotations"
         )
-      case _ =>
+      case Some((2, _)) =>
         Seq(
-          "-Xfatal-warnings",
           "-Yno-adapted-args",
           "-Ypartial-unification",
           "-Xfuture"
         )
+      case _ =>
+        Nil
     }
   }
 }

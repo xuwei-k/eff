@@ -1,16 +1,7 @@
 language: scala
 
-scala:
-  - 2.12.11
-  - 2.13.2
-
 jdk:
   - openjdk8
-
-matrix:
-  include:
-  - jdk: openjdk11
-    scala: 2.12.11
 
 # These directories are cached to S3 at the end of the build
 cache:
@@ -20,6 +11,6 @@ cache:
     - $HOME/.coursier
 
 script:
-  - sbt -scala-version $TRAVIS_SCALA_VERSION ';clean; testOnly -- timefactor 5 exclude travis'
+  - sbt '++ 0.24.0-RC1!' coreJVM/compile
   - find $HOME/.sbt -name "*.lock" | xargs rm
   - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs --no-run-if-empty rm
