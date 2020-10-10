@@ -18,4 +18,4 @@ jobs:
       with:
         java-version: "adopt@1.${{ matrix.java }}"
     - uses: coursier/cache-action@v4.1
-    - run: sbt -v -sbt-opts .github/workflows/.sbtopts "+ test:compile" "+testOnly -- timefactor 5 exclude travis"
+    - run: sbt -v -sbt-opts .github/workflows/.sbtopts "+ test:compile" "+testOnly -- timefactor 5"

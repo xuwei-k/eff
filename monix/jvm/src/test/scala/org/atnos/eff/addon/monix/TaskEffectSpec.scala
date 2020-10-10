@@ -20,7 +20,7 @@ class TaskEffectSpec(implicit ee: ExecutionEnv) extends Specification with Scala
 
  Tasks can work as normal values                           $e1
  Task effects can be attempted                             $e2
- Task effects can be executed concurrently                 $e3 ${tag("travis")}
+ Task effects can be executed concurrently                 $e3
  Task effects are stacksafe with recursion                 $e5
  A forked task computation can be timed out                $e6
 

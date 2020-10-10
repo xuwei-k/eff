@@ -19,7 +19,7 @@ class FutureEffectSpec(implicit ee: ExecutionEnv) extends Specification with Sca
 
  Future effects can work as normal values                      $e1
  Future effects can be attempted                               $e2
- Future effects can be executed concurrently                   $e3 ${tag("travis")}
+ Future effects can be executed concurrently                   $e3
  Future effects are stacksafe with recursion                   $e6
  An Future effect can be created from Either                   $e7
  An Future forked computation can be timed out                 $e8
