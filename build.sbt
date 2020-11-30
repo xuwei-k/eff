@@ -108,12 +108,12 @@ lazy val scoverageSettings = Seq(
 
 lazy val buildSettings = Seq(
   organization := "org.atnos",
-  scalaVersion := "2.12.12",
+  scalaVersion := "3.0.0-M2",
   crossScalaVersions := Seq(scalaVersion.value, "2.13.4")
 )
 
 lazy val commonSettings = Seq(
-  libraryDependencies ++= specs2,
+  libraryDependencies ++= specs2.map(_ withDottyCompat scalaVersion.value),
   scalacOptions ++= commonScalacOptions.value,
   scalacOptions in (Compile, doc) ++= {
     Seq(
