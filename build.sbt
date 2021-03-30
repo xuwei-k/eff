@@ -15,7 +15,7 @@ effSettings
 noPublishSettings
 commonJvmSettings
 libraryDependencies ++= scalameter
-libraryDependencies += "org.specs2" %% "specs2-html" % specs2Version % "test"
+//libraryDependencies += "org.specs2" %% "specs2-html" % specs2Version % "test"
 
 dependsOn(
   coreJVM % "test->test;compile->compile",
@@ -122,6 +122,7 @@ lazy val buildSettings = Seq(
 lazy val commonSettings = Seq(
   libraryDependencies += "org.typelevel" %%% "cats-core" % "2.5.0",
   scalacOptions ++= commonScalacOptions.value,
+  scalacOptions += "-no-indent",
   (Compile / doc / scalacOptions) ++= {
     Seq(
       "-sourcepath",
@@ -154,7 +155,6 @@ lazy val commonJsSettings = Seq(
 )
 
 lazy val commonJvmSettings = Seq(
-  libraryDependencies ++= specs2.value,
   Test / fork := true,
   Global / cancelable := true,
   Test / scalacOptions ~= (_.filterNot(_ == "-Xfatal-warnings")),
