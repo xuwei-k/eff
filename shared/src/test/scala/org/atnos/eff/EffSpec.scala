@@ -213,8 +213,8 @@ class EffSpec extends Specification with ScalaCheck with ThrownExpectations { de
     type S0 = Fx.fx2[ReaderString, Option]
     type S1 = Fx.fx2[StateString, Option]
 
-    implicit val m1 = Member.Member2L[ReaderString, Option]
-    implicit val m2 = Member.Member2L[StateString, Option]
+    implicit val m1: Int = Member.Member2L[ReaderString, Option]
+    implicit val m2: Int = Member.Member2L[StateString, Option]
 
     def both: Eff[S1, Int] = for {
       _ <- setString[S1]

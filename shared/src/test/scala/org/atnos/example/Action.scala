@@ -43,13 +43,13 @@ trait ActionImplicits extends ActionTypes {
   implicit def ErrorOrOkMember: Member.Aux[ErrorOrOk, ActionStack, Fx3[Console, Warnings, Eval]] =
     Member.Member4L[ErrorOrOk, Console, Warnings, Eval]
 
-  implicit def ConsoleMember =
+  implicit def ConsoleMember: Int =
     Member.MemberAppendR[Console, Fx1[ErrorOrOk], Fx3[Console, Warnings, Eval], Fx2[Warnings, Eval]](Member.Member3L[Console, Warnings, Eval])
 
-  implicit def WarningsMember =
+  implicit def WarningsMember: Int =
     Member.MemberAppendR[Warnings, Fx1[ErrorOrOk], Fx3[Console, Warnings, Eval], Fx2[Console, Eval]](Member.Member3M[Console, Warnings, Eval])
 
-  implicit def EvalMember =
+  implicit def EvalMember: Int =
     Member.MemberAppendR[Eval, Fx1[ErrorOrOk], Fx3[Console, Warnings, Eval], Fx2[Console, Warnings]](Member.Member3R[Console, Warnings, Eval])
 }
 
