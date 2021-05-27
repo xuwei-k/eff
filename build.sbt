@@ -90,7 +90,7 @@ lazy val scalaz = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file(
   .settings(moduleName := "eff-scalaz")
   .dependsOn(core)
   .settings(
-    libraryDependencies += "org.scalaz" %%% "scalaz-core" % "7.3.3",
+    libraryDependencies += "org.scalaz" %%% "scalaz-core" % "7.3.3" cross CrossVersion.for3Use2_13,
   )
   .settings(effSettings)
   .jvmSettings(commonJvmSettings)
@@ -115,8 +115,7 @@ lazy val scoverageSettings = Seq(
 
 lazy val buildSettings = Seq(
   organization := "org.atnos",
-  scalaVersion := "2.12.13",
-  crossScalaVersions := Seq(scalaVersion.value, "2.13.6")
+  scalaVersion := "3.0.1-RC1-bin-20210525-8f3fdf5-NIGHTLY",
 )
 
 lazy val commonSettings = Seq(
@@ -206,7 +205,7 @@ lazy val commonScalacOptions = Def.setting {
     "-deprecation",
     "-encoding", "UTF-8",
     "-feature",
-    "-language:_",
+    "-language:implicitConversions",
     "-unchecked",
   ) ++ {
     CrossVersion.partialVersion(scalaVersion.value) match {
@@ -231,6 +230,7 @@ lazy val commonScalacOptions = Def.setting {
           "-Ykind-projector",
           "-source",
           "3.0-migration",
+          "-no-indent",
         )
       case _ =>
         Seq(
@@ -309,9 +309,9 @@ lazy val scalameter = Seq(
   "com.storm-enroute" %% "scalameter" % "0.19" % "test")
 
 lazy val twitterUtilCore = Seq(
-  "com.twitter" %% "util-core" % twitterUtilVersion
+  ("com.twitter" %% "util-core" % twitterUtilVersion).cross(CrossVersion.for3Use2_13)
 )
 
 lazy val catbird = Seq(
-  "io.catbird" %% "catbird-util" % catbirdVersion
+  ("io.catbird" %% "catbird-util" % catbirdVersion).cross(CrossVersion.for3Use2_13)
 )
