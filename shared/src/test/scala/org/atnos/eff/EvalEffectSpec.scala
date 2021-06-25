@@ -21,12 +21,12 @@ class EvalEffectSpec extends Specification { def is = s2"""
 
   def stacksafeRun = {
     val action = list.traverse(i => EvalEffect.delay(i))
-    action.runEval.run ==== list
+    action.runEval.run == list
   }
 
   def stacksafeAttempt = {
     val action = list.traverse(i => EvalEffect.delay(i))
-    action.attemptEval.run ==== Right(list)
+    action.attemptEval.run == Right(list)
   }
 
   def stacksafeRecursion = {
@@ -37,7 +37,7 @@ class EvalEffectSpec extends Specification { def is = s2"""
         Eval.now(org.atnos.eff.eval.defer(loop(i - 1)).map(_  + 1))
       }
 
-    loop(100000).value.runEval.run ==== 100001
+    loop(100000).value.runEval.run == 100001
   }
 }
 

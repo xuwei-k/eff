@@ -35,8 +35,8 @@ class DoobieConnectionIOEffectSpec extends Specification with ThrownExpectations
 
     val (xa, c) = H2TestableTransactor.create[IO]()
 
-    p.runConnectionIO(xa).detach.unsafeRunSync() must_== 10
-    c.calls must_== List("connection", "before", "after", "always")
+    p.runConnectionIO(xa).detach.unsafeRunSync() == 10
+    c.calls == List("connection", "before", "after", "always")
   }
 
   def t2 = {
@@ -49,7 +49,7 @@ class DoobieConnectionIOEffectSpec extends Specification with ThrownExpectations
     val (xa, c) = H2TestableTransactor.create[IO]()
 
     p.runConnection(xa) must beLeft(withExceptionMessage("c failed"))
-    c.calls must_== List("connection", "before", "oops", "always")
+    c.calls == List("connection", "before", "oops", "always")
   }
 
   def t3 = {
@@ -61,7 +61,7 @@ class DoobieConnectionIOEffectSpec extends Specification with ThrownExpectations
     val (xa, c) = H2TestableTransactor.create[IO](before = connection.delay(throw new Error("before failed")))
 
     properProgram.runConnection(xa) must beLeft(withExceptionMessage("before failed"))
-    c.calls must_== List("connection", "oops", "always")
+    c.calls == List("connection", "oops", "always")
   }
 
   def t4 = {
@@ -73,7 +73,7 @@ class DoobieConnectionIOEffectSpec extends Specification with ThrownExpectations
     val (xa, c) = H2TestableTransactor.create[IO](after = connection.delay(throw new Error("after failed")))
 
     properProgram.runConnection(xa) must beLeft(withExceptionMessage("after failed"))
-    c.calls must_== List("connection", "before", "oops", "always")
+    c.calls == List("connection", "before", "oops", "always")
   }
 
   def t5 = {
@@ -83,7 +83,7 @@ class DoobieConnectionIOEffectSpec extends Specification with ThrownExpectations
     val (xa, c) = H2TestableTransactor.create[IO](oops = connection.delay(throw new Error("oops failed")))
 
     erroneousProgram.runConnection(xa) must beLeft(withExceptionMessage("oops failed"))
-    c.calls must_== List("connection", "before", "always")
+    c.calls == List("connection", "before", "always")
   }
 
   def t6 = {
@@ -92,7 +92,7 @@ class DoobieConnectionIOEffectSpec extends Specification with ThrownExpectations
     val (xa, c) = H2TestableTransactor.create[IO](always = connection.delay(throw new Error("always failed")))
 
     properProgram.runConnection(xa) must beLeft(withExceptionMessage("always failed"))
-    c.calls must_== List("connection", "before", "after")
+    c.calls == List("connection", "before", "after")
   }
 
   /**
@@ -107,6 +107,6 @@ class DoobieConnectionIOEffectSpec extends Specification with ThrownExpectations
   def queryTable(i: Int): ConnectionIO[Int] = sql"select $i".query[Int].unique
 
   def withExceptionMessage(msg: String): ValueCheck[Throwable] = { (err: Throwable) =>
-    err.getMessage must_== msg
+    err.getMessage == msg
   }
 }

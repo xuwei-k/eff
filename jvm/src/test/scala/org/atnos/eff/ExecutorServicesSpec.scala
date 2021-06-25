@@ -12,6 +12,6 @@ class ExecutorServicesSpec(implicit ec: ExecutionContext) extends Specification 
 
   def fromExecutionContext = {
     val executorServices = ExecutorServices.fromExecutionContext(ec)
-    executorServices.executionContext ==== ec
+    executorServices.executionContext == ec
   }
 }

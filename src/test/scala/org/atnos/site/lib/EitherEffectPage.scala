@@ -45,7 +45,7 @@ A `catchLeft` method can also be used to intercept an error and possibly recover
     else        left[E, TooBig, Int](TooBig(k))
   }
 
-  action.runEither.run ==== Right(7)
+  action.runEither.run == Right(7)
 }}
 
 *Note*: the type annotations on `left` and `right` can be avoided by adding an implicit declaration in scope. You can learn

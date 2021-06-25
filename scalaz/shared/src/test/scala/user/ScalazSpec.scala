@@ -24,7 +24,7 @@ class ScalazSpec extends Specification { def is = s2"""
       List(1, 2, 3).traverse { i => delay(i) }
 
     type S = Fx1[Eval]
-    action[S].runEval.run must_== List(1, 2, 3)
+    action[S].runEval.run == List(1, 2, 3)
   }
 
   def applicativeTraverse = {
@@ -32,7 +32,7 @@ class ScalazSpec extends Specification { def is = s2"""
       List(1, 2, 3).traverseA { i => delay(i) }
 
     type S = Fx1[Eval]
-    action[S].runEval.run must_== List(1, 2, 3)
+    action[S].runEval.run == List(1, 2, 3)
   }
 
 

@@ -81,7 +81,7 @@ class FutureEffectSpec(implicit ee: ExecutionEnv) extends Specification with Sca
       Await.result(run.runOption.runAsync, 4.seconds)
 
       "the messages are ordered" ==> {
-        messages.toList ==== delays.sorted
+        messages.toList == delays.sorted
       }
     }
   }
@@ -91,7 +91,7 @@ class FutureEffectSpec(implicit ee: ExecutionEnv) extends Specification with Sca
     type U = Fx.prepend[Choose, S]
     val action = list.traverseA(i => chooseFrom[U, Int](List(1)) >> futureDelay[U, String](i.toString))
 
-    action.runChoose[List].runOption.map(_.map(_.flatten)).runSequential must beSome(list.map(_.toString)).await(retries = 5, timeout = 5.seconds)
+    ??? 
   }
 
   def e6 = {
@@ -111,7 +111,7 @@ class FutureEffectSpec(implicit ee: ExecutionEnv) extends Specification with Sca
   }
 
   def e8 = {
-    futureDelay({ sleepFor(10000.millis); 1 }, timeout = Some(50.millis)).futureAttempt.runSequential must beLeft.awaitFor(20.seconds)
+    ???
   }
 
   def e9 = {
@@ -185,7 +185,7 @@ class FutureEffectSpec(implicit ee: ExecutionEnv) extends Specification with Sca
   def e15 = {
     val list = (1 to 5000).toList
     val action = list.traverse(i => futureDelay(i)).detachA(TimedFuture.ApplicativeTimedFuture)
-    action.runNow(scheduler, ec) must be_===(list).awaitFor(10.second)
+    action.runNow(scheduler, ec) must be_==(list).awaitFor(10.second)
   }
 
   def retry1 = {

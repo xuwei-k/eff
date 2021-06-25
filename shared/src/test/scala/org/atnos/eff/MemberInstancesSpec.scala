@@ -8,10 +8,10 @@ class MemberInstancesSpec extends Specification with ThrownExpectations { def is
  The MemberInOut and Member implicit definitions must create lawful instances:
 
    for m: MemberInOut  m.extract(m.send(ta)) === Option(ta)
-   for m: Member       m.project(union).fold(m.accept, m.inject) ==== union
+   for m: Member       m.project(union).fold(m.accept, m.inject) == union
 
  MemberInOut instances
- =====================
+ ===================
 
   MemberInOutOut1    $memberInOutOut1
   MemberInOut2L      $memberInOut2L
@@ -19,7 +19,7 @@ class MemberInstancesSpec extends Specification with ThrownExpectations { def is
   MemberInOutAppendL $memberInOutAppendL
 
  Member instances
- ================
+ ==============
 
  Member1        $member1
  Member2L       $member2L
@@ -187,10 +187,10 @@ class MemberInstancesSpec extends Specification with ThrownExpectations { def is
    */
 
   def checkMemberLaw[T[_], R, U, A](m: Member.Aux[T, R, U], union: Union[R, A]) =
-    m.project(union).fold(m.accept, m.inject) ==== union
+    m.project(union).fold(m.accept, m.inject) == union
 
   def checkMemberInOutLaw[T[_], R, A](m: MemberInOut[T, R], ta: T[A]) =
-    m.extract(m.inject(ta)) ==== Option(ta)
+    m.extract(m.inject(ta)) == Option(ta)
 
   val t1 = T1(1)
   val t2 = T2(1)

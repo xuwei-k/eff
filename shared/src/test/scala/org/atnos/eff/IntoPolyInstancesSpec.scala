@@ -73,7 +73,7 @@ class IntoPolyInstancesSpec extends Specification { def is = s2"""
    */
 
   def checkLaw[R, U, A](into: IntoPoly[R, U], e: Eff[R, A], expected: Eff[U, A]) =
-    unions(into.apply(e)) ==== unions(expected)
+    unions(into.apply(e)) == unions(expected)
 
   def unions[R, A](e: Eff[R, A]): List[Any] =
     e match {

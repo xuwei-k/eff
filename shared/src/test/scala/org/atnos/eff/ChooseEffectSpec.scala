@@ -25,7 +25,7 @@ class ChooseEffectSpec extends Specification { def is = s2"""
       k <- chooseFrom[R, Int](List(i, j))
     } yield k
 
-    action.runChoose[List].runOption.run ==== Some(List(1, 2))
+    action.runChoose[List].runOption.run == Some(List(1, 2))
   }
 
   def nondetOption = {
@@ -36,7 +36,7 @@ class ChooseEffectSpec extends Specification { def is = s2"""
       k <- chooseFrom[R, Int](List(j))
     } yield k
 
-    action.runChoose[Option].runOption.run ==== Some(Some(2))
+    action.runChoose[Option].runOption.run == Some(Some(2))
   }
 
   def stacksafeRun = {

@@ -46,10 +46,10 @@ for 4-element stacks:
     evalMember3.project(evalMember3.inject(eval1)) must beRight(eval1)
 
   def lawMemberIn3 =
-    writerMember3.extract(writerMember3.inject(write1)) ==== Option(write1)
+    writerMember3.extract(writerMember3.inject(write1)) == Option(write1)
 
   def lawMember3 = Prop.forAll(genUnion3, genMember3) { (union: Union[S3, String], m: SMember3) =>
-    m.member.project(union).fold(m.member.accept, m.member.inject) ==== union
+    m.member.project(union).fold(m.member.accept, m.member.inject) == union
   }
 
   def reader4 =
@@ -62,17 +62,17 @@ for 4-element stacks:
     evalMember4.project(evalMember4.inject(eval1)) must beRight(eval1)
 
   def lawMemberIn4 =
-    writerMember4.extract(writerMember4.inject(write1)) ==== Option(write1)
+    writerMember4.extract(writerMember4.inject(write1)) == Option(write1)
 
   def lawMember4 = Prop.forAll(genUnion4, genMember4) { (union: Union[S4, String], m: SMember4) =>
-    m.member.project(union).fold(m.member.accept, m.member.inject) ==== union
+    m.member.project(union).fold(m.member.accept, m.member.inject) == union
   }
 
   def natIn =
-    stateIn[Fx2[State[String, *], Option]].runOption.evalState("hello").run ==== Option(5)
+    stateIn[Fx2[State[String, *], Option]].runOption.evalState("hello").run == Option(5)
 
   def natInOut =
-    stateInOut[Fx2[State[String, *], Option]].runOption.evalState("hello").run ==== Option(5)
+    stateInOut[Fx2[State[String, *], Option]].runOption.evalState("hello").run == Option(5)
 
   /**
    * HELPERS

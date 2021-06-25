@@ -80,7 +80,7 @@ class EffMacrosSpec extends Specification { def is = s2"""
 
     // run the program with the unsafe interpreter
     val result = sideEffect.run(theProgram).run
-    result ==== Some(14)
+    result == Some(14)
   }
 
   def generatesTranslateInterpreter = {
@@ -133,7 +133,7 @@ class EffMacrosSpec extends Specification { def is = s2"""
     val (result, logs) =
       runKVStore(program[Stack]).runEither.evalState(Map.empty[String, Any]).runWriter.run
 
-    result ==== Right(Some(14))
+    result == Right(Some(14))
   }
 
   def generatesTranslatorFactory = {
@@ -182,7 +182,7 @@ class EffMacrosSpec extends Specification { def is = s2"""
     val (result, logs) =
       program[Stack].runKVStore.runEither.evalState(Map.empty[String, Any]).runWriter.run
 
-    result ==== Right(Some(14))
+    result == Right(Some(14))
   }
 
   def generatesNaturalTransformationInterpreter = {
@@ -196,11 +196,11 @@ class EffMacrosSpec extends Specification { def is = s2"""
       def delete[T](key: String): Option[Unit] = Some(())
     }
 
-    runOption(theProgram.transform(optionInterp)).run ==== Some(None)
+    runOption(theProgram.transform(optionInterp)).run == Some(None)
   }
 
   def overrideExistingCompanion = {
-    KVStoreDsl.someConstant ==== 1
+    KVStoreDsl.someConstant == 1
   }
 
 }

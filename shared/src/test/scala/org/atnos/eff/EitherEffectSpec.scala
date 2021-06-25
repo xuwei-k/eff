@@ -43,7 +43,7 @@ class EitherEffectSpec extends Specification with ScalaCheck with EitherMatchers
 
     val either1 = stringOrInt
     val e: Eff[S, Int] = fromEither(either1)
-    e.runEither.run ==== either1
+    e.runEither.run == either1
   }
 
   def EitherMonad = {
@@ -84,7 +84,7 @@ class EitherEffectSpec extends Specification with ScalaCheck with EitherMatchers
       } yield i.toInt + j
 
     // run effects
-    readEither.runEither.runReader(init).run must_==
+    readEither.runEither.runReader(init).run ==
       Right(init.toInt + someValue)
 
   }.setGens(posNum[Long], posNum[Int])
@@ -97,7 +97,7 @@ class EitherEffectSpec extends Specification with ScalaCheck with EitherMatchers
     val list = (1 to 5000).toList
     val action = list.traverse(i => EitherEffect.right[E, String, String](i.toString))
 
-    action.runEither.run ==== Right(list.map(_.toString))
+    action.runEither.run == Right(list.map(_.toString))
   }
 
   def leftToRight = prop { (i: Int) =>
@@ -157,7 +157,7 @@ class EitherEffectSpec extends Specification with ScalaCheck with EitherMatchers
     val action2: Eff[R2, Unit] =
       action1.zoomEither(Error2)
 
-    action2.runEither.run ==== Left(Error2(Error1("boom")))
+    action2.runEither.run == Left(Error2(Error1("boom")))
   }
 
   def localRun = {
@@ -169,7 +169,7 @@ class EitherEffectSpec extends Specification with ScalaCheck with EitherMatchers
     val action1: Eff[R1, Unit] =
       EitherEffect.left(Error1("boom"))
 
-    action1.translateEither(Error2).runEither.run ==== Left(Error2(Error1("boom")))
+    action1.translateEither(Error2).runEither.run == Left(Error2(Error1("boom")))
   }
 
   def implicitRequireLeft = {
@@ -184,7 +184,7 @@ class EitherEffectSpec extends Specification with ScalaCheck with EitherMatchers
     def withE2[R](implicit m: Either[Error2, *] |= R): Eff[R, String] =
       withE1[R](10).map(_.toString)
 
-    withE2[Fx.fx1[Either[Error2, *]]].runEither.run ==== Right("10")
+    withE2[Fx.fx1[Either[Error2, *]]].runEither.run == Right("10")
   }
 
   def handleFromCatchNonFatal = {

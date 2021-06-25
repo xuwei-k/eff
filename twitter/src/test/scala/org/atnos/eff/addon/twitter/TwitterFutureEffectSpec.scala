@@ -80,7 +80,7 @@ class TwitterFutureEffectSpec(implicit ee: ExecutionEnv) extends Specification w
       Await.result(run.runOption.runAsync)
 
       "the messages are ordered" ==> {
-        messages.toList ==== delays.sorted
+        messages.toList == delays.sorted
       }
     }
   }

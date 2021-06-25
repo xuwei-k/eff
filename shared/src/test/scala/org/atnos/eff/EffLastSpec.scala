@@ -9,7 +9,7 @@ import org.scalacheck.Gen
 import EitherEffect.{left => leftE, right => rightE}
 import scala.collection.mutable.ListBuffer
 
-class EffLastSpec extends Specification with ScalaCheck { def is = isolated ^ s2"""
+class EffLastSpec extends Specification with ScalaCheck { def is = s2"""
 
   An action can run completely at the end, regardless of the number of flatmaps $runLast
     now with one very last action which fails, there should be no exception     $runLastFail
@@ -42,7 +42,7 @@ class EffLastSpec extends Specification with ScalaCheck { def is = isolated ^ s2
 
     act.runSafe.runEval.run
 
-    messages.toList ==== List("a", "b", "end")
+    messages.toList == List("a", "b", "end")
   }.setGen(Gen.listOf(Gen.oneOf("a", "b", "c")))
 
   def runLastSeveralTimes = prop { (xs: List[String]) =>
@@ -63,7 +63,7 @@ class EffLastSpec extends Specification with ScalaCheck { def is = isolated ^ s2
 
     act.runSafe.runEval.run
 
-    messages.toList ==== List("a", "b", "c", "d", "end2", "end1", "end3")
+    messages.toList == List("a", "b", "c", "d", "end2", "end1", "end3")
   }.setGen(Gen.listOf(Gen.oneOf("a", "b", "c")))
 
   def runLastAtFirst = prop { (xs: List[String]) =>
@@ -84,7 +84,7 @@ class EffLastSpec extends Specification with ScalaCheck { def is = isolated ^ s2
 
     act.runSafe.runEval.run
 
-    messages.toList ==== List("a", "b", "c", "d", "end2", "end1", "end3")
+    messages.toList == List("a", "b", "c", "d", "end2", "end1", "end3")
   }.setGen(Gen.listOf(Gen.oneOf("a", "b", "c")))
 
   def runLastFail = prop { (xs: List[String]) =>
@@ -101,7 +101,7 @@ class EffLastSpec extends Specification with ScalaCheck { def is = isolated ^ s2
 
     act.runSafe.runEval.run
 
-    messages.toList ==== List("a", "b", "boom")
+    messages.toList == List("a", "b", "boom")
   }.setGen(Gen.listOf(Gen.oneOf("a", "b", "c")))
 
   var i = 0
@@ -131,7 +131,7 @@ class EffLastSpec extends Specification with ScalaCheck { def is = isolated ^ s2
         map(i => i)
 
     action.execSafe.runEither.run
-    i ==== 1
+    i == 1
   }
 
   /**
@@ -144,7 +144,7 @@ class EffLastSpec extends Specification with ScalaCheck { def is = isolated ^ s2
 
   def checkRelease(use: Eff[S, Int]) = {
     eff(use).execSafe.flatMap(either => fromEither(either.leftMap(_.getMessage))).runEither.run
-    i ==== 0
+    i == 0
   }
 
   def eff[R :_Safe :_eitherString](use: Eff[R, Int]): Eff[R, Int] =

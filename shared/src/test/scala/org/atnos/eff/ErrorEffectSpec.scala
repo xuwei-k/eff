@@ -43,7 +43,7 @@ class ErrorEffectSpec extends Specification { def is = s2"""
 
     all.runError.run
 
-    messages.toList ==== List("first", "final")
+    messages.toList == List("first", "final")
   }
 
   def andFinallyKo = {
@@ -58,7 +58,7 @@ class ErrorEffectSpec extends Specification { def is = s2"""
 
     all.runError.run
 
-    messages.toList ==== List("final")
+    messages.toList == List("final")
   }
 
   def orElse1 = {
@@ -70,8 +70,8 @@ class ErrorEffectSpec extends Specification { def is = s2"""
     val all: Eff[R, Int] =
       action.orElse(OK { messages.append("second"); 2 })
 
-    (all.runError.run ==== Right(1)) and
-    (messages.toList ==== List("first"))
+    (all.runError.run == Right(1)) and
+    (messages.toList == List("first"))
   }
 
   def orElse2 = {
@@ -83,8 +83,8 @@ class ErrorEffectSpec extends Specification { def is = s2"""
     val all: Eff[R, Int] =
       action.orElse(OK { messages.append("second"); 2 })
 
-    (all.runError.run ==== Right(2)) and
-    (messages.toList ==== List("second"))
+    (all.runError.run == Right(2)) and
+    (messages.toList == List("second"))
   }
 
   def logException = {
@@ -102,8 +102,8 @@ class ErrorEffectSpec extends Specification { def is = s2"""
     val result =
       action.runError.runWriter.runEval.run
 
-    (result._2 ==== List("start")) and
-    (result._1.toErrorSimpleMessage ==== Option("Error[java.lang.Exception] boom"))
+    (result._2 == List("start")) and
+    (result._1.toErrorSimpleMessage == Option("Error[java.lang.Exception] boom"))
   }
 
   def ignored = {
@@ -113,7 +113,7 @@ class ErrorEffectSpec extends Specification { def is = s2"""
     val action2: Eff[R, Unit] =
       action.ignore[IllegalArgumentException]
 
-    action2.runError.run ==== Right(())
+    action2.runError.run == Right(())
 
   }
 
@@ -138,14 +138,14 @@ class ErrorEffectSpec extends Specification { def is = s2"""
       ErrorEffect.runLocalError(action1[R1], Error2)
     }
 
-    ErrorEffect2.runError(action2[Fx.fx1[ErrorOrOk2]]).run ==== Left(Right(Error2(Error1("boom"))))
+    ErrorEffect2.runError(action2[Fx.fx1[ErrorOrOk2]]).run == Left(Right(Error2(Error1("boom"))))
   }
 
   def stackSafety = {
     val list = (1 to 5000).toList
     val action = list.traverse(i => ErrorEffect.ok(i.toString))
 
-    ErrorEffect.runError(action).run ==== Right(list.map(_.toString))
+    ErrorEffect.runError(action).run == Right(list.map(_.toString))
   }
 
 }

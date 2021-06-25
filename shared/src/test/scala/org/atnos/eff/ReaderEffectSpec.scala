@@ -29,7 +29,7 @@ class ReaderEffectSpec extends Specification { def is = s2"""
       h <- local[S, Config, String]((_:Config).host)
     } yield (f, h)
 
-    action.runReader(Config(10, "www.me.com")).run ==== ((10, "www.me.com"))
+    action.runReader(Config(10, "www.me.com")).run == ((10, "www.me.com"))
   }
 
   def localKleisliEffect = {
@@ -41,7 +41,7 @@ class ReaderEffectSpec extends Specification { def is = s2"""
       h <- localKleisli[S, Config, String, Option]((_:Config).host.some)
     } yield (f, h)
 
-    action.runKleisli(Config(10, "www.me.com")).runOption.run ==== Some((10, "www.me.com"))
+    action.runKleisli(Config(10, "www.me.com")).runOption.run == Some((10, "www.me.com"))
   }
 
   def localReaderEffect = {
@@ -67,7 +67,7 @@ class ReaderEffectSpec extends Specification { def is = s2"""
       s2 <- readHost[S2].translateReader((c: Config) => c.host)
     } yield s1 + " " + s2
 
-    action.runReader(Config(10, "www.me.com")).runOption.run ==== Some("hello world")
+    action.runReader(Config(10, "www.me.com")).runOption.run == Some("hello world")
   }
 
   def modifyReaderEffect = {
@@ -89,7 +89,7 @@ class ReaderEffectSpec extends Specification { def is = s2"""
       e <- ask[Comp, Env]
     } yield s"Value: $v, env: $e"
 
-    program.runReader(env).runOption.run ==== Option(s"Value: 2, env: Map()")
+    program.runReader(env).runOption.run == Option(s"Value: 2, env: Map()")
   }
 
 
@@ -104,7 +104,7 @@ class ReaderEffectSpec extends Specification { def is = s2"""
       r <- if (y == 1) delay[R, String](x) else bar(x).localReader((z: Int) => z - 1)
     } yield r + "."
 
-    bar[Stack]("x").runReader(3).runEval.run ==== "x..."
+    bar[Stack]("x").runReader(3).runEval.run == "x..."
 
   }
 

@@ -27,9 +27,9 @@ class WriterEffectSpec extends Specification with ThrownExpectations { def is = 
 
     val messages: ListBuffer[String] = new ListBuffer[String]
 
-    action.runWriterUnsafe((m: String) => messages.append(m)).run ==== "hello world"
+    action.runWriterUnsafe((m: String) => messages.append(m)).run == "hello world"
 
-    messages.toList ==== List("hello", "world")
+    messages.toList == List("hello", "world")
 
   }
 
@@ -45,10 +45,10 @@ class WriterEffectSpec extends Specification with ThrownExpectations { def is = 
 
     val ranWriterAction = action.runWriterEval((m: String) => Eval.later(messages.append(m)))
 
-    ranWriterAction.runEval.run ==== "hello world"
-    ranWriterAction.runEval.run ==== "hello world"
+    ranWriterAction.runEval.run == "hello world"
+    ranWriterAction.runEval.run == "hello world"
 
-    messages.toList ==== List("hello", "world", "hello", "world")
+    messages.toList == List("hello", "world", "hello", "world")
 
   }
 

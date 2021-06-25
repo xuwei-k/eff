@@ -78,7 +78,7 @@ class TaskEffectSpec(implicit ee: ExecutionEnv) extends Specification with Scala
       Await.result(run.runOption.runAsync.runToFuture, 3.seconds)
 
       "the messages are ordered" ==> {
-        messages.toList ==== delays.sorted
+        messages.toList == delays.sorted
       }
     }
 

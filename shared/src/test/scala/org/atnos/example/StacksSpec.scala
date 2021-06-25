@@ -46,7 +46,7 @@ class StacksSpec extends Specification { def is = s2"""
       _ <- writeFile[HadoopS3]("key", s)
     } yield ()
 
-    runHadoopReader(HadoopConf(10))(runS3Reader(S3Conf("bucket"))(action)).runWriter.runEval.run ====
+    runHadoopReader(HadoopConf(10))(runS3Reader(S3Conf("bucket"))(action)).runWriter.runEval.run ==
       (((), List("Reading from /tmp/data", "Writing to bucket bucket: 10")))
   }
 
@@ -61,7 +61,7 @@ class StacksSpec extends Specification { def is = s2"""
       _ <- writeFile("key", s)  .into[HadoopS3]
     } yield ()
 
-    run(runEval(runWriter(runHadoopReader(HadoopConf(10))(runS3Reader(S3Conf("bucket"))(action))))) ====
+    run(runEval(runWriter(runHadoopReader(HadoopConf(10))(runS3Reader(S3Conf("bucket"))(action))))) ==
       (((), List("Reading from /tmp/data", "Writing to bucket bucket: 10")))
   }
 
