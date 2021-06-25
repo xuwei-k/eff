@@ -1,6 +1,6 @@
 import org.scalajs.jsenv.nodejs._
 
-lazy val specs2Version      = "4.12.2"
+lazy val specs2Version      = "SPECS2-5.0.0-RC0"
 lazy val twitterUtilVersion = "21.6.0"
 lazy val catbirdVersion     = "21.5.0"
 lazy val doobieVersion      = "0.13.4"
@@ -137,14 +137,6 @@ lazy val buildSettings = Seq(
 lazy val commonSettings = Seq(
   libraryDependencies += "org.typelevel" %%% "cats-core" % "2.6.1",
   scalacOptions ++= commonScalacOptions.value,
-  Test / test := {
-    // TODO await specs2 for Scala 3
-    if (scalaBinaryVersion.value == "3") {
-      ()
-    } else {
-      (Test / test).value
-    }
-  },
   (Compile / doc / scalacOptions) ++= {
     Seq(
       "-sourcepath",
@@ -254,7 +246,6 @@ lazy val commonScalacOptions = Def.setting {
         Seq(
           "-no-indent",
           "-Ykind-projector",
-          "-Xignore-scala2-macros", // TODO remove
           "-source",
           "3.0-migration",
         )
@@ -325,7 +316,7 @@ lazy val specs2 = Def.setting(
     "org.specs2" %%% "specs2-scalacheck",
     "org.specs2" %%% "specs2-junit",
   ).map(
-    _ % specs2Version % "test" cross CrossVersion.for3Use2_13
+    _ % specs2Version % "test"
   ).map(
     _.exclude(
       "org.specs2",
