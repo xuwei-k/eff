@@ -16,7 +16,7 @@ import org.atnos.eff.syntax.addon.monix.task._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class TaskEffectSpec(implicit ee: ExecutionEnv) extends Specification with ScalaCheck { def is = "monix task".title ^ sequential ^ s2"""
+class TaskEffectSpec(implicit ee: ExecutionEnv) extends Specification with ScalaCheck with Specs2Compat { def is = "monix task".title ^ sequential ^ s2"""
 
  Tasks can work as normal values                           $e1
  Task effects can be attempted                             $e2
