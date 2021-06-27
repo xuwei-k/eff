@@ -1,5 +1,7 @@
 import org.scalajs.jsenv.nodejs._
 
+aggregate := false
+
 lazy val specs2Version = Def.setting(
   if (scalaBinaryVersion.value == "3") {
     "5.0.0-ALPHA-03"
@@ -21,7 +23,6 @@ noPublishSettings
 commonJvmSettings
 libraryDependencies ++= scalameter.value
 libraryDependencies += "org.specs2" %% "specs2-html" % specs2Version.value % "test"
-disableScala3
 
 dependsOn(
   coreJVM % "test->test;compile->compile",

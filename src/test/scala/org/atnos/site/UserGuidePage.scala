@@ -1,5 +1,6 @@
 package org.atnos.site
 
+import org.atnos.eff.Specs2Compat
 import org.specs2.matcher._
 import org.specs2.execute.Snippet
 import org.specs2.io._
@@ -14,6 +15,7 @@ abstract class UserGuidePage extends
   SpecificationCreation with
   Snippets with
   TypedEqual with
+  Specs2Compat with
   ExpectationsCreation {
 
   /** mute all links, so that they are not decorated in the html */
@@ -26,7 +28,7 @@ abstract class UserGuidePage extends
   def load(path: FilePath): Snippet[Unit] =
     Snippet(
       code = () => (),
-      codeExpression = FileSystem.readFile(path).runOption.orElse(Option("no file found at "+path.path))
+      codeExpression = readFileSpecs2(path).runOption.orElse(Option("no file found at "+path.path))
     )
 
   def definition[T : ClassTag]: Snippet[Unit] = {

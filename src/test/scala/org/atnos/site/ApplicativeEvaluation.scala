@@ -104,11 +104,16 @@ def runDsl[A](eff: Eff[Fx1[UserDsl], A]): (A, Vector[String]) = {
   @tailrec
   def go(e: Eff[Fx1[UserDsl], A], trace: Vector[String]): (A, Vector[String]) =
     e match {
-      case Pure(a,_) => (a, trace)
-      case Impure(UnionTagged(GetUser(i), _), c, _)   => go(c(getWebUser(i)), trace :+ "getWebUser")
-      case Impure(UnionTagged(GetUsers(is), _), c, _) => go(c(getWebUsers(is)), trace :+ "getWebUsers")
-      case ap @ ImpureAp(_, _, _)                     => go(ap.toMonadic, trace)
-      case Impure(_, _, _)                            => sys.error("this should not happen with just one effect")
+      case Pure(a,_) =>
+        (a, trace)
+      case Impure(UnionTagged(GetUser(i), _), c: Continuation[Fx1[UserDsl], User, A], _) =>
+        go(c(getWebUser(i)), trace :+ "getWebUser")
+      case Impure(UnionTagged(GetUsers(is), _), c: Continuation[Fx1[UserDsl], List[User], A], _) =>
+        go(c(getWebUsers(is)), trace :+ "getWebUsers")
+      case ap @ ImpureAp(_, _, _) =>
+        go(ap.toMonadic, trace)
+      case Impure(_, _, _) =>
+        sys.error("this should not happen with just one effect")
   }
   go(eff, Vector())
 }

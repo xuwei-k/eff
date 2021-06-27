@@ -1,6 +1,8 @@
 package org.atnos.eff
 
 import org.specs2.Specification
+import org.specs2.io.FilePath
+import org.specs2.io.FilePathReader
 
 trait Specs2Compat { self: Specification =>
 
@@ -9,4 +11,6 @@ trait Specs2Compat { self: Specification =>
     def must_==(a2: A) = a1 must beEqualTo(a2)
   }
 
+  protected final def readFileSpecs2(path: FilePath) =
+    FilePathReader.readFile(path)
 }
