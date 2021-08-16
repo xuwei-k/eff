@@ -42,7 +42,9 @@ class FutureEffectSpec(implicit ee: ExecutionEnv) extends Specification with Sca
 
   type S = Fx.fx2[TimedFuture, Option]
 
-  implicit val scheduler: org.atnos.eff.concurrent.Scheduler = ExecutorServices.schedulerFromScheduledExecutorService(ee.ses)
+  implicit val scheduler: org.atnos.eff.concurrent.Scheduler =
+    ExecutorServices.schedulerFromGlobalExecutionContext
+
   implicit val ec: scala.concurrent.ExecutionContext = ee.ec
 
   def e1 = {
