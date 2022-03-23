@@ -1,8 +1,10 @@
 package org.atnos.eff
 
-import cats._
-
+import cats.~>
+import cats.arrow.Compose
+import cats.Functor
 import scala.annotation.tailrec
+import typealigned.FreeCompose
 
 /**
  * Sequence of monadic functions from A to B: A => Eff[B]
@@ -16,7 +18,12 @@ import scala.annotation.tailrec
  * to add its own effect. See SafeEffect.bracket
  *
  */
-case class Continuation[R, A, B](functions: Vector[Any => Eff[R, Any]], onNone: Last[R] = Last.none[R]) extends (A => Eff[R, B]) {
+case class Continuation[R, A, B](
+  functions: FreeCompose[({type l[a, b] = a => Eff[R, b]})#l, A, B],
+  onNone: Last[R] = Last.none[R]
+) extends (A => Eff[R, B]) {
+
+  private[this] type F[x, y] = x => Eff[R, y]
 
   /**
    * append a new monadic function to this list of functions such that
@@ -25,18 +32,14 @@ case class Continuation[R, A, B](functions: Vector[Any => Eff[R, Any]], onNone: 
    *
    */
   def append[C](f: B => Eff[R, C]): Continuation[R, A, C] =
-    Continuation(functions :+ f.asInstanceOf[Any => Eff[R, Any]], onNone)
-
-  /** map the last returned effect */
-  def mapLast[C](f: Eff[R, B] => Eff[R, C]): Continuation[R, A, C] =
-    functions match {
-      case v if v.isEmpty => Continuation[R, A, C](v :+ ((a: Any) => f(Eff.pure(a.asInstanceOf[B])).asInstanceOf[Eff[R, Any]]), onNone)
-      case fs :+ last => Continuation(fs :+ ((x: Any) => f(last(x).asInstanceOf[Eff[R, B]]).asInstanceOf[Eff[R, Any]]), onNone)
-    }
+    Continuation(functions :+ f, onNone)
 
   /** map the last value */
   def map[C](f: B => C): Continuation[R, A, C] =
-    Continuation(functions :+ ((x: Any) => Eff.pure[R, Any](f(x.asInstanceOf[B]).asInstanceOf[Any])), onNone)
+    Continuation(
+      functions >>> FreeCompose.lift[F, B, C](x => Eff.pure[R, C](f(x))),
+      onNone
+    )
 
   /**
    * execute this monadic function
@@ -44,42 +47,17 @@ case class Continuation[R, A, B](functions: Vector[Any => Eff[R, Any]], onNone: 
    * This method is stack-safe
    */
   def apply(a: A): Eff[R, B] = {
-    @tailrec
-    def go(fs: Vector[Any => Eff[R, Any]], v: Any, last: Last[R] = Last.none[R]): Eff[R, B] = {
-      fs match {
-        case vec if vec.isEmpty =>
-          Pure[R, B](v.asInstanceOf[B], last)
-
-        case f +: rest =>
-          val fv = f(v)
-          if (rest.isEmpty) {
-            fv.asInstanceOf[Eff[R, B]].addLast(last)
-          } else {
-            fv match {
-              case Pure(a1, l1) =>
-                go(rest, a1, last *> l1)
-
-              case Impure(u, q, l) =>
-                Impure[R, u.X, B](u, q.copy(q.functions ++ rest, onNone = q.onNone *> onNone), last *> l)
-
-              case ImpureAp(unions, q, l) =>
-                ImpureAp[R, unions.X, B](unions, q.copy(q.functions ++ rest, onNone = q.onNone *> onNone), last *> l)
-            }
-          }
-      }
-    }
-
-    go(functions, a)
+    functions.reduce(Continuation.effFunctionCompose[R]).apply(a)
   }
 
   def applyEval(a: A): Eff[R, B] =
     Impure(NoEffect(a), Continuation.lift((x: A) => apply(x), onNone))
 
   def contramap[C](f: C => A): Continuation[R, C, B] =
-    Continuation(((c: Any) => Eff.pure[R, Any](f(c.asInstanceOf[C]).asInstanceOf[Any])) +: functions, onNone)
+    contraFlatMap[C](c => Eff.pure[R, A](f(c)))
 
   def contraFlatMap[C](f: C => Eff[R, A]): Continuation[R, C, B] =
-    Continuation(f.asInstanceOf[Any => Eff[R, Any]] +: functions, onNone)
+    Continuation(FreeCompose.lift[F, C, A](f) >>> functions, onNone)
 
   /** adapt the input and output of an Arrs function */
   def dimapEff[C, D](f: C => A)(g: Eff[R, B] => Eff[R, D]): Continuation[R, C, D] =
@@ -97,7 +75,7 @@ case class Continuation[R, A, B](functions: Vector[Any => Eff[R, Any]], onNone: 
     implicit m: Member.Aux[M, R, U1],
              n: Member.Aux[N, R, U2],
              into: IntoPoly[U1, U2]): Continuation[R, A, B] =
-    Continuation(functions.map(f => (x: Any) => Interpret.transform(f(x): Eff[R, Any], t)(m, n, into)), onNone)
+    ??? // Continuation(functions.map(f => (x: Any) => Interpret.transform(f(x): Eff[R, Any], t)(m, n, into)), onNone)
 
   def runOnNone: Eff[R, Unit] =
     onNone.value.map(_.value).getOrElse(Eff.pure(()))
@@ -107,16 +85,22 @@ object Continuation {
 
   /** create an Arrs function from a single monadic function */
   def lift[R, A, B](f: A => Eff[R, B], otherwise: Last[R] = Last.none[R]): Continuation[R, A, B] =
-    Continuation(Vector.empty :+ f.asInstanceOf[Any => Eff[R, Any]], otherwise)
+    Continuation[R, A, B](FreeCompose.lift[({type l[x, y] = x => Eff[R, y]})#l, A, B](f), otherwise)
 
   /** create an Arrs function with no effect, which is similar to using an identity a => EffMonad[R].pure(a) */
   def unit[R, A]: Continuation[R, A, A] =
-    Continuation(Vector.empty)
+    lift[R, A, A]((a: A) => Eff.pure[R, A](a))
 
   implicit def ArrsFunctor[R, X]: Functor[Continuation[R, X, *]] = new Functor[Continuation[R, X, *]] {
     def map[A, B](fa: Continuation[R, X, A])(f: A => B): Continuation[R, X, B] =
       fa.map(f)
   }
+
+  def effFunctionCompose[R]: Compose[({type l[a, b] = a => Eff[R, b]})#l] =
+    new Compose[({type l[a, b] = a => Eff[R, b]})#l] {
+      def compose[A, B, C](bc: B => Eff[R, C], ab: A => Eff[R, B]): A => Eff[R, C] =
+        a => ab(a).flatMap(bc)
+    }
 }
 
 
