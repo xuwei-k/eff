@@ -6,7 +6,8 @@ import scalaz._
 object either extends org.atnos.eff.syntax.either with either
 
 trait either {
-  implicit final def toEitherEffectScalazOps[R, A](e: Eff[R, A]): EitherEffectScalazOps[R, A] = new EitherEffectScalazOps[R, A](e)
+  implicit final def toEitherEffectScalazOps[R, A](e: Eff[R, A]): EitherEffectScalazOps[R, A] =
+    new EitherEffectScalazOps[R, A](e)
 }
 
 final class EitherEffectScalazOps[R, A](private val e: Eff[R, A]) extends AnyVal {

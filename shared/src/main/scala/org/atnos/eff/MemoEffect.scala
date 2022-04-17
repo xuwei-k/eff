@@ -17,10 +17,7 @@ import cats.Eval
  * You can implement your own version using ScalaCache for example
  */
 
-trait MemoEffect extends
-  MemoTypes with
-  MemoCreation with
-  MemoInterpretation
+trait MemoEffect extends MemoTypes with MemoCreation with MemoInterpretation
 
 object MemoEffect extends MemoEffect
 
@@ -33,32 +30,36 @@ object MemoTypes extends MemoTypes
 
 trait MemoCreation extends MemoTypes {
 
-  def memoize[R :_memo, A](key: AnyRef, a: =>A): Eff[R, A] =
+  def memoize[R: _memo, A](key: AnyRef, a: => A): Eff[R, A] =
     send[Memoized, R, A](Store(key, () => a))
 
-  def getCache[R :_memo]: Eff[R, Cache] =
+  def getCache[R: _memo]: Eff[R, Cache] =
     send[Memoized, R, Cache](GetCache())
 
 }
 
 trait MemoInterpretation extends MemoTypes {
 
-  def runMemo[R, U, A](cache: Cache)(effect: Eff[R, A])(implicit m: Member.Aux[Memoized, R, U], eval: Eval |= U): Eff[U, A] = {
-    interpret.translate(effect)(new Translate[Memoized  , U] {
+  def runMemo[R, U, A](
+    cache: Cache
+  )(effect: Eff[R, A])(implicit m: Member.Aux[Memoized, R, U], eval: Eval |= U): Eff[U, A] = {
+    interpret.translate(effect)(new Translate[Memoized, U] {
       def apply[X](mx: Memoized[X]): Eff[U, X] =
         mx match {
           case Store(key, value) => EvalEffect.delay[U, X](cache.memo(key, value()))
-          case GetCache()        => EvalEffect.delay[U, X](cache)
+          case GetCache() => EvalEffect.delay[U, X](cache)
         }
     })
   }
 
-  def runFutureMemo[R, U, A](cache: Cache)(effect: Eff[R, A])(implicit m: Member.Aux[Memoized, R, U], future: TimedFuture |= U): Eff[U, A] = {
+  def runFutureMemo[R, U, A](
+    cache: Cache
+  )(effect: Eff[R, A])(implicit m: Member.Aux[Memoized, R, U], future: TimedFuture |= U): Eff[U, A] = {
     interpret.translate(effect)(new Translate[Memoized, U] {
       def apply[X](mx: Memoized[X]): Eff[U, X] =
         mx match {
           case Store(key, value) => FutureEffect.futureDelay(cache.memo(key, value()))
-          case GetCache()        => FutureEffect.futureDelay(cache)
+          case GetCache() => FutureEffect.futureDelay(cache)
         }
     })
   }
@@ -69,4 +70,4 @@ object MemoInterpretation extends MemoInterpretation
 sealed trait Memoized[A]
 
 case class Store[A](key: AnyRef, a: () => A) extends Memoized[A]
-case class GetCache()                        extends Memoized[Cache]
+case class GetCache() extends Memoized[Cache]

@@ -3,7 +3,6 @@ package org.atnos.eff
 import Eff._
 import cats._
 import cats.syntax.all._
-
 import scala.annotation.tailrec
 import scala.util.Random
 
@@ -28,9 +27,7 @@ case object ChoosePlus extends Choose[Boolean]
  *  - no results is the None
  *  - the result for a or b is Some(a) or Some(b
  */
-trait ChooseEffect extends
-  ChooseCreation with
-  ChooseInterpretation
+trait ChooseEffect extends ChooseCreation with ChooseInterpretation
 
 object ChooseEffect extends ChooseEffect
 
@@ -39,13 +36,13 @@ trait ChooseCreation {
   type _Choose[R] = Choose <= R
   type _choose[R] = Choose |= R
 
-  def zero[R :_choose, A]: Eff[R, A] =
+  def zero[R: _choose, A]: Eff[R, A] =
     send[Choose, R, A](ChooseZero[A]())
 
-  def plus[R :_choose, A](a1: => Eff[R, A], a2: => Eff[R, A]): Eff[R, A] =
+  def plus[R: _choose, A](a1: => Eff[R, A], a2: => Eff[R, A]): Eff[R, A] =
     EffMonad[R].flatMap(send(ChoosePlus))((b: Boolean) => if (b) a1 else a2)
 
-  def chooseFrom[R :_choose, A](as: List[A]): Eff[R, A] =
+  def chooseFrom[R: _choose, A](as: List[A]): Eff[R, A] =
     as match {
       case Nil => send[Choose, R, A](ChooseZero[A]())
       case a :: rest => plus(EffMonad[R].pure(a), chooseFrom(rest))
@@ -56,7 +53,7 @@ object ChooseCreation extends ChooseCreation
 
 trait ChooseInterpretation {
 
-  def runChoose[R, U, A, F[_] : Alternative](r: Eff[R, A])(implicit m: Member.Aux[Choose, R, U]): Eff[U, F[A]] = {
+  def runChoose[R, U, A, F[_]: Alternative](r: Eff[R, A])(implicit m: Member.Aux[Choose, R, U]): Eff[U, F[A]] = {
     def lastRun(l: Last[R]): Last[U] =
       l match {
         case Last(None) => Last[U](None)
@@ -66,26 +63,36 @@ trait ChooseInterpretation {
     val alternativeF = Alternative[F]
 
     @tailrec
-    def go(stack: List[Eff[R, A]], result: Eff[U, F[A]] = EffMonad[U].pure(alternativeF.empty), resultLast: Option[Last[U]] = None): Eff[U, F[A]] =
+    def go(
+      stack: List[Eff[R, A]],
+      result: Eff[U, F[A]] = EffMonad[U].pure(alternativeF.empty),
+      resultLast: Option[Last[U]] = None
+    ): Eff[U, F[A]] =
       stack match {
         case Nil =>
           resultLast match {
             case Some(last) => result.addLast(last)
-            case None       => result
+            case None => result
           }
 
         case e :: rest =>
           e match {
             case Pure(a, last) =>
-              go(rest, (EffMonad[U].pure(alternativeF.pure(a)), result).mapN(alternativeF.combineK), resultLast.map(_ <* lastRun(last)))
+              go(
+                rest,
+                (EffMonad[U].pure(alternativeF.pure(a)), result).mapN(alternativeF.combineK),
+                resultLast.map(_ <* lastRun(last))
+              )
 
             case Impure(NoEffect(a), c, last) =>
               runChoose(c(a).addLast(last))
-              
+
             case Impure(u: Union[_, _], c, last) =>
               m.project(u) match {
                 case Left(u1) =>
-                  val r1 = Impure(u1, c.interpret(runChoose[R, U, A, F])(_.interpret(l => runChoose[R, U, Unit, F](l).void))).addLast(lastRun(last))
+                  val r1 =
+                    Impure(u1, c.interpret(runChoose[R, U, A, F])(_.interpret(l => runChoose[R, U, Unit, F](l).void)))
+                      .addLast(lastRun(last))
                   go(rest, (r1, result).mapN(alternativeF.combineK))
 
                 case Right(choose) =>
@@ -110,10 +117,12 @@ trait ChooseInterpretation {
 object ChooseInterpretation extends ChooseInterpretation
 
 trait ChooseImplicits {
+
   /**
    * MonadCombine implementation for the Eff[R, *] type if R contains the Choose effect
    */
-  def EffMonadAlternative[R](implicit m: Member[Choose, R]): Alternative[Eff[R, *]] = new Alternative[Eff[R, *]] with Monad[Eff[R, *]] {
+  def EffMonadAlternative[R](implicit m: Member[Choose, R]): Alternative[Eff[R, *]] = new Alternative[Eff[R, *]]
+    with Monad[Eff[R, *]] {
     def pure[A](a: A): Eff[R, A] =
       EffMonad[R].pure(a)
 
@@ -122,7 +131,7 @@ trait ChooseImplicits {
 
     def tailRecM[A, B](a: A)(f: A => Eff[R, Either[A, B]]): Eff[R, B] =
       flatMap(f(a)) {
-        case Right(b)   => pure(b)
+        case Right(b) => pure(b)
         case Left(next) => tailRecM(next)(f)
       }
 
@@ -136,7 +145,6 @@ trait ChooseImplicits {
 }
 
 object ChooseImplicits extends ChooseImplicits
-
 
 /**
  * This class can be used as a F in runChoose
@@ -158,12 +166,13 @@ object Rand {
         if (r.nextBoolean()) {
           x.run(r) match {
             case Some(a) => Some(a)
-            case None    => y.run(r)
+            case None => y.run(r)
           }
-        } else y.run(r) match {
-          case Some(a) => Some(a)
-          case None    => x.run(r)
-        }
+        } else
+          y.run(r) match {
+            case Some(a) => Some(a)
+            case None => x.run(r)
+          }
       }
 
     def flatMap[A, B](fa: Rand[A])(f: A => Rand[B]): Rand[B] =

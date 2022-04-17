@@ -2,9 +2,9 @@ package org.atnos.eff.syntax
 
 import org.atnos.eff._
 import org.atnos.eff.concurrent.Scheduler
-
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 trait future {
 
@@ -13,7 +13,6 @@ trait future {
 }
 
 object future extends future
-
 
 final class FutureOps[R, A](private val e: Eff[R, A]) extends AnyVal {
   def futureAttempt(implicit future: TimedFuture /= R): Eff[R, Throwable Either A] =
@@ -31,11 +30,15 @@ final class FutureOps[R, A](private val e: Eff[R, A]) extends AnyVal {
   def runSequentialOn(executorServices: ExecutorServices)(implicit m: Member.Aux[TimedFuture, R, NoFx]): Future[A] =
     FutureInterpretation.runSequentialOn(executorServices)(e)
 
-  def runSequential(implicit scheduler: Scheduler, exc: ExecutionContext, m: Member.Aux[TimedFuture, R, NoFx]): Future[A] =
+  def runSequential(implicit
+    scheduler: Scheduler,
+    exc: ExecutionContext,
+    m: Member.Aux[TimedFuture, R, NoFx]
+  ): Future[A] =
     FutureInterpretation.runSequential(e)
 
-  def retryUntil(condition: A => Boolean, durations: List[FiniteDuration])(implicit future: TimedFuture |= R): Eff[R, A] =
+  def retryUntil(condition: A => Boolean, durations: List[FiniteDuration])(implicit
+    future: TimedFuture |= R
+  ): Eff[R, A] =
     FutureCreation.retryUntil(e, condition, durations)
 }
-
-

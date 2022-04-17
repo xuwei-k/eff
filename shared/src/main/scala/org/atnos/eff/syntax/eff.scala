@@ -24,18 +24,20 @@ trait effCats {
   implicit final def toEffOneEffectOps[M[_], A](e: Eff[Fx1[M], A]): EffOneEffectOps[M, A] = new EffOneEffectOps(e)
   implicit final def toEffMonadicOps[R, M[_], A](e: Eff[R, M[A]]): EffMonadicOps[R, M, A] = new EffMonadicOps(e)
   implicit final def toEffApplicativeOps[F[_], A](values: F[A]): EffApplicativeOps[F, A] = new EffApplicativeOps(values)
-  implicit final def toEffSequenceOps[F[_], R, A](values: F[Eff[R, A]]): EffSequenceOps[F, R, A] = new EffSequenceOps(values)
-  implicit final def toEffFlatSequenceOps[F[_], R, A](values: F[Eff[R, F[A]]]): EffFlatSequenceOps[F, R, A] = new EffFlatSequenceOps(values)
-  implicit final def toEffApplicativeSyntaxOps[R, A](a: Eff[R, A]): EffApplicativeSyntaxOps[R, A] = new EffApplicativeSyntaxOps(a)
+  implicit final def toEffSequenceOps[F[_], R, A](values: F[Eff[R, A]]): EffSequenceOps[F, R, A] = new EffSequenceOps(
+    values
+  )
+  implicit final def toEffFlatSequenceOps[F[_], R, A](values: F[Eff[R, F[A]]]): EffFlatSequenceOps[F, R, A] =
+    new EffFlatSequenceOps(values)
+  implicit final def toEffApplicativeSyntaxOps[R, A](a: Eff[R, A]): EffApplicativeSyntaxOps[R, A] =
+    new EffApplicativeSyntaxOps(a)
 }
 
 final class EffOps[R, A](private val e: Eff[R, A]) extends AnyVal {
   def into[U](implicit f: IntoPoly[R, U]): Eff[U, A] =
     Eff.effInto(e)(f)
 
-  def transform[BR, U, M[_], N[_]](t: ~>[M, N])(
-    implicit m: Member.Aux[M, R, U],
-             n: Member.Aux[N, BR, U]): Eff[BR, A] =
+  def transform[BR, U, M[_], N[_]](t: ~>[M, N])(implicit m: Member.Aux[M, R, U], n: Member.Aux[N, BR, U]): Eff[BR, A] =
     Interpret.transform(e, t)(m, n, IntoPoly.intoSelf[U])
 
   def translate[M[_], U](t: Translate[M, U])(implicit m: Member.Aux[M, R, U]): Eff[U, A] =
@@ -46,7 +48,9 @@ final class EffTranslateIntoOps[R, A](private val e: Eff[R, A]) extends AnyVal {
   def translateInto[T[_], U](t: Translate[T, U])(implicit m: MemberInOut[T, R], into: IntoPoly[R, U]): Eff[U, A] =
     interpret.translateInto(e)(t)(m, into)
 
-  def write[T[_], O](w: Write[T, O])(implicit memberT: MemberInOut[T, R], memberW: MemberInOut[Writer[O, *], R]): Eff[R, A] =
+  def write[T[_], O](
+    w: Write[T, O]
+  )(implicit memberT: MemberInOut[T, R], memberW: MemberInOut[Writer[O, *], R]): Eff[R, A] =
     interpret.write(e)(w)
 
   def trace[F[_]](implicit memberF: MemberInOut[F, R], memberW: MemberInOut[Writer[F[_], *], R]): Eff[R, A] =

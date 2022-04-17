@@ -1,7 +1,6 @@
 package org.atnos.eff.syntax
 
 import org.atnos.eff._
-
 import scala.reflect.ClassTag
 
 object safe extends safe
@@ -25,7 +24,9 @@ trait safe {
     def catchThrowable[B](pure: A => B, onThrowable: Throwable => Eff[R, B])(implicit m: Safe /= R): Eff[R, B] =
       SafeEffect.catchThrowable(e, pure, onThrowable)
 
-    def recoverThrowable[B](pure: A => B, onThrowable: PartialFunction[Throwable, Eff[R, B]])(implicit m: Safe /= R): Eff[R, B] =
+    def recoverThrowable[B](pure: A => B, onThrowable: PartialFunction[Throwable, Eff[R, B]])(implicit
+      m: Safe /= R
+    ): Eff[R, B] =
       SafeEffect.recoverThrowable(e, pure, onThrowable)
 
     def otherwise(onThrowable: Eff[R, A])(implicit m: Safe /= R): Eff[R, A] =
@@ -40,9 +41,8 @@ trait safe {
     def attempt(implicit m: Safe /= R): Eff[R, Throwable Either A] =
       SafeEffect.attempt(e)
 
-    def ignoreException[E <: Throwable : ClassTag](implicit m: Safe /= R): Eff[R, Unit] =
+    def ignoreException[E <: Throwable: ClassTag](implicit m: Safe /= R): Eff[R, Unit] =
       SafeEffect.ignoreException[R, E, A](e)
   }
 
 }
-

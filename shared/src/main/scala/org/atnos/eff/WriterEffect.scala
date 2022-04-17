@@ -16,9 +16,7 @@ import Interpret._
  *  - accumulate values in a list
  *
  */
-trait WriterEffect extends
-  WriterCreation with
-  WriterInterpretation
+trait WriterEffect extends WriterCreation with WriterInterpretation
 
 object WriterEffect extends WriterEffect
 
@@ -45,7 +43,9 @@ trait WriterInterpretation {
   /**
    * More general fold of runWriter where we can use a fold to accumulate values in a mutable buffer
    */
-  def runWriterFold[R, U, O, A, B](w: Eff[R, A])(fold: RightFold[O, B])(implicit m: Member.Aux[Writer[O, *], R, U]): Eff[U, (A, B)] = {
+  def runWriterFold[R, U, O, A, B](
+    w: Eff[R, A]
+  )(fold: RightFold[O, B])(implicit m: Member.Aux[Writer[O, *], R, U]): Eff[U, (A, B)] = {
     val executed =
       Interpret.runInterpreter(w)(new Interpreter[Writer[O, *], U, A, (A, fold.S)] {
         def onPure(a: A): Eff[U, (A, fold.S)] =
@@ -59,7 +59,10 @@ trait WriterInterpretation {
         def onLastEffect[X](x: Writer[O, X], continuation: Continuation[U, X, Unit]): Eff[U, Unit] =
           Eff.pure(())
 
-        def onApplicativeEffect[X, T[_] : Traverse](xs: T[Writer[O, X]], continuation: Continuation[U, T[X], (A, fold.S)]): Eff[U, (A, fold.S)] = {
+        def onApplicativeEffect[X, T[_]: Traverse](
+          xs: T[Writer[O, X]],
+          continuation: Continuation[U, T[X], (A, fold.S)]
+        ): Eff[U, (A, fold.S)] = {
           val os = new collection.mutable.ListBuffer[O]
           val values = xs.map { w =>
             val (o, x) = w.run
@@ -67,7 +70,11 @@ trait WriterInterpretation {
             x
           }
 
-          Eff.impure(values, continuation, { case (a, s) => (a, os.toList.foldLeft(s) { (res, o) => fold.fold(o, res) }) })
+          Eff.impure(
+            values,
+            continuation,
+            { case (a, s) => (a, os.toList.foldLeft(s) { (res, o) => fold.fold(o, res) }) }
+          )
         }
 
       })
@@ -86,17 +93,23 @@ trait WriterInterpretation {
         x
       }
 
-      def applicative[X, Tr[_] : Traverse](ms: Tr[Writer[O, X]]): Tr[X] =
+      def applicative[X, Tr[_]: Traverse](ms: Tr[Writer[O, X]]): Tr[X] =
         ms.map(apply)
     })
 
-  def runWriterEval[R, U, O, A](w: Eff[R, A])(f: O => Eval[Unit])(implicit m: Member.Aux[Writer[O, *], R, U], ev: Eval |= U): Eff[U, A] =
+  def runWriterEval[R, U, O, A](w: Eff[R, A])(
+    f: O => Eval[Unit]
+  )(implicit m: Member.Aux[Writer[O, *], R, U], ev: Eval |= U): Eff[U, A] =
     runWriterFold(w)(EvalFold(f)).flatMap { case (a, e) => send[Eval, U, Unit](e).as(a) }
 
-  def runWriterMonoid[R, U, O, A](w: Eff[R, A])(implicit m: Member.Aux[Writer[O, *], R, U], O: Monoid[O]): Eff[U, (A, O)] =
+  def runWriterMonoid[R, U, O, A](
+    w: Eff[R, A]
+  )(implicit m: Member.Aux[Writer[O, *], R, U], O: Monoid[O]): Eff[U, (A, O)] =
     runWriterFold(w)(MonoidFold[O])
 
-  def runWriterIntoMonoid[R, U, O, M, A](w: Eff[R, A])(f: O => M)(implicit m: Member.Aux[Writer[O, *], R, U], M: Monoid[M]): Eff[U, (A, M)] =
+  def runWriterIntoMonoid[R, U, O, M, A](w: Eff[R, A])(
+    f: O => M
+  )(implicit m: Member.Aux[Writer[O, *], R, U], M: Monoid[M]): Eff[U, (A, M)] =
     runWriterFold(w)(IntoMonoidFold[M, O](f))
 
   implicit def ListFold[A]: RightFold[A, List[A]] = new RightFold[A, List[A]] {
@@ -113,7 +126,7 @@ trait WriterInterpretation {
     def finalize(s: M): M = s
   }
 
-  def MonoidFold[A : Monoid]: RightFold[A, A] =
+  def MonoidFold[A: Monoid]: RightFold[A, A] =
     IntoMonoidFold(identity)
 
   def EvalFold[A](f: A => Eval[Unit]): RightFold[A, Eval[Unit]] = new RightFold[A, Eval[Unit]] {

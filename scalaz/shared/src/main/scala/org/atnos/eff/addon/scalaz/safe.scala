@@ -8,7 +8,9 @@ object safe extends safe
 
 trait safe {
 
-  def runSafeDisjunction[R, U, A](r: Eff[R, A])(implicit m: Member.Aux[Safe, R, U]): Eff[U, (Throwable \/ A, List[Throwable])] =
+  def runSafeDisjunction[R, U, A](r: Eff[R, A])(implicit
+    m: Member.Aux[Safe, R, U]
+  ): Eff[U, (Throwable \/ A, List[Throwable])] =
     org.atnos.eff.all.runSafe(r).map(_.leftMap(_.fold(\/.left, \/.right)))
 
   def execSafeDisjunction[R, U, A](r: Eff[R, A])(implicit m: Member.Aux[Safe, R, U]): Eff[U, Throwable \/ A] =

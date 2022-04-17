@@ -1,7 +1,6 @@
 package org.atnos.eff
 
 import cats._
-
 import scala.annotation.tailrec
 
 /**
@@ -16,7 +15,8 @@ import scala.annotation.tailrec
  * to add its own effect. See SafeEffect.bracket
  *
  */
-case class Continuation[R, A, B](functions: Vector[Any => Eff[R, Any]], onNone: Last[R] = Last.none[R]) extends (A => Eff[R, B]) {
+case class Continuation[R, A, B](functions: Vector[Any => Eff[R, Any]], onNone: Last[R] = Last.none[R])
+    extends (A => Eff[R, B]) {
 
   /**
    * append a new monadic function to this list of functions such that
@@ -30,8 +30,10 @@ case class Continuation[R, A, B](functions: Vector[Any => Eff[R, Any]], onNone: 
   /** map the last returned effect */
   def mapLast[C](f: Eff[R, B] => Eff[R, C]): Continuation[R, A, C] =
     functions match {
-      case v if v.isEmpty => Continuation[R, A, C](v :+ ((a: Any) => f(Eff.pure(a.asInstanceOf[B])).asInstanceOf[Eff[R, Any]]), onNone)
-      case fs :+ last => Continuation(fs :+ ((x: Any) => f(last(x).asInstanceOf[Eff[R, B]]).asInstanceOf[Eff[R, Any]]), onNone)
+      case v if v.isEmpty =>
+        Continuation[R, A, C](v :+ ((a: Any) => f(Eff.pure(a.asInstanceOf[B])).asInstanceOf[Eff[R, Any]]), onNone)
+      case fs :+ last =>
+        Continuation(fs :+ ((x: Any) => f(last(x).asInstanceOf[Eff[R, B]]).asInstanceOf[Eff[R, Any]]), onNone)
     }
 
   /** map the last value */
@@ -93,10 +95,9 @@ case class Continuation[R, A, B](functions: Vector[Any => Eff[R, Any]], onNone: 
   def interpretEff[U, C](map: Eff[R, B] => Eff[U, C])(mapOnNone: Eff[R, Unit] => Eff[U, Unit]): Continuation[U, A, C] =
     Continuation.lift((a: A) => map(apply(a)), onNone.interpret(mapOnNone))
 
-  def transform[U1, U2, M[_], N[_]](t: ~>[M, N])(
-    implicit m: Member.Aux[M, R, U1],
-             n: Member.Aux[N, R, U2],
-             into: IntoPoly[U1, U2]): Continuation[R, A, B] =
+  def transform[U1, U2, M[_], N[_]](
+    t: ~>[M, N]
+  )(implicit m: Member.Aux[M, R, U1], n: Member.Aux[N, R, U2], into: IntoPoly[U1, U2]): Continuation[R, A, B] =
     Continuation(functions.map(f => (x: Any) => Interpret.transform(f(x): Eff[R, Any], t)(m, n, into)), onNone)
 
   def runOnNone: Eff[R, Unit] =
@@ -118,5 +119,3 @@ object Continuation {
       fa.map(f)
   }
 }
-
-

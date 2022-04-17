@@ -2,7 +2,8 @@ package org.atnos.eff
 
 import org.specs2.Specification
 
-class IntoPolyInstancesSpec extends Specification with Specs2Compat { def is = s2"""
+class IntoPolyInstancesSpec extends Specification with Specs2Compat {
+  def is = s2"""
 
  The IntoPoly implicit definitions must create lawful instances:
 
@@ -19,37 +20,97 @@ class IntoPolyInstancesSpec extends Specification with Specs2Compat { def is = s
 
   def intoAppendL2L = {
     val into = IntoPoly.intoAppendL2L[T1, T2, Fx2[T3, T4]]
-    checkLaw(into, Eff.send[T2, Fx.prepend[T2, Fx2[T3, T4]], Int](t2), Eff.send[T2, Fx.append[Fx2[T1, T2], Fx2[T3, T4]], Int](t2))
-    checkLaw(into, Eff.send[T3, Fx.prepend[T2, Fx2[T3, T4]], Int](t3), Eff.send[T3, Fx.append[Fx2[T1, T2], Fx2[T3, T4]], Int](t3))
-    checkLaw(into, Eff.send[T4, Fx.prepend[T2, Fx2[T3, T4]], Int](t4), Eff.send[T4, Fx.append[Fx2[T1, T2], Fx2[T3, T4]], Int](t4))
+    checkLaw(
+      into,
+      Eff.send[T2, Fx.prepend[T2, Fx2[T3, T4]], Int](t2),
+      Eff.send[T2, Fx.append[Fx2[T1, T2], Fx2[T3, T4]], Int](t2)
+    )
+    checkLaw(
+      into,
+      Eff.send[T3, Fx.prepend[T2, Fx2[T3, T4]], Int](t3),
+      Eff.send[T3, Fx.append[Fx2[T1, T2], Fx2[T3, T4]], Int](t3)
+    )
+    checkLaw(
+      into,
+      Eff.send[T4, Fx.prepend[T2, Fx2[T3, T4]], Int](t4),
+      Eff.send[T4, Fx.append[Fx2[T1, T2], Fx2[T3, T4]], Int](t4)
+    )
   }
 
   def intoAppendL2R = {
     val into = IntoPoly.intoAppendL2R[T1, T2, Fx2[T3, T4]]
-    checkLaw(into, Eff.send[T1, Fx.prepend[T1, Fx2[T3, T4]], Int](t1), Eff.send[T1, Fx.append[Fx2[T1, T2], Fx2[T3, T4]], Int](t1))
-    checkLaw(into, Eff.send[T3, Fx.prepend[T1, Fx2[T3, T4]], Int](t3), Eff.send[T3, Fx.append[Fx2[T1, T2], Fx2[T3, T4]], Int](t3))
-    checkLaw(into, Eff.send[T4, Fx.prepend[T1, Fx2[T3, T4]], Int](t4), Eff.send[T4, Fx.append[Fx2[T1, T2], Fx2[T3, T4]], Int](t4))
+    checkLaw(
+      into,
+      Eff.send[T1, Fx.prepend[T1, Fx2[T3, T4]], Int](t1),
+      Eff.send[T1, Fx.append[Fx2[T1, T2], Fx2[T3, T4]], Int](t1)
+    )
+    checkLaw(
+      into,
+      Eff.send[T3, Fx.prepend[T1, Fx2[T3, T4]], Int](t3),
+      Eff.send[T3, Fx.append[Fx2[T1, T2], Fx2[T3, T4]], Int](t3)
+    )
+    checkLaw(
+      into,
+      Eff.send[T4, Fx.prepend[T1, Fx2[T3, T4]], Int](t4),
+      Eff.send[T4, Fx.append[Fx2[T1, T2], Fx2[T3, T4]], Int](t4)
+    )
   }
 
   def intoAppendL3L = {
     val into = IntoPoly.intoAppendL3L[T1, T2, T3, Fx1[T4]]
-    checkLaw(into, Eff.send[T2, Fx.append[Fx2[T2, T3], Fx1[T4]], Int](t2), Eff.send[T2, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t2))
-    checkLaw(into, Eff.send[T3, Fx.append[Fx2[T2, T3], Fx1[T4]], Int](t3), Eff.send[T3, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t3))
-    checkLaw(into, Eff.send[T4, Fx.append[Fx2[T2, T3], Fx1[T4]], Int](t4), Eff.send[T4, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t4))
+    checkLaw(
+      into,
+      Eff.send[T2, Fx.append[Fx2[T2, T3], Fx1[T4]], Int](t2),
+      Eff.send[T2, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t2)
+    )
+    checkLaw(
+      into,
+      Eff.send[T3, Fx.append[Fx2[T2, T3], Fx1[T4]], Int](t3),
+      Eff.send[T3, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t3)
+    )
+    checkLaw(
+      into,
+      Eff.send[T4, Fx.append[Fx2[T2, T3], Fx1[T4]], Int](t4),
+      Eff.send[T4, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t4)
+    )
   }
 
   def intoAppendL3M = {
     val into = IntoPoly.intoAppendL3M[T1, T2, T3, Fx1[T4]]
-    checkLaw(into, Eff.send[T1, Fx.append[Fx2[T1, T3], Fx1[T4]], Int](t1), Eff.send[T1, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t1))
-    checkLaw(into, Eff.send[T3, Fx.append[Fx2[T1, T3], Fx1[T4]], Int](t3), Eff.send[T3, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t3))
-    checkLaw(into, Eff.send[T4, Fx.append[Fx2[T1, T3], Fx1[T4]], Int](t4), Eff.send[T4, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t4))
+    checkLaw(
+      into,
+      Eff.send[T1, Fx.append[Fx2[T1, T3], Fx1[T4]], Int](t1),
+      Eff.send[T1, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t1)
+    )
+    checkLaw(
+      into,
+      Eff.send[T3, Fx.append[Fx2[T1, T3], Fx1[T4]], Int](t3),
+      Eff.send[T3, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t3)
+    )
+    checkLaw(
+      into,
+      Eff.send[T4, Fx.append[Fx2[T1, T3], Fx1[T4]], Int](t4),
+      Eff.send[T4, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t4)
+    )
   }
 
   def intoAppendL3R = {
     val into = IntoPoly.intoAppendL3R[T1, T2, T3, Fx1[T4]]
-    checkLaw(into, Eff.send[T1, Fx.append[Fx2[T1, T2], Fx1[T4]], Int](t1), Eff.send[T1, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t1))
-    checkLaw(into, Eff.send[T2, Fx.append[Fx2[T1, T2], Fx1[T4]], Int](t2), Eff.send[T2, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t2))
-    checkLaw(into, Eff.send[T4, Fx.append[Fx2[T1, T2], Fx1[T4]], Int](t4), Eff.send[T4, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t4))
+    checkLaw(
+      into,
+      Eff.send[T1, Fx.append[Fx2[T1, T2], Fx1[T4]], Int](t1),
+      Eff.send[T1, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t1)
+    )
+    checkLaw(
+      into,
+      Eff.send[T2, Fx.append[Fx2[T1, T2], Fx1[T4]], Int](t2),
+      Eff.send[T2, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t2)
+    )
+    checkLaw(
+      into,
+      Eff.send[T4, Fx.append[Fx2[T1, T2], Fx1[T4]], Int](t4),
+      Eff.send[T4, Fx.append[Fx3[T1, T2, T3], Fx1[T4]], Int](t4)
+    )
   }
 
   def intoAppendL1 = {
@@ -77,8 +138,8 @@ class IntoPolyInstancesSpec extends Specification with Specs2Compat { def is = s
 
   def unions[R, A](e: Eff[R, A]): List[Any] =
     e match {
-      case Pure(_, _)        => List()
-      case Impure(u, _, _)   => List(u)
+      case Pure(_, _) => List()
+      case Impure(u, _, _) => List(u)
       case ImpureAp(u, _, _) => List(u.unions.toList)
     }
 

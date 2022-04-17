@@ -4,9 +4,11 @@ import cats.data._
 import cats.syntax.all._
 import org.atnos.eff.all._
 import org.atnos.eff.syntax.all._
-import org.specs2.{ScalaCheck, Specification}
+import org.specs2.ScalaCheck
+import org.specs2.Specification
 
-class ValidateEffectSpec extends Specification with ScalaCheck with Specs2Compat { def is = s2"""
+class ValidateEffectSpec extends Specification with ScalaCheck with Specs2Compat {
+  def is = s2"""
 
  run the validate effect                     $validateOk
  run the validate effect with nothing        $validateKo
@@ -190,7 +192,9 @@ class ValidateEffectSpec extends Specification with ScalaCheck with Specs2Compat
         a <- EffMonad[C].pure(3)
       } yield a.toString
 
-    validate.runList.catchAllWrongs((ss: NonEmptyList[String]) => pure(ss.toList)).runNel.run ==== Right(List("error1", "error2"))
+    validate.runList.catchAllWrongs((ss: NonEmptyList[String]) => pure(ss.toList)).runNel.run ==== Right(
+      List("error1", "error2")
+    )
   }
 
   def stacksafeRun = {

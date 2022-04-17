@@ -4,7 +4,6 @@ import cats._
 import cats.syntax.all._
 import Eff._
 import EffCompat._
-
 import scala.concurrent.duration.FiniteDuration
 
 /**
@@ -91,7 +90,7 @@ sealed trait Eff[R, A] {
     flatMap(ev)
 
   /** add one last action to be executed after any computation chained to this Eff value */
-  def addLast(l: =>Eff[R, Unit]): Eff[R, A] =
+  def addLast(l: => Eff[R, Unit]): Eff[R, A] =
     addLast(Last.eff(l))
 
   /** add one last action to be executed after any computation chained to this Eff value */
@@ -113,7 +112,8 @@ case class Pure[R, A](value: A, last: Last[R] = Last.none[R]) extends Eff[R, A] 
  *
  * One effect can always be executed last, just for side-effects
  */
-case class Impure[R, X, A](union: Effect[R, X], continuation: Continuation[R, X, A], last: Last[R] = Last.none[R]) extends Eff[R, A] {
+case class Impure[R, X, A](union: Effect[R, X], continuation: Continuation[R, X, A], last: Last[R] = Last.none[R])
+    extends Eff[R, A] {
   def addLast(l: Last[R]): Eff[R, A] =
     Impure[R, X, A](union, continuation, last <* l)
 }
@@ -140,7 +140,11 @@ case class Impure[R, X, A](union: Effect[R, X], continuation: Continuation[R, X,
  *  - the types of the elements in the list argument to 'map' must be the exact types of each effect in unions.unions
  *
  */
-case class ImpureAp[R, X, A](unions: Unions[R, X], continuation: Continuation[R, Vector[Any], A], last: Last[R] = Last.none[R]) extends Eff[R, A] {
+case class ImpureAp[R, X, A](
+  unions: Unions[R, X],
+  continuation: Continuation[R, Vector[Any], A],
+  last: Last[R] = Last.none[R]
+) extends Eff[R, A] {
   def toMonadic: Eff[R, A] =
     Impure[R, unions.X, A](unions.first, unions.continueWith(continuation), last)
 
@@ -148,10 +152,7 @@ case class ImpureAp[R, X, A](unions: Unions[R, X], continuation: Continuation[R,
     ImpureAp[R, X, A](unions, continuation, last <* l)
 }
 
-
-object Eff extends EffCreation with
-  EffInterpretation with
-  EffImplicits
+object Eff extends EffCreation with EffInterpretation with EffImplicits
 
 trait EffImplicits {
 
@@ -195,12 +196,17 @@ trait EffImplicits {
 
     def tailRecM[A, B](a: A)(f: A => Eff[AnyRef, Either[A, B]]): Eff[AnyRef, B] =
       f(a) match {
-        case Pure(v, l) => v match {
-          case Left(a1) => tailRecM(a1)(f)
-          case Right(b) => Pure(b)
-        }
+        case Pure(v, l) =>
+          v match {
+            case Left(a1) => tailRecM(a1)(f)
+            case Right(b) => Pure(b)
+          }
         case Impure(u, c, l) =>
-          Impure(u, Continuation.lift((x: u.X) => c(x).flatMap(a1 => a1.fold(a11 => tailRecM(a11)(f), b => pure(b)))), l)
+          Impure(
+            u,
+            Continuation.lift((x: u.X) => c(x).flatMap(a1 => a1.fold(a11 => tailRecM(a11)(f), b => pure(b)))),
+            l
+          )
 
         case ImpureAp(u, c, l) =>
           ImpureAp(u, Continuation.lift(x => c(x).flatMap(a1 => a1.fold(a11 => tailRecM(a11)(f), b => pure(b)))), l)
@@ -225,7 +231,11 @@ trait EffImplicits {
             case Pure(f, last1) =>
               Pure(f(a), last1 *> last)
             case Impure(NoEffect(f), c, last1) =>
-              Impure[AnyRef, Any, B](NoEffect[AnyRef, Any](f), c.append(f1 => pure(f1(a))).cast[Continuation[Object, Any, B]], c.onNone).addLast(last1 *> last)
+              Impure[AnyRef, Any, B](
+                NoEffect[AnyRef, Any](f),
+                c.append(f1 => pure(f1(a))).cast[Continuation[Object, Any, B]],
+                c.onNone
+              ).addLast(last1 *> last)
             case Impure(u: Union[_, _], c: Continuation[AnyRef, Any, A => B], last1) =>
               ImpureAp(Unions(u, Vector.empty), c.dimapEff((x: Vector[Any]) => x.head)(_.map(_(a))), last1 *> last)
             case ImpureAp(u, c, last1) =>
@@ -242,11 +252,19 @@ trait EffImplicits {
             case Impure(NoEffect(f), c1, last1) =>
               Impure(u, c.append(x => c1(f).map(_(x)))).addLast(last1 *> last)
             case Impure(u1: Union[_, _], c1: Continuation[AnyRef, Any, A => B], last1) =>
-              ImpureAp[AnyRef, Any, B](Unions(u, Vector(u1)), Continuation.lift(ls => ap(c1(ls(1)))(c(ls.head)), c.onNone), last1 *> last)
+              ImpureAp[AnyRef, Any, B](
+                Unions(u, Vector(u1)),
+                Continuation.lift(ls => ap(c1(ls(1)))(c(ls.head)), c.onNone),
+                last1 *> last
+              )
             case ImpureAp(u1, c1, last1) =>
-              ImpureAp(Unions(u, u1.unions), Continuation.lift(ls => ap(c1(ls.drop(1)))(c(ls.head)), c.onNone), last1 *> last)
+              ImpureAp(
+                Unions(u, u1.unions),
+                Continuation.lift(ls => ap(c1(ls.drop(1)))(c(ls.head)), c.onNone),
+                last1 *> last
+              )
           }
-          
+
         case ImpureAp(unions, c, last) =>
           ff match {
             case Pure(f, last1) =>
@@ -254,18 +272,30 @@ trait EffImplicits {
             case Impure(NoEffect(f), c1, last1) =>
               ImpureAp(unions, c.append(x => c1(f).map(_(x)))).addLast(last1 *> last)
             case Impure(u: Union[_, _], c1: Continuation[AnyRef, Any, A => B], last1) =>
-              ImpureAp(Unions(unions.first, unions.rest :+ u), Continuation.lift(ls => ap(c1(ls.last))(c(ls.dropRight(1))), c.onNone), last1 *> last)
-            case ImpureAp(u, c1, last1) => ImpureAp(u append unions, Continuation.lift({ xs =>
-              val usize = u.size
-              val (taken, dropped) = xs.splitAt(usize)
-              // don't recurse if the number of effects is too large
-              // this will ensure stack-safety on large traversals
-              // and keep enough concurrency on smaller traversals
-              if (xs.size > 10)
-                Eff.impure(taken, Continuation.lift((xs1: Vector[Any]) => ap(c1(xs1))(c(dropped)), c1.onNone))
-              else
-                ap(c1(taken))(c(dropped))
-            }, c.onNone), last1 *> last)
+              ImpureAp(
+                Unions(unions.first, unions.rest :+ u),
+                Continuation.lift(ls => ap(c1(ls.last))(c(ls.dropRight(1))), c.onNone),
+                last1 *> last
+              )
+            case ImpureAp(u, c1, last1) =>
+              ImpureAp(
+                u append unions,
+                Continuation.lift(
+                  { xs =>
+                    val usize = u.size
+                    val (taken, dropped) = xs.splitAt(usize)
+                    // don't recurse if the number of effects is too large
+                    // this will ensure stack-safety on large traversals
+                    // and keep enough concurrency on smaller traversals
+                    if (xs.size > 10)
+                      Eff.impure(taken, Continuation.lift((xs1: Vector[Any]) => ap(c1(xs1))(c(dropped)), c1.onNone))
+                    else
+                      ap(c1(taken))(c(dropped))
+                  },
+                  c.onNone
+                ),
+                last1 *> last
+              )
           }
 
       }
@@ -280,6 +310,7 @@ trait EffImplicits {
 object EffImplicits extends EffImplicits
 
 trait EffCreation {
+
   /** create an Eff[R, A] value from an effectful value of type T[V] provided that T is one of the effects of R */
   def send[T[_], R, V](tv: T[V])(implicit member: T |= R): Eff[R, V] =
     ImpureAp(Unions(member.inject(tv), Vector.empty), Continuation.lift(xs => pure[R, V](xs.head.asInstanceOf[V])))
@@ -313,15 +344,17 @@ trait EffCreation {
     EffImplicits.EffApplicative[R].ap(f)(a)
 
   /** use the applicative instance of Eff to traverse a list of values */
-  def traverseA[R, F[_] : Traverse, A, B](fs: F[A])(f: A => Eff[R, B]): Eff[R, F[B]] =
+  def traverseA[R, F[_]: Traverse, A, B](fs: F[A])(f: A => Eff[R, B]): Eff[R, F[B]] =
     Traverse[F].traverse(fs)(f)(EffImplicits.EffApplicative[R])
 
   /** use the applicative instance of Eff to sequence a list of values */
-  def sequenceA[R, F[_] : Traverse, A](fs: F[Eff[R, A]]): Eff[R, F[A]] =
+  def sequenceA[R, F[_]: Traverse, A](fs: F[Eff[R, A]]): Eff[R, F[A]] =
     Traverse[F].sequence(fs)(EffImplicits.EffApplicative[R])
 
   /** use the applicative instance of Eff to traverse a list of values, then flatten it */
-  def flatTraverseA[R, F[_], A, B](fs: F[A])(f: A => Eff[R, F[B]])(implicit FT: Traverse[F], FM: FlatMap[F]): Eff[R, F[B]] =
+  def flatTraverseA[R, F[_], A, B](fs: F[A])(
+    f: A => Eff[R, F[B]]
+  )(implicit FT: Traverse[F], FM: FlatMap[F]): Eff[R, F[B]] =
     FT.flatTraverse[Eff[R, *], A, B](fs)(f)(EffImplicits.EffApplicative[R], FM)
 
   /** use the applicative instance of Eff to sequence a list of values, then flatten it */
@@ -338,12 +371,17 @@ trait EffCreation {
   /** attach a clean-up action to the continuation (if any) */
   def whenStopped[R, A](e: Eff[R, A], action: Last[R]): Eff[R, A] =
     e match {
-      case Pure(a, l)        => Pure(a, l)
-      case Impure(u, c, l)   => Impure(u,   c.copy(onNone = c.onNone <* action), l)
+      case Pure(a, l) => Pure(a, l)
+      case Impure(u, c, l) => Impure(u, c.copy(onNone = c.onNone <* action), l)
       case ImpureAp(u, c, l) => ImpureAp(u, c.copy(onNone = c.onNone <* action), l)
     }
 
-  def retryUntil[R, A](e: Eff[R, A], condition: A => Boolean, durations: List[FiniteDuration], waitFor: FiniteDuration => Eff[R, Unit]): Eff[R, A] =
+  def retryUntil[R, A](
+    e: Eff[R, A],
+    condition: A => Boolean,
+    durations: List[FiniteDuration],
+    waitFor: FiniteDuration => Eff[R, Unit]
+  ): Eff[R, A] =
     e.flatMap { a =>
       if (condition(a))
         Eff.pure(a)
@@ -354,7 +392,7 @@ trait EffCreation {
 
           case duration :: rest =>
             waitFor(duration) >>
-            retryUntil(e, condition, rest, waitFor)
+              retryUntil(e, condition, rest, waitFor)
         }
     }
 
@@ -384,7 +422,7 @@ trait EffInterpretation {
           Eval.later(c(a)).flatMap(runEval).flatMap(res => runEval(l.value).as(res))
 
         case other =>
-          throw new EffImpossibleException("impossible: cannot run the effects in "+other)
+          throw new EffImpossibleException("impossible: cannot run the effects in " + other)
       }
 
     runEval(eff).value
@@ -405,7 +443,9 @@ trait EffInterpretation {
   /**
    * peel-off the only present effect, using an Applicative instance where possible
    */
-  def detachA[M[_], R, A, E](eff: Eff[R, A])(implicit monad: MonadError[M, E], applicative: Applicative[M], member: Member.Aux[M, R, NoFx]): M[A] =
+  def detachA[M[_], R, A, E](
+    eff: Eff[R, A]
+  )(implicit monad: MonadError[M, E], applicative: Applicative[M], member: Member.Aux[M, R, NoFx]): M[A] =
     detachA(Eff.effInto[R, Fx1[M], A](eff))(monad, applicative)
 
   /**
@@ -414,7 +454,7 @@ trait EffInterpretation {
   def detachA[M[_], A, E](eff: Eff[Fx1[M], A])(implicit monad: MonadError[M, E], applicative: Applicative[M]): M[A] =
     Monad[M].tailRecM[Eff[Fx1[M], A], A](eff) {
       case Pure(a, Last(Some(l))) => monad.pure(Left(l.value.as(a)))
-      case Pure(a, Last(None))    => monad.pure(Right(a))
+      case Pure(a, Last(None)) => monad.pure(Right(a))
 
       case Impure(NoEffect(a), continuation, last) =>
         monad.pure(Left(continuation(a).addLast(last)))
@@ -422,7 +462,9 @@ trait EffInterpretation {
       case Impure(u: Union[_, _], continuation, last) =>
         val ta = u.tagged.valueUnsafe.asInstanceOf[M[A]]
         val result: M[Either[Eff[Fx1[M], A], A]] =
-          ta.map(x => Left(Impure(NoEffect(x.asInstanceOf[Any]), continuation.cast[Continuation[Fx1[M], Any, A]], last)))
+          ta.map(x =>
+            Left(Impure(NoEffect(x.asInstanceOf[Any]), continuation.cast[Continuation[Fx1[M], Any, A]], last))
+          )
 
         last match {
           case Last(Some(l)) =>
@@ -453,10 +495,10 @@ trait EffInterpretation {
    */
   def runPure[R, A](eff: Eff[R, A]): Option[A] =
     eff match {
-      case Pure(a, Last(Some(l)))     => l.value; Some(a)
-      case Pure(a, _)                 => Some(a)
-      case Impure(NoEffect(a), c, l)  => runPure(c(a).addLast(l))
-      case _                          => None
+      case Pure(a, Last(Some(l))) => l.value; Some(a)
+      case Pure(a, _) => Some(a)
+      case Impure(NoEffect(a), c, l) => runPure(c(a).addLast(l))
+      case _ => None
     }
 
   /**
@@ -466,7 +508,6 @@ trait EffInterpretation {
   def effInto[R, U, A](e: Eff[R, A])(implicit f: IntoPoly[R, U]): Eff[U, A] =
     f(e)
 
-
   /**
    * Memoize an effect using a cache
    *
@@ -474,13 +515,19 @@ trait EffInterpretation {
    * will be cached in the cache and retrieved from there if the Eff[R, A] computation is
    * executed again
    */
-  def memoizeEffect[R, M[_], A](e: Eff[R, A], cache: Cache, key: AnyRef)(implicit member: M /= R, cached: SequenceCached[M]): Eff[R, A] =
-    send[M, R, Option[A]](cached.get(cache, key)).
-      flatMap(_.
-        map(Eff.pure[R, A]).
-        getOrElse(memoizeEffectSequence(e, cache, key).map(a => { cache.put(key, a); a })))
+  def memoizeEffect[R, M[_], A](e: Eff[R, A], cache: Cache, key: AnyRef)(implicit
+    member: M /= R,
+    cached: SequenceCached[M]
+  ): Eff[R, A] =
+    send[M, R, Option[A]](cached.get(cache, key))
+      .flatMap(_.map(Eff.pure[R, A]).getOrElse(memoizeEffectSequence(e, cache, key).map(a => {
+        cache.put(key, a); a
+      })))
 
-  private def memoizeEffectSequence[R, M[_], A](e: Eff[R, A], cache: Cache, key: AnyRef)(implicit member: M /= R, cached: SequenceCached[M]): Eff[R, A] = {
+  private def memoizeEffectSequence[R, M[_], A](e: Eff[R, A], cache: Cache, key: AnyRef)(implicit
+    member: M /= R,
+    cached: SequenceCached[M]
+  ): Eff[R, A] = {
     var seqKey = 0
     def incrementSeqKey = { val s = seqKey; seqKey += 1; s }
 
@@ -493,4 +540,3 @@ trait EffInterpretation {
 }
 
 object EffInterpretation extends EffInterpretation
-
