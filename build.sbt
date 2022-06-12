@@ -131,7 +131,8 @@ lazy val buildSettings = Seq(
 )
 
 lazy val commonSettings = Def.settings(
-  libraryDependencies += "org.typelevel" %%% "cats-core" % "2.7.0",
+  libraryDependencies += "org.typelevel" %%% "cats-core" % "2.8-113da92-SNAPSHOT",
+  resolvers += "sonatype-s01-snapshot" at "https://s01.oss.sonatype.org/content/repositories/snapshots/",
   libraryDependencies ++= specs2.value,
   scalacOptions ++= commonScalacOptions.value,
   (Compile / doc / scalacOptions) ++= {
@@ -191,7 +192,6 @@ lazy val commonJvmSettings = Seq(
 )
 
 lazy val commonNativeSettings = Def.settings(
-  disableScala3, // TODO https://github.com/typelevel/cats/issues/4117
 )
 
 lazy val effSettings =
