@@ -191,7 +191,9 @@ lazy val commonJvmSettings = Seq(
 )
 
 lazy val commonNativeSettings = Def.settings(
-  disableScala3, // TODO https://github.com/typelevel/cats/issues/4117
+  // TODO https://github.com/scala-native/scala-native/commit/7058cea339168f945
+  crossScalaVersions -= "3.1.3",
+  crossScalaVersions += "3.1.2",
 )
 
 lazy val effSettings =
