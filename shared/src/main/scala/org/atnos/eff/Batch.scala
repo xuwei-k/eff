@@ -24,7 +24,7 @@ trait Batch {
             // by using the Batched datastructure keeping track
             // of both unbatched and batch effects
             val result: Batched[T] = rest.foldLeft(Batched.single(e)) { case (batched, (effect, i)) =>
-              batchable.batch[Any, Any](batched.batchedEffect.asInstanceOf[T[Any]], effect) match {
+              batchable.batch(batched.batchedEffect, effect) match {
                 case Some(b) => batched.fuse(b, i)
                 case None => batched.append(effect, i)
               }
@@ -81,38 +81,45 @@ trait Batchable[T[_]] {
  *
  */
 private sealed trait Batched[T[_]] {
-  def effects: Vector[T[_]]
+  type X
+  def effects: Vector[T[Any]]
   def keys: Vector[Int]
-  def batchedEffect: T[_]
+  def batchedEffect: T[X]
 
-  def append(ty: T[_], key: Int): Batched[T]
-  def fuse(ty: T[_], key: Int): Batched[T]
+  def append[Y](ty: T[Y], key: Int): Batched[T]
+  def fuse[Y](ty: T[Y], key: Int): Batched[T]
 }
 
 private object Batched {
   def single[T[_], X](txi: (T[X], Int)): Batched[T] =
     Single(txi._1, Vector(txi._2))
+
+  type Aux[T[_], Y] = Batched[T] { type X = Y }
 }
 
-private case class Composed[T[_]](unbatched: Vector[Batched[T]], batched: Single[T]) extends Batched[T] {
-  def effects = unbatched.flatMap(_.effects)
-  def keys = unbatched.flatMap(_.keys) ++ batched.keys
-  def batchedEffect: T[_] = batched.batchedEffect
+private case class Composed[T[_]](unbatched: Vector[Batched[T]], batched: Single[T, ?]) extends Batched[T] {
+  override type X = Any
 
-  def append(ty: T[_], key: Int) =
-    copy(unbatched = unbatched :+ Batched.single[T, Any]((ty.asInstanceOf[T[Any]], key)))
+  def effects: Vector[T[Any]] = unbatched.flatMap(_.effects)
+  def keys: Vector[Int] = unbatched.flatMap(_.keys) ++ batched.keys
+  def batchedEffect: T[X] = batched.batchedEffect.asInstanceOf[T[X]]
 
-  def fuse(ty: T[_], key: Int) =
-    copy(batched = Single(ty, batched.keys :+ key))
+  def append[Y](ty: T[Y], key: Int): Batched[T] =
+    copy(unbatched = unbatched :+ Batched.single[T, Y]((ty, key)))
+
+  def fuse[X](ty: T[X], key: Int): Batched[T] =
+    copy(batched = Single[T, X](ty, batched.keys :+ key))
 }
 
-private case class Single[T[_]](tx: T[_], keys: Vector[Int]) extends Batched[T] {
-  def effects = Vector(tx)
+private case class Single[T[_], Y](tx: T[Y], keys: Vector[Int]) extends Batched[T] {
+  override type X = Y
+
+  def effects: Vector[T[Any]] = Vector(tx.asInstanceOf[T[Any]])
   def batchedEffect = tx
 
-  def append(ty: T[_], key: Int): Batched[T] =
-    Composed(Vector(Batched.single((tx.asInstanceOf[T[Any]], key))), this)
+  def append[Y](ty: T[Y], key: Int): Batched[T] =
+    Composed[T](Vector(Batched.single[T, X]((tx, key))), this)
 
-  def fuse(ty: T[_], key: Int): Batched[T] =
+  def fuse[Z](ty: T[Z], key: Int): Batched[T] =
     Single(ty, keys :+ key)
 }
