@@ -57,6 +57,7 @@ lazy val state = p("state")
 lazy val safe = p("safe")
 lazy val batch = p("batch")
 lazy val memo = p("memo")
+lazy val future = p("future")
 
 lazy val all = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
@@ -68,7 +69,7 @@ lazy val all = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     effSettings,
   )
   .nativeSettings(commonNativeSettings)
-  .dependsOn(eval, option, either, validate, error, reader, writer, choose, list, state, safe, batch, memo)
+  .dependsOn(eval, option, either, validate, error, reader, writer, choose, list, state, safe, batch, memo, future)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
