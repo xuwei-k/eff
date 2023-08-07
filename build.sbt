@@ -1,4 +1,5 @@
 import org.scalajs.jsenv.nodejs._
+import sbtcrossproject.CrossProject
 
 lazy val specs2Version = Def.setting("4.20.0")
 lazy val twitterUtilVersion = "22.12.0"
@@ -17,14 +18,47 @@ libraryDependencies += "org.specs2" %% "specs2-html" % specs2Version.value % "te
 disableScala3
 
 dependsOn(
-  coreJVM % "test->test;compile->compile",
+  all.jvm % "test->test;compile->compile",
   doobie,
   macros,
   monixJVM,
   scalazJVM,
 )
 
-lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
+def p(id: String) = CrossProject(id, file(id))(JSPlatform, JVMPlatform, NativePlatform)
+  .settings(moduleName := s"eff-$id")
+  .jsSettings(commonJsSettings)
+  .jvmSettings(commonJvmSettings)
+  .settings(
+    effSettings,
+  )
+  .nativeSettings(commonNativeSettings)
+  .dependsOn(core)
+
+lazy val core = CrossProject("core", file("core"))(JSPlatform, JVMPlatform, NativePlatform)
+  .settings(moduleName := "eff-core")
+  .jsSettings(commonJsSettings)
+  .jvmSettings(commonJvmSettings)
+  .settings(
+    effSettings,
+  )
+  .nativeSettings(commonNativeSettings)
+
+lazy val eval = p("eval")
+lazy val option = p("option")
+lazy val either = p("either")
+lazy val validate = p("validate")
+lazy val error = p("error")
+lazy val reader = p("reader")
+lazy val writer = p("writer")
+lazy val choose = p("choose")
+lazy val list = p("list")
+lazy val state = p("state")
+lazy val safe = p("safe").dependsOn(either)
+lazy val batch = p("batch")
+lazy val future = p("future").dependsOn(eval)
+
+lazy val all = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .settings(moduleName := "eff")
   .jsSettings(commonJsSettings)
@@ -34,20 +68,21 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     effSettings,
   )
   .nativeSettings(commonNativeSettings)
+  .dependsOn(eval, option, either, validate, error, reader, writer, choose, list, state, safe, batch, future)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 
 lazy val doobie = project
   .settings(moduleName := "eff-doobie")
-  .dependsOn(coreJVM % "compile->compile;test->test")
+  .dependsOn(all.jvm % "test->test", coreJVM)
   .settings(libraryDependencies ++= doobieJvm)
   .settings(effSettings ++ commonJvmSettings)
 
 lazy val catsEffect = crossProject(JVMPlatform)
   .in(file("cats"))
   .settings(moduleName := "eff-cats-effect")
-  .dependsOn(core)
+  .dependsOn(future, option % Test)
   .settings(
     libraryDependencies += "org.typelevel" %%% "cats-effect" % "3.5.1",
   )
@@ -59,7 +94,7 @@ lazy val catsEffectJVM = catsEffect.jvm
 lazy val macros = project
   .in(file("macros"))
   .settings(moduleName := "eff-macros")
-  .dependsOn(coreJVM)
+  .dependsOn(coreJVM, all.jvm % "test->test")
   .settings(libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value)
   .settings(
     disableScala3,
@@ -80,7 +115,10 @@ lazy val macros = project
 lazy val monix = crossProject(JSPlatform, JVMPlatform)
   .in(file("monix"))
   .settings(moduleName := "eff-monix")
-  .dependsOn(core % "test->test;compile->compile")
+  .dependsOn(
+    all % "test->test",
+    future,
+  )
   .settings(
     libraryDependencies += "io.monix" %%% "monix-eval" % "3.4.1",
   )
@@ -94,7 +132,13 @@ lazy val monixJS = monix.js
 lazy val scalaz = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("scalaz"))
   .settings(moduleName := "eff-scalaz")
-  .dependsOn(core % "compile->compile;test->test")
+  .dependsOn(
+    all % "test->test",
+    either,
+    validate,
+    eval,
+    safe,
+  )
   .settings(
     libraryDependencies += "org.scalaz" %%% "scalaz-core" % "7.3.7",
   )
@@ -108,7 +152,10 @@ lazy val scalazJS = scalaz.js
 
 lazy val twitter = project
   .settings(moduleName := "eff-twitter")
-  .dependsOn(coreJVM % "compile->compile;test->test")
+  .dependsOn(
+    all.jvm % "test->test",
+    future.jvm
+  )
   .settings(libraryDependencies ++= twitterUtilCore)
   .settings(effSettings ++ commonJvmSettings)
   .settings(
