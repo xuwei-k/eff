@@ -1,10 +1,5 @@
 package org.atnos.eff
 
-object option extends OptionCreation with OptionInterpretation
-object list extends ListCreation with ListInterpretation
-object future extends FutureCreation with FutureInterpretation
-object memo extends MemoCreation with MemoInterpretation
-
 object create
     extends ReaderCreation
     with WriterCreation
