@@ -1,12 +1,7 @@
 package org.atnos.eff
 
-object reader extends ReaderCreation with ReaderInterpretation
-object writer extends WriterCreation with WriterInterpretation
-object state extends StateCreation with StateInterpretation with StateImplicits
-object eval extends EvalCreation with EvalInterpretation
 object option extends OptionCreation with OptionInterpretation
 object list extends ListCreation with ListInterpretation
-object either extends EitherCreation with EitherInterpretation with EitherImplicits
 object future extends FutureCreation with FutureInterpretation
 object memo extends MemoCreation with MemoInterpretation
 

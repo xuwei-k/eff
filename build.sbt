@@ -129,7 +129,13 @@ lazy val monixJS = monix.js
 lazy val scalaz = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("scalaz"))
   .settings(moduleName := "eff-scalaz")
-  .dependsOn(core % "compile->compile;test->test")
+  .dependsOn(
+    all % "test->test",
+    either,
+    validate,
+    eval,
+    safe,
+  )
   .settings(
     libraryDependencies += "org.scalaz" %%% "scalaz-core" % "7.3.7",
   )
