@@ -54,7 +54,7 @@ lazy val writer = p("writer")
 lazy val choose = p("choose")
 lazy val list = p("list")
 lazy val state = p("state")
-lazy val safe = p("safe")
+lazy val safe = p("safe").dependsOn(either)
 lazy val batch = p("batch")
 lazy val future = p("future").dependsOn(eval)
 
