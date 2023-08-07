@@ -1,4 +1,5 @@
 import org.scalajs.jsenv.nodejs._
+import sbtcrossproject.CrossProject
 
 lazy val specs2Version = Def.setting("4.20.0")
 lazy val twitterUtilVersion = "22.12.0"
@@ -24,7 +25,40 @@ dependsOn(
   scalazJVM,
 )
 
-lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
+def p(id: String) = CrossProject(id, file(id))(JSPlatform, JVMPlatform, NativePlatform)
+  .settings(moduleName := s"eff-$id")
+  .jsSettings(commonJsSettings)
+  .jvmSettings(commonJvmSettings)
+  .settings(
+    effSettings,
+  )
+  .nativeSettings(commonNativeSettings)
+  .dependsOn(core)
+
+lazy val core = CrossProject("core", file("core"))(JSPlatform, JVMPlatform, NativePlatform)
+  .settings(moduleName := "eff-core")
+  .jsSettings(commonJsSettings)
+  .jvmSettings(commonJvmSettings)
+  .settings(
+    effSettings,
+  )
+  .nativeSettings(commonNativeSettings)
+
+lazy val eval = p("eval")
+lazy val option = p("option")
+lazy val either = p("either")
+lazy val validate = p("validate")
+lazy val error = p("error")
+lazy val reader = p("reader")
+lazy val writer = p("writer")
+lazy val choose = p("choose")
+lazy val list = p("list")
+lazy val state = p("state")
+lazy val safe = p("safe")
+lazy val batch = p("batch")
+lazy val memo = p("memo")
+
+lazy val all = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .settings(moduleName := "eff")
   .jsSettings(commonJsSettings)
@@ -34,6 +68,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     effSettings,
   )
   .nativeSettings(commonNativeSettings)
+  .dependsOn(eval, option, either, validate, error, reader, writer, choose, list, state, safe, batch, memo)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
