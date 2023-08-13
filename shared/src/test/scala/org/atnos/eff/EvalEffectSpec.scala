@@ -1,8 +1,8 @@
 package org.atnos.eff
 
 import org.specs2.Specification
-import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.eff._
+import org.atnos.eff.syntax.eval._
 import cats.syntax.all._
 import cats.Eval
 

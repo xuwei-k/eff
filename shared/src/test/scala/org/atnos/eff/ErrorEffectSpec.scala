@@ -7,8 +7,12 @@ import scala.collection.mutable.ListBuffer
 import cats.data._
 import cats.syntax.all._
 import cats.Eval
-import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.ErrorEffect._
+import org.atnos.eff.writer._
+import org.atnos.eff.syntax.eff._
+import org.atnos.eff.syntax.error._
+import org.atnos.eff.syntax.eval._
+import org.atnos.eff.syntax.writer._
 
 class ErrorEffectSpec extends Specification with Specs2Compat {
   def is = s2"""

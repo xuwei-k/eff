@@ -6,8 +6,12 @@ import org.specs2.ScalaCheck
 import org.specs2.Specification
 import cats.data._
 import cats.syntax.all._
-import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.either._
+import org.atnos.eff.reader._
+import org.atnos.eff.syntax.eff._
+import org.atnos.eff.syntax.either._
+import org.atnos.eff.syntax.eval._
+import org.atnos.eff.syntax.reader._
 import org.scalacheck.Gen
 import org.specs2.matcher.EitherMatchers
 

@@ -2,8 +2,10 @@ package org.atnos.eff
 
 import cats.data._
 import cats.Eval
-import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.writer._
+import org.atnos.eff.syntax.eff._
+import org.atnos.eff.syntax.eval._
+import org.atnos.eff.syntax.writer._
 import org.specs2.Specification
 import org.specs2.matcher.ThrownExpectations
 import scala.collection.mutable.ListBuffer

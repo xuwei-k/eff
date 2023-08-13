@@ -1,8 +1,10 @@
 package org.atnos.eff
 
 import org.specs2.Specification
-import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.ChooseEffect._
+import org.atnos.eff.syntax.choose._
+import org.atnos.eff.syntax.eff._
+import org.atnos.eff.syntax.option._
 import cats.syntax.all._
 
 class ChooseEffectSpec extends Specification with Specs2Compat {

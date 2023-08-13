@@ -2,7 +2,10 @@ package org.atnos.eff
 
 import cats.data._
 import cats.syntax.all._
-import org.atnos.eff.all._
+import org.atnos.eff.Eff.EffMonad
+import org.atnos.eff.ValidateEffect._
+import org.atnos.eff.eff._
+import org.atnos.eff.writer._
 import org.atnos.eff.syntax.all._
 import org.specs2.ScalaCheck
 import org.specs2.Specification

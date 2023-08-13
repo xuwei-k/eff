@@ -5,8 +5,11 @@ import org.specs2.Specification
 import org.scalacheck.Gen.posNum
 import cats.syntax.all.{catsSyntaxEq => _, _}
 import cats.data._
-import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.option._
+import org.atnos.eff.reader._
+import org.atnos.eff.syntax.eff._
+import org.atnos.eff.syntax.option._
+import org.atnos.eff.syntax.reader._
 
 class OptionEffectSpec extends Specification with ScalaCheck with Specs2Compat {
   def is = s2"""
