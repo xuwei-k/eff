@@ -2,6 +2,7 @@ package org.atnos.eff.syntax.addon.cats
 
 import cats.effect.IO
 import org.atnos.eff._
+import scala.language.implicitConversions
 
 package object effect {
 

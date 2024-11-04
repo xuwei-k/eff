@@ -6,6 +6,7 @@ import cats.effect.Bracket
 import org.atnos.eff.addon.doobie._
 import org.atnos.eff.Eff
 import org.atnos.eff._
+import scala.language.implicitConversions
 
 trait doobie {
 

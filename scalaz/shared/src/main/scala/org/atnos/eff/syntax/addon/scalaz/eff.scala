@@ -2,6 +2,7 @@ package org.atnos.eff
 package syntax.addon.scalaz
 
 import org.atnos.eff.addon.scalaz._
+import scala.language.implicitConversions
 
 object eff extends eff
 

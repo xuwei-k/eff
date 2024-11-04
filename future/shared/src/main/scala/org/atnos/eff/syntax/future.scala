@@ -5,6 +5,7 @@ import org.atnos.eff.concurrent.Scheduler
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.language.implicitConversions
 
 trait future {
 

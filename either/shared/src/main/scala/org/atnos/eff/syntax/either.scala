@@ -2,6 +2,7 @@ package org.atnos.eff.syntax
 
 import cats.Semigroup
 import org.atnos.eff._
+import scala.language.implicitConversions
 
 object either extends either
 

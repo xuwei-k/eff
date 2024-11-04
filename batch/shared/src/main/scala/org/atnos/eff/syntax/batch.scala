@@ -1,6 +1,7 @@
 package org.atnos.eff.syntax
 
 import org.atnos.eff._
+import scala.language.implicitConversions
 
 object batch extends batch
 

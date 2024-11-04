@@ -3,6 +3,7 @@ package syntax.addon.scalaz
 
 import cats.Eval
 import scalaz._
+import scala.language.implicitConversions
 
 object eval extends org.atnos.eff.syntax.eval with eval
 

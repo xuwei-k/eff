@@ -2,6 +2,7 @@ package org.atnos.eff
 package syntax.addon.scalaz
 
 import scalaz._
+import scala.language.implicitConversions
 
 object safe extends org.atnos.eff.syntax.safe with safe
 

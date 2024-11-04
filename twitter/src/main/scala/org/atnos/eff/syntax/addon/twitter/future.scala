@@ -6,6 +6,7 @@ import org.atnos.eff.addon.twitter._
 import org.atnos.eff._
 import org.atnos.eff.concurrent.Scheduler
 import scala.concurrent.duration.FiniteDuration
+import scala.language.implicitConversions
 
 trait future {
 

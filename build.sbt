@@ -352,7 +352,7 @@ lazy val commonScalacOptions = Def.setting {
     "-encoding",
     "UTF-8",
     "-feature",
-    "-language:implicitConversions,higherKinds,existentials",
+    "-language:higherKinds,existentials",
     "-unchecked",
   ) ++ {
     CrossVersion.partialVersion(scalaVersion.value) match {

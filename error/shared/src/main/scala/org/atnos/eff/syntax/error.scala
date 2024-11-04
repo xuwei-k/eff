@@ -3,6 +3,7 @@ package syntax
 
 import ErrorEffect._
 import scala.reflect.ClassTag
+import scala.language.implicitConversions
 
 object error extends error
 

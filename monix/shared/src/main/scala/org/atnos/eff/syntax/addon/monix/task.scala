@@ -5,6 +5,7 @@ import org.atnos.eff.addon.monix._
 import _root_.monix.eval.Task
 import monix.execution.Scheduler
 import scala.concurrent.duration.FiniteDuration
+import scala.language.implicitConversions
 import scala.util.Either
 
 trait task {

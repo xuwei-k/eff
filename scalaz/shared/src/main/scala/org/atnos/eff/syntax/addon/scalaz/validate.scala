@@ -2,6 +2,7 @@ package org.atnos.eff
 package syntax.addon.scalaz
 
 import scalaz._
+import scala.language.implicitConversions
 
 object validate extends org.atnos.eff.syntax.validate with validate
 
