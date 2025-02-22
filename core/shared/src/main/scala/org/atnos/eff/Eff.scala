@@ -108,9 +108,28 @@ case class Pure[R, A](value: A, last: Last[R] = Last.none[R]) extends Eff[R, A] 
  *
  * One effect can always be executed last, just for side-effects
  */
-case class Impure[R, X, A](union: Effect[R, X], continuation: Continuation[R, X, A], last: Last[R] = Last.none[R]) extends Eff[R, A] {
+sealed abstract class Impure[R, A] extends Eff[R, A] {
+  type X
+  def union: Effect[R, X]
+  def continuation: Continuation[R, X, A]
+  def last: Last[R]
   def addLast(l: Last[R]): Eff[R, A] =
     Impure[R, X, A](union, continuation, last <* l)
+}
+
+object Impure {
+  type Aux[R, X1, A] = Impure[R, A] { type X = X1 }
+
+  def unapply[R, X, A](impure: Impure.Aux[R, X, A]): Some[(Effect[R, X], Continuation[R, X, A], Last[R])] =
+    Some((impure.union, impure.continuation, impure.last))
+
+  def apply[R, X1, A](union0: Effect[R, X1], continuation0: Continuation[R, X1, A], last0: Last[R] = Last.none[R]): Impure.Aux[R, X1, A] =
+    new Impure[R, A] {
+      override type X = X1
+      def union: Effect[R, X] = union0
+      def continuation: Continuation[R, X, A] = continuation0
+      def last: Last[R] = last0
+    }
 }
 
 /**
