@@ -39,7 +39,7 @@ object Safe {
   def failFinalizer(t: Throwable): Safe[Unit] =
     FailedFinalizer(t)
 
-  implicit val safeSequenceCached: SequenceCached[Safe] =
+  given safeSequenceCached: SequenceCached[Safe] =
     new SequenceCached[Safe] {
       def get[X](cache: Cache, key: AnyRef): Safe[Option[X]] =
         evaluate(cache.get(key))

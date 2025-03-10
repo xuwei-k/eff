@@ -63,7 +63,7 @@ sealed trait Eff[R, A] {
     EffApplicative[R].map2(this, fb)(f)
 
   def map2Flatten[B, C](fb: Eff[R, B])(f: (A, B) => Eff[R, C]): Eff[R, C] =
-    Monad[Eff[R, *]].flatMap(EffApplicative[R].product(this, fb)) { case (a, b) => f(a, b) }
+    Monad[Eff[R, *]].flatMap(EffApplicative[R].product(this, fb)) { (a, b) => f(a, b) }
 
   def *>[B](fb: Eff[R, B]): Eff[R, B] =
     EffApplicative[R].map2(this, fb) { case (_, b) => b }
@@ -83,7 +83,7 @@ sealed trait Eff[R, A] {
   def flatMap[B](f: A => Eff[R, B]): Eff[R, B] =
     Monad[Eff[R, *]].flatMap(this)(f)
 
-  def flatten[B](implicit ev: A <:< Eff[R, B]): Eff[R, B] =
+  def flatten[B](using ev: A <:< Eff[R, B]): Eff[R, B] =
     flatMap(ev)
 
   /** add one last action to be executed after any computation chained to this Eff value */
