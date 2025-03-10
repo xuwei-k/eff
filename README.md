@@ -67,7 +67,6 @@ Feel free to open an issue if you notice a bug, have an idea for a feature, or h
 - [scalaz](./scalaz)
 - [monix](./monix)
 - [doobie](./doobie)
-- [twitter](./twitter) (deprecated)
 
 ## External
 

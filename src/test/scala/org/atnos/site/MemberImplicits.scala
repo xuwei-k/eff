@@ -27,7 +27,7 @@ When creating effects you can always "require" a stack containing the right effe
       type WriterString[A] = Writer[String, A]
 
 // for creating state effects
-      def putAndTell[R](i: Int)(implicit s: StateInt |= R, w: WriterString |= R): Eff[R, Int] =
+      def putAndTell[R](i: Int)(using s: StateInt |= R, w: WriterString |= R): Eff[R, Int] =
         for {
           // no type annotations needed!
           _ <- put(i)

@@ -19,7 +19,7 @@ You can also inject a "local" reader into a "bigger" one:${snippet {
 
       type S = Fx.fx2[R1, R2]
 
-      def getPort[R](implicit r: Reader[Int, *] |= R): Eff[R, String] = for {
+      def getPort[R](using r: Reader[Int, *] |= R): Eff[R, String] = for {
         p1 <- ask[R, Int]
       } yield "the port is " + p1
 

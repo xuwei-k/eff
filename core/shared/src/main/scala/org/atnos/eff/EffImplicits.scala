@@ -125,7 +125,7 @@ trait EffImplicits {
       }
   }
 
-  implicit final def EffMonad[R]: Monad[Eff[R, *]] = effMonadUnsafeImpl.asInstanceOf[Monad[Eff[R, *]]]
+  given EffMonad[R]: Monad[Eff[R, *]] = effMonadUnsafeImpl.asInstanceOf[Monad[Eff[R, *]]]
 
   final def EffApplicative[R]: Applicative[Eff[R, *]] = effApplicativeUnsafeImpl.asInstanceOf[Applicative[Eff[R, *]]]
 

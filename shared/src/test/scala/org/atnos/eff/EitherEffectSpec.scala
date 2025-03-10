@@ -176,13 +176,13 @@ class EitherEffectSpec extends Specification with ScalaCheck with EitherMatchers
   def implicitRequireLeft = {
     case class Error1(m: String)
     case class Error2(e1: Error1)
-    implicit def e1Toe2: Error1 => Error2 = (e1: Error1) => Error2(e1)
+    given e1Toe2: (Error1 => Error2) = (e1: Error1) => Error2(e1)
     import either._
 
-    def withE1[R](i: Int)(implicit m: Either[Error1, *] |= R): Eff[R, Int] =
+    def withE1[R](i: Int)(using m: Either[Error1, *] |= R): Eff[R, Int] =
       either.right[R, Error1, Int](i)
 
-    def withE2[R](implicit m: Either[Error2, *] |= R): Eff[R, String] =
+    def withE2[R](using m: Either[Error2, *] |= R): Eff[R, String] =
       withE1[R](10).map(_.toString)
 
     withE2[Fx.fx1[Either[Error2, *]]].runEither.run ==== Right("10")

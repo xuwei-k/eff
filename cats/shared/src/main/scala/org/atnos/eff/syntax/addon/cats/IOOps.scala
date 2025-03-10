@@ -11,19 +11,19 @@ import org.atnos.eff.Eff
 
 final class IOOps[A](private val e: Eff[Fx1[IO], A]) extends AnyVal {
 
-  def unsafeRunAsync(cb: Either[Throwable, A] => Unit)(implicit i: IORuntime): Unit =
+  def unsafeRunAsync(cb: Either[Throwable, A] => Unit)(using i: IORuntime): Unit =
     IOEffect.unsafeRunAsync(e)(cb)
 
-  def unsafeRunSync(implicit i: IORuntime): A =
+  def unsafeRunSync(using i: IORuntime): A =
     IOEffect.unsafeRunSync(e)
 
-  def unsafeRunTimed(limit: FiniteDuration)(implicit i: IORuntime): Option[A] =
+  def unsafeRunTimed(limit: FiniteDuration)(using i: IORuntime): Option[A] =
     IOEffect.unsafeRunTimed(e, limit)
 
-  def unsafeToFuture(implicit i: IORuntime): Future[A] =
+  def unsafeToFuture(using i: IORuntime): Future[A] =
     IOEffect.unsafeToFuture(e)
 
-  def to[F[_]](implicit f: LiftIO[F]): F[A] =
+  def to[F[_]](using f: LiftIO[F]): F[A] =
     IOEffect.to(e)
 
 }

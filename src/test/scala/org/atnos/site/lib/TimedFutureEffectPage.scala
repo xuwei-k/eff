@@ -44,12 +44,10 @@ Then we need to pass a `Scheduler` and an `ExecutionContext` in to begin the com
 
 You can also use other `Future` or `Task` effects:
 
- - `twitter`: depend on `eff-twitter` and import `org.atnos.eff.addon.twitter.future._`
  - `monix`: depend on `eff-monix` and import `org.atnos.eff.addon.monix.task._`
 
 There are corresponding syntax imports to be able to call `runAsync` methods in:
 
- - `twitter`: `org.atnos.eff.syntax.addon.twitter.future._`
  - `monix`: `org.atnos.eff.syntax.addon.monix.task._`
 
 `Future` and `Task` computations can also be memoized to avoid expensive computations to be done several times. You can either

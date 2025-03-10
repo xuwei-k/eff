@@ -13,16 +13,16 @@ trait safe {
 
 final class SafeEffectScalazOps[R, A](private val e: Eff[R, A]) extends AnyVal {
 
-  def runSafeDisjunction[U](implicit m: Member.Aux[Safe, R, U]): Eff[U, (Throwable \/ A, List[Throwable])] =
+  def runSafeDisjunction[U](using m: Member.Aux[Safe, R, U]): Eff[U, (Throwable \/ A, List[Throwable])] =
     addon.scalaz.safe.runSafeDisjunction(e)
 
-  def execSafeDisjunction[U](implicit m: Member.Aux[Safe, R, U]): Eff[U, Throwable \/ A] =
+  def execSafeDisjunction[U](using m: Member.Aux[Safe, R, U]): Eff[U, Throwable \/ A] =
     addon.scalaz.safe.execSafeDisjunction(e)
 
-  def attemptSafeDisjunction(implicit m: Safe /= R): Eff[R, (Throwable \/ A, List[Throwable])] =
+  def attemptSafeDisjunction(using m: Safe /= R): Eff[R, (Throwable \/ A, List[Throwable])] =
     addon.scalaz.safe.attemptSafeDisjunction(e)
 
-  def attemptDisjunction(implicit member: MemberInOut[Safe, R]): Eff[R, Throwable \/ A] =
+  def attemptDisjunction(using member: MemberInOut[Safe, R]): Eff[R, Throwable \/ A] =
     addon.scalaz.safe.attemptDisjunction(e)
 
 }

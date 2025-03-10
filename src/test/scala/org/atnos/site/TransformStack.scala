@@ -61,10 +61,10 @@ so the following compiles ok:
 ${snippet {
       import org.atnos.eff._
 
-      def runT3[R, U, A](e: Eff[R, A])(implicit m: Member.Aux[T3, R, U]): Eff[U, A] = ???
-      def runT2[R, U, A](e: Eff[R, A])(implicit m: Member.Aux[T2, R, U]): Eff[U, A] = ???
-      def runT1[R, U, A](e: Eff[R, A])(implicit m: Member.Aux[T1, R, U]): Eff[U, A] = ???
-      def runT4[R, U, A](e: Eff[R, A])(implicit m: Member.Aux[T4, R, U]): Eff[U, A] = ???
+      def runT3[R, U, A](e: Eff[R, A])(using m: Member.Aux[T3, R, U]): Eff[U, A] = ???
+      def runT2[R, U, A](e: Eff[R, A])(using m: Member.Aux[T2, R, U]): Eff[U, A] = ???
+      def runT1[R, U, A](e: Eff[R, A])(using m: Member.Aux[T1, R, U]): Eff[U, A] = ???
+      def runT4[R, U, A](e: Eff[R, A])(using m: Member.Aux[T4, R, U]): Eff[U, A] = ???
 
       type S = FxAppend[Fx1[T1], Fx3[T2, T3, T4]]
 
@@ -158,7 +158,7 @@ And you want to write an interpreter which will translate authentication actions
  * The order of implicit parameters is really important for type inference!
  * see below
  */
-      def runAuth[R, U, A](e: Eff[R, A])(implicit authenticated: Member.Aux[Authenticated, R, U], future: _future[U], either: _error[U]): Eff[U, A] =
+      def runAuth[R, U, A](e: Eff[R, A])(using authenticated: Member.Aux[Authenticated, R, U], future: _future[U], either: _error[U]): Eff[U, A] =
         translate(e)(new Translate[Authenticated, U] {
           def apply[X](ax: Authenticated[X]): Eff[U, X] =
             ax match {
@@ -217,7 +217,7 @@ ${snippet {
       trait Db[A]
       type _writerString[R] = Writer[String, *] |= R
 
-      def runDb[R, U, A](queries: Eff[R, A])(implicit db: Member.Aux[Db, R, U], eval: _eval[U], writer: _writerString[U]): Eff[U, A] = ???
+      def runDb[R, U, A](queries: Eff[R, A])(using db: Member.Aux[Db, R, U], eval: _eval[U], writer: _writerString[U]): Eff[U, A] = ???
     }}
 
 The database queries (the `Db` effect) are being executed by the `runDb` method inside the `Eval` effect, and they use
@@ -238,7 +238,7 @@ ${snippet {
       type _writerString[R] = WriterString |= R
 // 8<--
 
-      def executeOnDb[R, U, A](queries: Eff[R, A])(implicit db: Member.Aux[Db, R, U], eval: _eval[U]): Eff[U, A] = ???
+      def executeOnDb[R, U, A](queries: Eff[R, A])(using db: Member.Aux[Db, R, U], eval: _eval[U]): Eff[U, A] = ???
     }}
 
 How can you implement `executeOnDb` with `runDb`?
@@ -252,12 +252,12 @@ ${snippet {
       type WriterString[A] = Writer[String, A]
       type _writerString[R] = WriterString |= R
 
-      def runDb[R, U, A](queries: Eff[R, A])(implicit m: Member.Aux[Db, R, U], e: _eval[U], w: _writerString[U]): Eff[U, A] = ???
+      def runDb[R, U, A](queries: Eff[R, A])(using m: Member.Aux[Db, R, U], e: _eval[U], w: _writerString[U]): Eff[U, A] = ???
 // 8<--
       import org.atnos.eff.all._
       import org.atnos.eff.syntax.all._
 
-      def executeOnDb[R, U, A](queries: Eff[R, A])(implicit db: Member.Aux[Db, R, U], eval: _eval[U]): Eff[U, A] = {
+      def executeOnDb[R, U, A](queries: Eff[R, A])(using db: Member.Aux[Db, R, U], eval: _eval[U]): Eff[U, A] = {
 
         type S = Fx.prepend[WriterString, R]
         runDb(queries.into[S]).runWriterNoLog[String]

@@ -54,7 +54,7 @@ abstract class UserGuidePage
     }
   }
 
-  override implicit def defaultSnippetParameters[T]: org.specs2.execute.SnippetParams[T] =
+  override given defaultSnippetParameters[T]: org.specs2.execute.SnippetParams[T] =
     Snippet.defaultParams[T].copy(asCode = (s1: String, s2: String) => splitText(Snippet.markdownCode()(s1, s2)))
 
   // extract //text comments as text paragraphs
