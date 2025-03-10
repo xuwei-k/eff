@@ -1,6 +1,5 @@
 package org.atnos.eff
 
-import Eff._
 import cats.syntax.all._
 import Interpret._
 import cats.Traverse
@@ -8,7 +7,7 @@ import cats.Traverse
 trait ListInterpretation {
 
   /** run an effect stack starting with a list effect */
-  def runList[R, U, A](effect: Eff[R, A])(implicit m: Member.Aux[List, R, U]): Eff[U, List[A]] =
+  def runList[R, U, A](effect: Eff[R, A])(using m: Member.Aux[List, R, U]): Eff[U, List[A]] =
     runInterpreter(effect)(new Interpreter[List, U, A, List[A]] {
       def onPure(a: A): Eff[U, List[A]] =
         Eff.pure(List(a))

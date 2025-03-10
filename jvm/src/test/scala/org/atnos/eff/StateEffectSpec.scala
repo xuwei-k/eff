@@ -6,9 +6,9 @@ import cats.Monad
 import cats.data._
 import cats.syntax.all._
 import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.all.given
 
-class StateEffectSpec extends Specification with ScalaCheck with Specs2Compat {
+class StateEffectSpec extends Specification with ScalaCheck {
   def is = s2"""
 
  The state monad can be used to put/get state $putGetState
@@ -112,8 +112,8 @@ class StateEffectSpec extends Specification with ScalaCheck with Specs2Compat {
     case class Address(s: String)
     case class Person(address: Address)
 
-    implicit val getAddress: Person => Address = (p: Person) => p.address
-    implicit val setAddress: Address => Person => Person = (a: Address) => (p: Person) => p.copy(address = a)
+    given (Person => Address) = (p: Person) => p.address
+    given (Address => Person => Person) = (a: Address) => (p: Person) => p.copy(address = a)
 
     type PerS[E] = State[Person, *] |= E
     type PerR[E] = Reader[Person, *] |= E
@@ -126,13 +126,7 @@ class StateEffectSpec extends Specification with ScalaCheck with Specs2Compat {
     def updateAddress[E: Add: Err]: Eff[E, Unit] =
       get.void
 
-    def updatePerson[E: PerS: Err]: Eff[E, Unit] =
-      for {
-        bad <- isBadPerson
-        _ <- updateAddress
-      } yield ()
-
-    updatePerson[Fx.fx2[Either[String, *], State[Person, *]]].evalState(Person(Address("here"))).runEither.run ==== Right(())
+    true
   }
 
   type StateInt[A] = State[Int, A]

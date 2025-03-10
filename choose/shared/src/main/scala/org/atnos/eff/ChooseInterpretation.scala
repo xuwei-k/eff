@@ -1,13 +1,12 @@
 package org.atnos.eff
 
-import Eff._
 import cats._
 import cats.syntax.all._
 import scala.annotation.tailrec
 
 trait ChooseInterpretation {
 
-  def runChoose[R, U, A, F[_]: Alternative](r: Eff[R, A])(implicit m: Member.Aux[Choose, R, U]): Eff[U, F[A]] = {
+  def runChoose[R, U, A, F[_]: Alternative](r: Eff[R, A])(using m: Member.Aux[Choose, R, U]): Eff[U, F[A]] = {
     def lastRun(l: Last[R]): Last[U] =
       l match {
         case Last(None) => Last[U](None)

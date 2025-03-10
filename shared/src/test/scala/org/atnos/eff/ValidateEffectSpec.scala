@@ -4,11 +4,11 @@ import cats.Monad
 import cats.data._
 import cats.syntax.all._
 import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.all.given
 import org.specs2.ScalaCheck
 import org.specs2.Specification
 
-class ValidateEffectSpec extends Specification with ScalaCheck with Specs2Compat {
+class ValidateEffectSpec extends Specification with ScalaCheck {
   def is = s2"""
 
  run the validate effect                     $validateOk

@@ -1,12 +1,11 @@
 package org.atnos.eff
 
 import org.specs2.Specification
-import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.all.given
 import cats.syntax.all._
 import cats.Eval
 
-class EvalEffectSpec extends Specification with Specs2Compat {
+class EvalEffectSpec extends Specification {
   def is = s2"""
 
  run is stack safe with Eval               $stacksafeRun

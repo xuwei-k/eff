@@ -8,7 +8,7 @@ object Members {
   type &:[H, T <: Members] = Cons[H, T]
   type &&:[H1, H2] = Cons[H1, Cons[H2, NoMember]]
 
-  implicit def extractMember[T <: Members, H[_], Op[_[_], _], R](implicit effects: T, extract: ExtractMember[T, H Op R]): Op[H, R] =
+  given extractMember[T <: Members, H[_], Op[_[_], _], R](using effects: T, extract: ExtractMember[T, H Op R]): Op[H, R] =
     extract.member(effects)
 }
 
@@ -16,13 +16,13 @@ case class Cons[H, T <: Members](head: H, tail: T) extends Members
 
 object Cons extends ConsLower1 {
 
-  implicit def tailEffect[H[_], Op[_[_], _], R](implicit h: H Op R): Cons[H Op R, NoMember] =
+  given tailEffect[H[_], Op[_[_], _], R](using h: H Op R): Cons[H Op R, NoMember] =
     Cons(h, NoMember())
 
 }
 
 trait ConsLower1 {
-  implicit def headEffect[H[_], Op[_[_], _], R, T <: Members](implicit t: T, h: H Op R): Cons[H Op R, T] =
+  given headEffect[H[_], Op[_[_], _], R, T <: Members](using t: T, h: H Op R): Cons[H Op R, T] =
     Cons(h, t)
 }
 
@@ -36,11 +36,11 @@ trait ExtractMember[T, +H] {
 }
 
 object ExtractMember extends ExtractLower1 {
-  implicit def extractHead[H, T <: Members]: ExtractMember[H Cons T, H] =
+  given extractHead[H, T <: Members]: ExtractMember[H Cons T, H] =
     _.head
 }
 
 trait ExtractLower1 {
-  implicit def extractTail[H1, H2, T <: Members](implicit extract: ExtractMember[T, H2]): ExtractMember[H1 Cons T, H2] =
+  given extractTail[H1, H2, T <: Members](using extract: ExtractMember[T, H2]): ExtractMember[H1 Cons T, H2] =
     effects => extract.member(effects.tail)
 }

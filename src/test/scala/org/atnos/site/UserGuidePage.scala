@@ -1,6 +1,5 @@
 package org.atnos.site
 
-import org.atnos.eff.Specs2Compat
 import org.specs2.matcher._
 import org.specs2.execute.Snippet
 import org.specs2.io._
@@ -8,7 +7,6 @@ import org.specs2.control.ioOperationToOption
 import org.specs2.specification.Snippets
 import org.specs2.specification.core._
 import org.specs2.specification.create.SpecificationCreation
-import scala.collection.compat._
 import scala.reflect.ClassTag
 
 abstract class UserGuidePage
@@ -16,7 +14,6 @@ abstract class UserGuidePage
     with SpecificationCreation
     with Snippets
     with TypedEqual
-    with Specs2Compat
     with ExpectationsCreation {
 
   /** mute all links, so that they are not decorated in the html */
@@ -54,7 +51,7 @@ abstract class UserGuidePage
     }
   }
 
-  override implicit def defaultSnippetParameters[T]: org.specs2.execute.SnippetParams[T] =
+  override given defaultSnippetParameters[T]: org.specs2.execute.SnippetParams[T] =
     Snippet.defaultParams[T].copy(asCode = (s1: String, s2: String) => splitText(Snippet.markdownCode()(s1, s2)))
 
   // extract //text comments as text paragraphs
@@ -72,7 +69,7 @@ abstract class UserGuidePage
       ._1
       .mkString("\n")
 
-  implicit class SnippetParams[T](snippet: Snippet[T]) {
+  extension [T](snippet: Snippet[T]) {
     def noPrompt: Snippet[T] =
       snippet.copy(params = defaultSnippetParameters[T].copy(prompt = Snippet.emptyPrompt))
   }

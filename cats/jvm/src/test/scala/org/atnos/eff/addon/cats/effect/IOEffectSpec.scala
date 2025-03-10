@@ -1,18 +1,18 @@
 package org.atnos.eff.addon.cats.effect
 
 import org.atnos.eff.option._
-import org.atnos.eff.syntax.eff._
-import org.atnos.eff.syntax.option._
+import org.atnos.eff.syntax.eff.given
+import org.atnos.eff.syntax.option.given
 import org.specs2._
 import org.specs2.concurrent.ExecutionEnv
 import org.atnos.eff._
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import IOEffect._
-import org.atnos.eff.syntax.addon.cats.effect._
+import org.atnos.eff.syntax.addon.cats.effect.given
 import scala.concurrent.duration._
 
-class IOEffectSpec(implicit ee: ExecutionEnv) extends Specification with ScalaCheck {
+class IOEffectSpec(using ee: ExecutionEnv) extends Specification with ScalaCheck {
   def is = "io".title ^ sequential ^ s2"""
 
  IO effects can work as normal values                    $e1

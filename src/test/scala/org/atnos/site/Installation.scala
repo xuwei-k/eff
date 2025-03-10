@@ -47,7 +47,6 @@ This table lists the other available eff modules:
  `eff-scalaz`      | if you want to use [Scalaz](https://github.com/scalaz/scalaz) as a library for functional programming. This gives you a `Scalaz` `Monad` instance for `Eff` and a Scalaz's `\/` effect
  `eff-monix`       | to use Monix's `Task` effect
  `eff-cats-effect` | to use cats's `IO` effect
- `eff-twitter`     | to use Twitter's `Future` effect
  `eff-doobie`      | to use Doobie's `ConnectionIO` effect
 
 <p/>
@@ -99,7 +98,7 @@ fromOption(Option(1)).runOption
 
 You can also access all the syntax imports at once with:
 ```scala
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.all.given
 ```
 
 #### Intellij support

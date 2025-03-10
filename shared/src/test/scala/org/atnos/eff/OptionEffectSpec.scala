@@ -6,9 +6,9 @@ import org.scalacheck.Gen.posNum
 import cats.syntax.all.{catsSyntaxEq => _, _}
 import cats.data._
 import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.all.given
 
-class OptionEffectSpec extends Specification with ScalaCheck with Specs2Compat {
+class OptionEffectSpec extends Specification with ScalaCheck {
   def is = s2"""
 
  run the option monad                     $optionMonad

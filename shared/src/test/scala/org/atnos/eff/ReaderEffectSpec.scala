@@ -4,9 +4,9 @@ import cats.Eval
 import org.specs2.Specification
 import cats.data._
 import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.all.given
 
-class ReaderEffectSpec extends Specification with Specs2Compat {
+class ReaderEffectSpec extends Specification {
   def is = s2"""
 
  local can be used to "zoom" on a configuration $localEffect
@@ -50,12 +50,12 @@ class ReaderEffectSpec extends Specification with Specs2Compat {
     type ReaderInt[A] = Reader[Int, A]
     type ReaderString[A] = Reader[String, A]
 
-    def readFactor[R: _option](implicit r: ReaderInt |= R): Eff[R, String] = for {
+    def readFactor[R: _option](using r: ReaderInt |= R): Eff[R, String] = for {
       c <- ask[R, Int]
       h <- OptionEffect.some("hello")
     } yield h
 
-    def readHost[R: _option](implicit r: ReaderString |= R): Eff[R, String] = for {
+    def readHost[R: _option](using r: ReaderString |= R): Eff[R, String] = for {
       c <- ask[R, String]
       h <- OptionEffect.some("world")
     } yield h

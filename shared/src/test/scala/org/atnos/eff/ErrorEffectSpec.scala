@@ -8,9 +8,9 @@ import cats.data._
 import cats.syntax.all._
 import cats.Eval
 import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.all.given
 
-class ErrorEffectSpec extends Specification with Specs2Compat {
+class ErrorEffectSpec extends Specification {
   def is = s2"""
 
  An action can be evaluated after another
@@ -129,10 +129,10 @@ class ErrorEffectSpec extends Specification with Specs2Compat {
 
     type ErrorOrOk2[A] = ErrorEffect2.ErrorOrOk[A]
 
-    def action1[E](implicit m: ErrorOrOk1 |= E): Eff[E, Unit] =
+    def action1[E](using m: ErrorOrOk1 |= E): Eff[E, Unit] =
       ErrorEffect1.fail(Error1("boom"))
 
-    def action2[E](implicit e: ErrorOrOk2 |= E): Eff[E, Unit] = {
+    def action2[E](using e: ErrorOrOk2 |= E): Eff[E, Unit] = {
       // add the error1 effect locally and run it right away into error2
       type R1 = Fx.prepend[ErrorOrOk1, E]
 

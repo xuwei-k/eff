@@ -83,7 +83,7 @@ sealed trait Eff[R, A] {
   def flatMap[B](f: A => Eff[R, B]): Eff[R, B] =
     Monad[Eff[R, *]].flatMap(this)(f)
 
-  def flatten[B](implicit ev: A <:< Eff[R, B]): Eff[R, B] =
+  def flatten[B](using ev: A <:< Eff[R, B]): Eff[R, B] =
     flatMap(ev)
 
   /** add one last action to be executed after any computation chained to this Eff value */

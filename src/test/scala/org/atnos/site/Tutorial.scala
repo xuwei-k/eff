@@ -129,7 +129,7 @@ Like this: ${snippet {
 
 // 8<---
 
-      import org.atnos.eff._, syntax.all._
+      import org.atnos.eff._, syntax.all.given
 
 // run the program with the unsafe interpreter
       runKVStoreUnsafe(program[Fx.fx1[KVStore]]).run
@@ -149,7 +149,7 @@ Like that: ${snippet {
       import AdtUsageSnippet._
       import AdtInterpreterSafeSnippet._
 // 8<---
-      import org.atnos.eff._, syntax.all._
+      import org.atnos.eff._, syntax.all.given
       import cats._, data._
 
 // run the program with the safe interpreter
@@ -168,7 +168,7 @@ It is nice to be able to "chain" `run` methods with this additional piece of syn
       import AdtSnippet._
       import AdtUsageSnippet._
       import AdtInterpreterSafeSnippet._
-      import org.atnos.eff._, all._, syntax.all._
+      import org.atnos.eff._, all._, syntax.all.given
       import cats._, data._
 
       type _writerString[R] = Writer[String, *] |= R
@@ -178,8 +178,8 @@ It is nice to be able to "chain" `run` methods with this additional piece of syn
 
 // 8<---
 
-      implicit class KVStoreOps[R, A](effects: Eff[R, A]) {
-        def runStore[U](implicit
+      extension [R, A](effects: Eff[R, A]) {
+        def runStore[U](using
           m: Member.Aux[KVStore, R, U],
           throwable: _throwableEither[U],
           writer: _writerString[U],
@@ -212,7 +212,7 @@ Now if we run our program for a Stack combining both effects and type in "snuggl
       import UserInteractionSnippet._
       import UserInteractionInterpretersSnippet._
       import UserInteractionProgramSnippet._
-      import org.atnos.eff._, syntax.all._
+      import org.atnos.eff._, syntax.all.given
 // 8<--
 
       type Stack = Fx.fx2[Interact, DataOp]

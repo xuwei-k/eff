@@ -4,7 +4,7 @@ package example
 import ActionCreation._
 import Action.runAction
 import eff._
-import syntax.error._
+import syntax.error.given
 import EvalEffect._
 import WarningsEffect._
 import ConsoleEffect._
@@ -13,7 +13,7 @@ import Member.<=
 import cats.Eval
 import org.specs2._
 
-class ActionSpec extends Specification with ScalaCheck with Specs2Compat {
+class ActionSpec extends Specification with ScalaCheck {
   def is = s2"""
 
  The action stack can be used to
@@ -80,12 +80,12 @@ class ActionSpec extends Specification with ScalaCheck with Specs2Compat {
   def actions(i: Int, j: Int): Eff[ActionStack, Int] = {
     import ActionImplicits._
     for {
-      x <- delay(i)
-      _ <- log("got the value " + x)
-      y <- delay(j)
-      _ <- log("got the value " + y)
-      s <- if (x + y > 10) fail("too big") else ErrorEffect.ok(x + y)
-      _ <- if (s >= 5) warn("the sum is big: " + s) else Eff.unit[ActionStack]
+      x <- delay[ActionStack, Int](i)
+      _ <- log[ActionStack]("got the value " + x)
+      y <- delay[ActionStack, Int](j)
+      _ <- log[ActionStack]("got the value " + y)
+      s <- if (x + y > 10) fail[ActionStack, Int]("too big") else ErrorEffect.ok[ActionStack, Int](x + y)
+      _ <- if (s >= 5) warn[ActionStack]("the sum is big: " + s) else Eff.unit[ActionStack]
     } yield s
   }
 
@@ -93,7 +93,7 @@ class ActionSpec extends Specification with ScalaCheck with Specs2Compat {
    * "open" effects version of the same actions
    * this one can be reused with more effects
    */
-  def unboundActions[R](i: Int, j: Int)(implicit
+  def unboundActions[R](i: Int, j: Int)(using
     m1: Eval <= R,
     m2: Console <= R,
     m3: Warnings <= R,

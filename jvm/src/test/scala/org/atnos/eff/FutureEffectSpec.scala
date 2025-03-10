@@ -3,8 +3,8 @@ package org.atnos.eff
 import cats.syntax.all._
 import org.atnos.eff.all._
 import org.atnos.eff.future._
-import org.atnos.eff.syntax.all._
-import org.atnos.eff.syntax.future._
+import org.atnos.eff.syntax.all.given
+import org.atnos.eff.syntax.future.given
 import org.specs2._
 import org.specs2.concurrent.ExecutionEnv
 import scala.collection.mutable.ListBuffer
@@ -12,7 +12,7 @@ import scala.concurrent._
 import duration._
 import org.specs2.matcher.ThrownExpectations
 
-class FutureEffectSpec(implicit ee: ExecutionEnv) extends Specification with ScalaCheck with ThrownExpectations with Specs2Compat {
+class FutureEffectSpec(using ee: ExecutionEnv) extends Specification with ScalaCheck with ThrownExpectations {
   def is = sequential ^ s2"""
 
  Future effects can work as normal values                      $e1
@@ -42,8 +42,8 @@ class FutureEffectSpec(implicit ee: ExecutionEnv) extends Specification with Sca
 
   type S = Fx.fx2[TimedFuture, Option]
 
-  implicit val scheduler: org.atnos.eff.concurrent.Scheduler = ExecutorServices.schedulerFromScheduledExecutorService(ee.ses)
-  implicit val ec: scala.concurrent.ExecutionContext = ee.ec
+  given scheduler: org.atnos.eff.concurrent.Scheduler = ExecutorServices.schedulerFromScheduledExecutorService(ee.ses)
+  given ec: scala.concurrent.ExecutionContext = ee.ec
 
   def e1 = {
     def action[R: _future: _option]: Eff[R, Int] = for {
