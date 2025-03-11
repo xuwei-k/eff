@@ -63,13 +63,21 @@ trait effOperations {
       def collapse(using m: M |= R): Eff[R, A] =
         Eff.collapse[R, M, A](e)
     }
+
+    extension [F[_], R, A](values: F[Eff[R, A]]) {
+      def sequenceA(using F: Traverse[F]): Eff[R, F[A]] =
+        Eff.sequenceA(values)
+    }
+
+    extension [F[_], R, A](values: F[Eff[R, F[A]]]) {
+      def flatSequenceA(using F1: Traverse[F], F2: FlatMap[F]): Eff[R, F[A]] =
+        Eff.flatSequenceA(values)
+    }
   }
 }
 
 trait effCats {
   implicit final def toEffOneEffectOps[M[_], A](e: Eff[Fx1[M], A]): EffOneEffectOps[M, A] = new EffOneEffectOps(e)
-  implicit final def toEffSequenceOps[F[_], R, A](values: F[Eff[R, A]]): EffSequenceOps[F, R, A] = new EffSequenceOps(values)
-  implicit final def toEffFlatSequenceOps[F[_], R, A](values: F[Eff[R, F[A]]]): EffFlatSequenceOps[F, R, A] = new EffFlatSequenceOps(values)
 }
 
 final class EffOneEffectOps[M[_], A](private val e: Eff[Fx1[M], A]) extends AnyVal {
@@ -78,14 +86,4 @@ final class EffOneEffectOps[M[_], A](private val e: Eff[Fx1[M], A]) extends AnyV
 
   def detachA[E](applicative: Applicative[M])(using monad: MonadError[M, E]): M[A] =
     Eff.detachA(e)(using monad, applicative)
-}
-
-final class EffSequenceOps[F[_], R, A](private val values: F[Eff[R, A]]) extends AnyVal {
-  def sequenceA(using F: Traverse[F]): Eff[R, F[A]] =
-    Eff.sequenceA(values)
-}
-
-final class EffFlatSequenceOps[F[_], R, A](private val values: F[Eff[R, F[A]]]) extends AnyVal {
-  def flatSequenceA(using F1: Traverse[F], F2: FlatMap[F]): Eff[R, F[A]] =
-    Eff.flatSequenceA(values)
 }
