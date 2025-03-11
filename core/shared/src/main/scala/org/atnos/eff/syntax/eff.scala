@@ -44,10 +44,15 @@ trait effOperations {
         Eff.run(e)
     }
 
-  }
+    extension [M[_], A](ma: M[A]) {
+      def send[R](using m: M |= R): Eff[R, A] = Eff.send(ma)
+    }
 
-  implicit final def toEffSendOps[M[_], A](ma: M[A]): EffSendOps[M, A] = new EffSendOps(ma)
-  implicit final def toEffPureOps[A](a: A): EffPureOps[A] = new EffPureOps(a)
+    extension [A](a: A) {
+      def pureEff[R]: Eff[R, A] =
+        Eff.pure(a)
+    }
+  }
 }
 
 trait effCats {
@@ -56,15 +61,6 @@ trait effCats {
   implicit final def toEffApplicativeOps[F[_], A](values: F[A]): EffApplicativeOps[F, A] = new EffApplicativeOps(values)
   implicit final def toEffSequenceOps[F[_], R, A](values: F[Eff[R, A]]): EffSequenceOps[F, R, A] = new EffSequenceOps(values)
   implicit final def toEffFlatSequenceOps[F[_], R, A](values: F[Eff[R, F[A]]]): EffFlatSequenceOps[F, R, A] = new EffFlatSequenceOps(values)
-}
-
-final class EffSendOps[M[_], A](private val ma: M[A]) extends AnyVal {
-  def send[R](using m: M |= R): Eff[R, A] = Eff.send(ma)
-}
-
-final class EffPureOps[A](private val a: A) extends AnyVal {
-  def pureEff[R]: Eff[R, A] =
-    Eff.pure(a)
 }
 
 final class EffOneEffectOps[M[_], A](private val e: Eff[Fx1[M], A]) extends AnyVal {

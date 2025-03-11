@@ -137,6 +137,7 @@ type S = Fx.fx3[Authenticated, TimedFuture, Either[AuthError, *]]
 And you want to write an interpreter which will translate authentication actions into `TimedFuture` and `Either`:${snippet {
       import org.atnos.eff._
       import org.atnos.eff.syntax.eff._
+      import org.atnos.eff.syntax.eff.given
       import org.atnos.eff.future._
       import org.atnos.eff.interpret._
       import scala.concurrent.Future
