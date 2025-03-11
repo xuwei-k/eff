@@ -85,7 +85,7 @@ class ActionSpec extends Specification with ScalaCheck with Specs2Compat {
       _ <- log[ActionStack]("got the value " + x)
       y <- delay[ActionStack, Int](j)
       _ <- log[ActionStack]("got the value " + y)
-      s <- if (x + y > 10) fail[ActionStack, Int]("too big") else ErrorEffect.ok(x + y)
+      s <- if (x + y > 10) fail[ActionStack, Int]("too big") else ErrorEffect.ok[ActionStack, Int](x + y)
       _ <- if (s >= 5) warn[ActionStack]("the sum is big: " + s) else Eff.unit[ActionStack]
     } yield s
   }

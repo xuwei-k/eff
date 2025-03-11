@@ -177,7 +177,7 @@ class EitherEffectSpec extends Specification with ScalaCheck with EitherMatchers
     case class Error1(m: String)
     case class Error2(e1: Error1)
     given e1Toe2: (Error1 => Error2) = (e1: Error1) => Error2(e1)
-    import either._
+    import either.given
 
     def withE1[R](i: Int)(using m: Either[Error1, *] |= R): Eff[R, Int] =
       either.right[R, Error1, Int](i)

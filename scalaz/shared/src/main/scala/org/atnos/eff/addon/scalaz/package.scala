@@ -5,10 +5,12 @@ import _root_.scalaz._
 
 package object scalaz {
 
+  private type MonadWithBindRec[F[_]] = Monad[F] & BindRec[F]
+
   /**
    * Monad implementation for the Eff[R, *] type
    */
-  implicit final def EffScalazMonad[R]: Monad[Eff[R, *]] & BindRec[Eff[R, *]] = new Monad[Eff[R, *]] with BindRec[Eff[R, *]] {
+  given EffScalazMonad[R]: MonadWithBindRec[Eff[R, *]] = new Monad[Eff[R, *]] with BindRec[Eff[R, *]] {
     def point[A](a: => A): Eff[R, A] =
       cats.Monad[Eff[R, *]].pure(a)
 

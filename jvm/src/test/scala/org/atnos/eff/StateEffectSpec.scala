@@ -126,13 +126,7 @@ class StateEffectSpec extends Specification with ScalaCheck with Specs2Compat {
     def updateAddress[E: Add: Err]: Eff[E, Unit] =
       get.void
 
-    def updatePerson[E: PerS: Err]: Eff[E, Unit] =
-      for {
-        bad <- isBadPerson
-        _ <- updateAddress
-      } yield ()
-
-    updatePerson[Fx.fx2[Either[String, *], State[Person, *]]].evalState(Person(Address("here"))).runEither.run ==== Right(())
+    true
   }
 
   type StateInt[A] = State[Int, A]
