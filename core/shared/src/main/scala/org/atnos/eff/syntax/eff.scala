@@ -46,19 +46,28 @@ trait effOperations {
 
     extension [M[_], A](ma: M[A]) {
       def send[R](using m: M |= R): Eff[R, A] = Eff.send(ma)
+
+      def traverseA[R, B](f: A => Eff[R, B])(using F: Traverse[M]): Eff[R, M[B]] =
+        Eff.traverseA(ma)(f)
+
+      def flatTraverseA[R, B](f: A => Eff[R, M[B]])(using F1: Traverse[M], F2: FlatMap[M]): Eff[R, M[B]] =
+        Eff.flatTraverseA(ma)(f)
     }
 
     extension [A](a: A) {
       def pureEff[R]: Eff[R, A] =
         Eff.pure(a)
     }
+
+    extension [R, M[_], A](e: Eff[R, M[A]]) {
+      def collapse(using m: M |= R): Eff[R, A] =
+        Eff.collapse[R, M, A](e)
+    }
   }
 }
 
 trait effCats {
   implicit final def toEffOneEffectOps[M[_], A](e: Eff[Fx1[M], A]): EffOneEffectOps[M, A] = new EffOneEffectOps(e)
-  implicit final def toEffMonadicOps[R, M[_], A](e: Eff[R, M[A]]): EffMonadicOps[R, M, A] = new EffMonadicOps(e)
-  implicit final def toEffApplicativeOps[F[_], A](values: F[A]): EffApplicativeOps[F, A] = new EffApplicativeOps(values)
   implicit final def toEffSequenceOps[F[_], R, A](values: F[Eff[R, A]]): EffSequenceOps[F, R, A] = new EffSequenceOps(values)
   implicit final def toEffFlatSequenceOps[F[_], R, A](values: F[Eff[R, F[A]]]): EffFlatSequenceOps[F, R, A] = new EffFlatSequenceOps(values)
 }
@@ -69,19 +78,6 @@ final class EffOneEffectOps[M[_], A](private val e: Eff[Fx1[M], A]) extends AnyV
 
   def detachA[E](applicative: Applicative[M])(using monad: MonadError[M, E]): M[A] =
     Eff.detachA(e)(using monad, applicative)
-}
-
-final class EffMonadicOps[R, M[_], A](private val e: Eff[R, M[A]]) extends AnyVal {
-  def collapse(using m: M |= R): Eff[R, A] =
-    Eff.collapse[R, M, A](e)
-}
-
-final class EffApplicativeOps[F[_], A](private val values: F[A]) extends AnyVal {
-  def traverseA[R, B](f: A => Eff[R, B])(using F: Traverse[F]): Eff[R, F[B]] =
-    Eff.traverseA(values)(f)
-
-  def flatTraverseA[R, B](f: A => Eff[R, F[B]])(using F1: Traverse[F], F2: FlatMap[F]): Eff[R, F[B]] =
-    Eff.flatTraverseA(values)(f)
 }
 
 final class EffSequenceOps[F[_], R, A](private val values: F[Eff[R, A]]) extends AnyVal {
