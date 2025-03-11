@@ -5,6 +5,7 @@ import Eff._
 import EffCompat._
 import org.atnos.eff.either._
 import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.all.given
 import scala.util.control.NonFatal
 
 /**

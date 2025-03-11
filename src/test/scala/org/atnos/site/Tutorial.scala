@@ -129,7 +129,7 @@ Like this: ${snippet {
 
 // 8<---
 
-      import org.atnos.eff._, syntax.all._
+      import org.atnos.eff._, syntax.all.given
 
 // run the program with the unsafe interpreter
       runKVStoreUnsafe(program[Fx.fx1[KVStore]]).run
@@ -212,7 +212,7 @@ Now if we run our program for a Stack combining both effects and type in "snuggl
       import UserInteractionSnippet._
       import UserInteractionInterpretersSnippet._
       import UserInteractionProgramSnippet._
-      import org.atnos.eff._, syntax.all._
+      import org.atnos.eff._, syntax.all.given
 // 8<--
 
       type Stack = Fx.fx2[Interact, DataOp]

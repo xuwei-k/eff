@@ -12,12 +12,42 @@ object eff extends eff
 trait eff extends effOperations with effCats
 
 trait effOperations {
-  implicit final def toEffOps[R, A](e: Eff[R, A]): EffOps[R, A] = new EffOps(e)
-  implicit final def toEffTranslateIntoOps[R, A](e: Eff[R, A]): EffTranslateIntoOps[R, A] = new EffTranslateIntoOps(e)
-  implicit final def toEffNoEffectOps[A](e: Eff[NoFx, A]): EffNoEffectOps[A] = new EffNoEffectOps(e)
+  given effExtension: AnyRef with {
+    extension [R, A](e: Eff[R, A]) {
+      def into[U](using f: IntoPoly[R, U]): Eff[U, A] =
+        Eff.effInto(e)(using f)
+
+      def transform[BR, U, M[_], N[_]](t: ~>[M, N])(using m: Member.Aux[M, R, U], n: Member.Aux[N, BR, U]): Eff[BR, A] =
+        Interpret.transform(e, t)(using m, n, IntoPoly.intoSelf[U])
+
+      def translate[M[_], U](t: Translate[M, U])(using m: Member.Aux[M, R, U]): Eff[U, A] =
+        Interpret.translate(e)(t)(using m)
+
+      def translateInto[T[_], U](t: Translate[T, U])(using m: MemberInOut[T, R], into: IntoPoly[R, U]): Eff[U, A] =
+        interpret.translateInto(e)(t)(using m, into)
+
+      def write[T[_], O](w: Write[T, O])(using memberT: MemberInOut[T, R], memberW: MemberInOut[Writer[O, *], R]): Eff[R, A] =
+        interpret.write(e)(w)
+
+      def augment[T[_], O[_]](w: Augment[T, O])(using memberT: MemberInOut[T, R], memberO: MemberIn[O, R]): Eff[R, A] =
+        interpret.augment(e)(w)
+
+      def runPure: Option[A] =
+        Eff.runPure(e)
+
+      def tuple2[B](b: Eff[R, B]): Eff[R, (A, B)] =
+        Eff.EffApplicative[R].tuple2(e, b)
+    }
+
+    extension [A](e: Eff[NoFx, A]) {
+      def run: A =
+        Eff.run(e)
+    }
+
+  }
+
   implicit final def toEffSendOps[M[_], A](ma: M[A]): EffSendOps[M, A] = new EffSendOps(ma)
   implicit final def toEffPureOps[A](a: A): EffPureOps[A] = new EffPureOps(a)
-  implicit final def toEffOnePureValueOps[R, A](e: Eff[R, A]): EffOnePureValueOps[R, A] = new EffOnePureValueOps(e)
 }
 
 trait effCats {
@@ -26,34 +56,6 @@ trait effCats {
   implicit final def toEffApplicativeOps[F[_], A](values: F[A]): EffApplicativeOps[F, A] = new EffApplicativeOps(values)
   implicit final def toEffSequenceOps[F[_], R, A](values: F[Eff[R, A]]): EffSequenceOps[F, R, A] = new EffSequenceOps(values)
   implicit final def toEffFlatSequenceOps[F[_], R, A](values: F[Eff[R, F[A]]]): EffFlatSequenceOps[F, R, A] = new EffFlatSequenceOps(values)
-  implicit final def toEffApplicativeSyntaxOps[R, A](a: Eff[R, A]): EffApplicativeSyntaxOps[R, A] = new EffApplicativeSyntaxOps(a)
-}
-
-final class EffOps[R, A](private val e: Eff[R, A]) extends AnyVal {
-  def into[U](using f: IntoPoly[R, U]): Eff[U, A] =
-    Eff.effInto(e)(using f)
-
-  def transform[BR, U, M[_], N[_]](t: ~>[M, N])(using m: Member.Aux[M, R, U], n: Member.Aux[N, BR, U]): Eff[BR, A] =
-    Interpret.transform(e, t)(using m, n, IntoPoly.intoSelf[U])
-
-  def translate[M[_], U](t: Translate[M, U])(using m: Member.Aux[M, R, U]): Eff[U, A] =
-    Interpret.translate(e)(t)(using m)
-}
-
-final class EffTranslateIntoOps[R, A](private val e: Eff[R, A]) extends AnyVal {
-  def translateInto[T[_], U](t: Translate[T, U])(using m: MemberInOut[T, R], into: IntoPoly[R, U]): Eff[U, A] =
-    interpret.translateInto(e)(t)(using m, into)
-
-  def write[T[_], O](w: Write[T, O])(using memberT: MemberInOut[T, R], memberW: MemberInOut[Writer[O, *], R]): Eff[R, A] =
-    interpret.write(e)(w)
-
-  def augment[T[_], O[_]](w: Augment[T, O])(using memberT: MemberInOut[T, R], memberO: MemberIn[O, R]): Eff[R, A] =
-    interpret.augment(e)(w)
-}
-
-final class EffNoEffectOps[A](private val e: Eff[NoFx, A]) extends AnyVal {
-  def run: A =
-    Eff.run(e)
 }
 
 final class EffSendOps[M[_], A](private val ma: M[A]) extends AnyVal {
@@ -71,11 +73,6 @@ final class EffOneEffectOps[M[_], A](private val e: Eff[Fx1[M], A]) extends AnyV
 
   def detachA[E](applicative: Applicative[M])(using monad: MonadError[M, E]): M[A] =
     Eff.detachA(e)(using monad, applicative)
-}
-
-final class EffOnePureValueOps[R, A](private val e: Eff[R, A]) extends AnyVal {
-  def runPure: Option[A] =
-    Eff.runPure(e)
 }
 
 final class EffMonadicOps[R, M[_], A](private val e: Eff[R, M[A]]) extends AnyVal {
@@ -99,10 +96,4 @@ final class EffSequenceOps[F[_], R, A](private val values: F[Eff[R, A]]) extends
 final class EffFlatSequenceOps[F[_], R, A](private val values: F[Eff[R, F[A]]]) extends AnyVal {
   def flatSequenceA(using F1: Traverse[F], F2: FlatMap[F]): Eff[R, F[A]] =
     Eff.flatSequenceA(values)
-}
-
-final class EffApplicativeSyntaxOps[R, A](private val a: Eff[R, A]) extends AnyVal {
-  def tuple2[B](b: Eff[R, B]): Eff[R, (A, B)] =
-    Eff.EffApplicative[R].tuple2(a, b)
-
 }
