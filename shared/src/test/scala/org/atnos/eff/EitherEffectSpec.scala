@@ -8,6 +8,7 @@ import cats.data._
 import cats.syntax.all._
 import org.atnos.eff.all._
 import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.all.given
 import org.scalacheck.Gen
 import org.specs2.matcher.EitherMatchers
 

@@ -2,7 +2,7 @@ package org.atnos.eff.addon.monix
 
 import org.atnos.eff.option._
 import org.atnos.eff.syntax.eff._
-import org.atnos.eff.syntax.option._
+import org.atnos.eff.syntax.option.given
 import org.specs2._
 import org.specs2.concurrent.ExecutionEnv
 import scala.collection.mutable.ListBuffer

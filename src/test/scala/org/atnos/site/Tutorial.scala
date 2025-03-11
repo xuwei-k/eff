@@ -178,7 +178,7 @@ It is nice to be able to "chain" `run` methods with this additional piece of syn
 
 // 8<---
 
-      implicit class KVStoreOps[R, A](effects: Eff[R, A]) {
+      extension [R, A](effects: Eff[R, A]) {
         def runStore[U](using
           m: Member.Aux[KVStore, R, U],
           throwable: _throwableEither[U],

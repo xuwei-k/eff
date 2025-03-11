@@ -72,7 +72,7 @@ abstract class UserGuidePage
       ._1
       .mkString("\n")
 
-  implicit class SnippetParams[T](snippet: Snippet[T]) {
+  extension [T](snippet: Snippet[T]) {
     def noPrompt: Snippet[T] =
       snippet.copy(params = defaultSnippetParameters[T].copy(prompt = Snippet.emptyPrompt))
   }

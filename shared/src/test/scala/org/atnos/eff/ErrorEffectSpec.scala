@@ -9,6 +9,7 @@ import cats.syntax.all._
 import cats.Eval
 import org.atnos.eff.all._
 import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.all.given
 
 class ErrorEffectSpec extends Specification with Specs2Compat {
   def is = s2"""

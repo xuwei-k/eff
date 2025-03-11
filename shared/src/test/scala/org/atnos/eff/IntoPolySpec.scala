@@ -5,6 +5,7 @@ import cats.data._
 import org.specs2.Specification
 import org.specs2.matcher.ThrownExpectations
 import syntax.all._
+import syntax.all.given
 
 class IntoPolySpec extends Specification with ThrownExpectations {
   def is = s2"""
@@ -88,7 +89,7 @@ class IntoPolySpec extends Specification with ThrownExpectations {
   /**
    * HELPERS
    */
-  implicit class RunOptionOps[T[_] <: OptionLike[?], R, U](e: Eff[R, Int])(implicit m: Member.Aux[T, R, U]) {
+  extension [T[_] <: OptionLike[?], R, U](e: Eff[R, Int])(using m: Member.Aux[T, R, U]) {
     def runOpt: Eff[U, Int] = runOption(e)
   }
 
