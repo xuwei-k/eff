@@ -3,6 +3,7 @@ package lib
 
 import java.util.concurrent.Executors
 import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.all.given
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 

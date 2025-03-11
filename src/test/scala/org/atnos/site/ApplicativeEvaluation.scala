@@ -9,7 +9,7 @@ object ApplicativeEvaluation extends UserGuidePage {
 
 The default interpretation of `Eff` values is "monadic" meaning that effectful values are being evaluated in order. This
   becomes clear when traversing a list of values with the `FutureEffect`:${snippet {
-      import org.atnos.eff._, all._, future._, syntax.all._
+      import org.atnos.eff._, all._, future._, syntax.all._, syntax.all.given
       import cats.Eval
       import cats.data.Writer
       import cats.syntax.traverse._
@@ -42,7 +42,7 @@ The default interpretation of `Eff` values is "monadic" meaning that effectful v
 
 We can however run all those computations concurrently using the applicative execution for `Eff`:${snippet {
       // 8<--
-      import org.atnos.eff._, all._, future._, syntax.all._
+      import org.atnos.eff._, all._, future._, syntax.all._, syntax.all.given
       import org.atnos.eff.concurrent.Scheduler
       import cats.Eval
       import cats.data.Writer

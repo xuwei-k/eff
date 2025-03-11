@@ -9,7 +9,7 @@ The `Reader` effect is used to request values from an "environment". The main me
 providing a value for the environment with the `runReader` method.
 
 You can also inject a "local" reader into a "bigger" one:${snippet {
-      import org.atnos.eff._, all._, syntax.all._
+      import org.atnos.eff._, all._, syntax.all._, syntax.all.given
       import cats.data._
 
       case class Conf(host: String, port: Int)

@@ -14,6 +14,7 @@ operations are
 
 Let's see an example for the protection of a resource: ${snippet {
       import org.atnos.eff.syntax.all._
+      import org.atnos.eff.syntax.all.given
       import org.atnos.eff._, all._
 
 // let's represent a resource which can be in use
@@ -52,6 +53,7 @@ A simpler version of `bracket` is `finally`.
 
 This example show how to use `finally` but also what happens if a finalizer fails:${snippet {
       import org.atnos.eff.syntax.all._
+      import org.atnos.eff.syntax.all.given
       import org.atnos.eff._, all._
 
 // our stack of effects, with safe evaluation

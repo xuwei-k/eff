@@ -15,7 +15,7 @@ Now, let's create some `TimedFuture` effects:${snippet {
 
       import org.atnos.eff._
       import org.atnos.eff.future._
-      import org.atnos.eff.syntax.all._
+      import org.atnos.eff.syntax.all.given
       import org.atnos.eff.concurrent.Scheduler
 
       import scala.concurrent._, duration._
