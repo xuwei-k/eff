@@ -23,7 +23,7 @@ The default interpretation of `Eff` values is "monadic" meaning that effectful v
 
       type S = Fx.fx3[Eval, TimedFuture, WriterString]
 
-      implicit val scheduler: Scheduler = ExecutorServices.schedulerFromGlobalExecutionContext
+      given Scheduler = ExecutorServices.schedulerFromGlobalExecutionContext
 
       def execute[E: _eval: _writerString: _future](i: Int): Eff[E, Int] =
         for {
@@ -53,7 +53,7 @@ We can however run all those computations concurrently using the applicative exe
       type _writerString[R] = WriterString |= R
 
       type S = Fx.fx3[Eval, TimedFuture, WriterString]
-      implicit val scheduler: Scheduler = ExecutorServices.schedulerFromGlobalExecutionContext
+      given scheduler: Scheduler = ExecutorServices.schedulerFromGlobalExecutionContext
 
       def execute[E: _eval: _writerString: _future](i: Int): Eff[E, Int] =
         for {

@@ -37,7 +37,7 @@ trait MaybeEffectSnippet {
           Right(ms.sequence)
       })
 
-    implicit val applicativeMaybe: Applicative[Maybe] = new Applicative[Maybe] {
+    given Applicative[Maybe] = new Applicative[Maybe] {
       def pure[A](a: A): Maybe[A] = Just(a)
 
       def ap[A, B](ff: Maybe[A => B])(fa: Maybe[A]): Maybe[B] =

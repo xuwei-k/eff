@@ -113,8 +113,8 @@ class StateEffectSpec extends Specification with ScalaCheck with Specs2Compat {
     case class Address(s: String)
     case class Person(address: Address)
 
-    implicit val getAddress: Person => Address = (p: Person) => p.address
-    implicit val setAddress: Address => Person => Person = (a: Address) => (p: Person) => p.copy(address = a)
+    given (Person => Address) = (p: Person) => p.address
+    given (Address => Person => Person) = (a: Address) => (p: Person) => p.copy(address = a)
 
     type PerS[E] = State[Person, *] |= E
     type PerR[E] = Reader[Person, *] |= E

@@ -36,7 +36,7 @@ Now, let's create some `TimedFuture` effects:${snippet {
 Then we need to pass a `Scheduler` and an `ExecutionContext` in to begin the computation.
        */
 
-      implicit val scheduler: Scheduler = ExecutorServices.schedulerFromGlobalExecutionContext
+      given Scheduler = ExecutorServices.schedulerFromGlobalExecutionContext
       import org.atnos.eff.syntax.future._
 
       Await.result(action.runOption.runSequential, 1.second)
@@ -72,7 +72,7 @@ ${snippet {
 
       type S = Fx.fx2[Memoized, TimedFuture]
 
-      implicit val scheduler: Scheduler = ExecutorServices.schedulerFromGlobalExecutionContext
+      given Scheduler = ExecutorServices.schedulerFromGlobalExecutionContext
 
       val futureMemo: Future[Int] =
         (expensive[S] >> expensive[S]).runFutureMemo(ConcurrentHashMapCache()).runSequential
