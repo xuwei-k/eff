@@ -12,7 +12,7 @@ import IOEffect._
 import org.atnos.eff.syntax.addon.cats.effect.given
 import scala.concurrent.duration._
 
-class IOEffectSpec(implicit ee: ExecutionEnv) extends Specification with ScalaCheck {
+class IOEffectSpec(using ee: ExecutionEnv) extends Specification with ScalaCheck {
   def is = "io".title ^ sequential ^ s2"""
 
  IO effects can work as normal values                    $e1
