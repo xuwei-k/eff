@@ -13,7 +13,7 @@ be provided: ${snippet {
       import cats.Eval
       import cats.syntax.all._
       import org.atnos.eff._, memo._
-      import org.atnos.eff.syntax.memo._
+      import org.atnos.eff.syntax.memo.given
       import org.atnos.eff.syntax.eval._
       import org.atnos.eff.syntax.eff.given
 

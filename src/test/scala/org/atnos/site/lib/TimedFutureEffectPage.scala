@@ -60,7 +60,7 @@ ${snippet {
       import cats.syntax.all._
       import org.atnos.eff._, future._, all._
       import org.atnos.eff.concurrent.Scheduler
-      import org.atnos.eff.syntax.all._
+      import org.atnos.eff.syntax.all.given
       import org.atnos.eff.syntax.future.given
       import scala.concurrent._, duration._
       import scala.concurrent.ExecutionContext.Implicits.global
