@@ -15,7 +15,6 @@ be provided: ${snippet {
       import org.atnos.eff._, memo._
       import org.atnos.eff.syntax.memo._
       import org.atnos.eff.syntax.eval._
-      import org.atnos.eff.syntax.eff._
       import org.atnos.eff.syntax.eff.given
 
       type S = Fx.fx2[Memoized, Eval]

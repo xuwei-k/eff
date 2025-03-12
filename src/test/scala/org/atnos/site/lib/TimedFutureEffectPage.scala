@@ -37,7 +37,6 @@ Then we need to pass a `Scheduler` and an `ExecutionContext` in to begin the com
        */
 
       given Scheduler = ExecutorServices.schedulerFromGlobalExecutionContext
-      import org.atnos.eff.syntax.future._
       import org.atnos.eff.syntax.future.given
 
       Await.result(action.runOption.runSequential, 1.second)
@@ -62,7 +61,6 @@ ${snippet {
       import org.atnos.eff._, future._, all._
       import org.atnos.eff.concurrent.Scheduler
       import org.atnos.eff.syntax.all._
-      import org.atnos.eff.syntax.future._
       import org.atnos.eff.syntax.future.given
       import scala.concurrent._, duration._
       import scala.concurrent.ExecutionContext.Implicits.global

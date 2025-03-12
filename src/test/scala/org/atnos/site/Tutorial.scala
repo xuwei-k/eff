@@ -149,7 +149,7 @@ Like that: ${snippet {
       import AdtUsageSnippet._
       import AdtInterpreterSafeSnippet._
 // 8<---
-      import org.atnos.eff._, syntax.all._, syntax.all.given
+      import org.atnos.eff._, syntax.all.given
       import cats._, data._
 
 // run the program with the safe interpreter
@@ -168,7 +168,7 @@ It is nice to be able to "chain" `run` methods with this additional piece of syn
       import AdtSnippet._
       import AdtUsageSnippet._
       import AdtInterpreterSafeSnippet._
-      import org.atnos.eff._, all._, syntax.all._, syntax.all.given
+      import org.atnos.eff._, all._, syntax.all.given
       import cats._, data._
 
       type _writerString[R] = Writer[String, *] |= R

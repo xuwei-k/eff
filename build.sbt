@@ -289,7 +289,8 @@ buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion)
 buildInfoPackage := "org.atnos.eff"
 
 lazy val warnUnusedImport = Seq(
-  Compile / console / scalacOptions ~= { _.filterNot("-Ywarn-unused-import" == _) },
+  scalacOptions += "-Wunused:imports",
+  Compile / console / scalacOptions ~= { _.filterNot("-Wunused:imports" == _) },
   (Test / console / scalacOptions) := (Compile / console / scalacOptions).value
 )
 

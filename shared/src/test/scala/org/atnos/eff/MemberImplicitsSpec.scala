@@ -240,7 +240,6 @@ import org.atnos.eff.syntax.all._
    */
   // PERMUTATIONS OF 4 effects
   import cats.data._
-  import org.atnos.eff.syntax.all._
   import org.atnos.eff.syntax.all.given
   import org.atnos.eff.option._
 

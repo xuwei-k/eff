@@ -3,9 +3,7 @@ package example
 
 import ActionCreation._
 import Action.runAction
-import org.atnos._
 import eff._
-import syntax.error._
 import syntax.error.given
 import EvalEffect._
 import WarningsEffect._

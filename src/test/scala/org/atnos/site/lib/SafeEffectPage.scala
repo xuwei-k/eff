@@ -13,7 +13,6 @@ operations are
 <p/>
 
 Let's see an example for the protection of a resource: ${snippet {
-      import org.atnos.eff.syntax.all._
       import org.atnos.eff.syntax.all.given
       import org.atnos.eff._, all._
 
@@ -52,7 +51,6 @@ possible exceptions thrown by the finalizers which can themselves fail.
 A simpler version of `bracket` is `finally`.
 
 This example show how to use `finally` but also what happens if a finalizer fails:${snippet {
-      import org.atnos.eff.syntax.all._
       import org.atnos.eff.syntax.all.given
       import org.atnos.eff._, all._
 

@@ -1,7 +1,6 @@
 package org.atnos.eff
 
 import cats._
-import org.atnos.eff.syntax.all._
 import org.atnos.eff.syntax.all.given
 import org.scalacheck.Arbitrary._
 import org.scalacheck._

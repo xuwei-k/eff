@@ -6,20 +6,15 @@ import org.specs2.ScalaCheck
 import org.specs2.Specification
 import cats.Eq
 import cats.Monad
-import org.atnos.eff.EffCompat._
 import org.atnos.eff.Eff.EffMonad
-import org.atnos.eff.all._
 import org.atnos.eff.concurrent.Scheduler
 import org.atnos.eff.future._
-import org.atnos.eff.syntax.all._
 import org.atnos.eff.syntax.all.given
-import org.atnos.eff.syntax.future._
 import org.atnos.eff.syntax.future.given
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.ThrownExpectations
 import scala.concurrent._
 import duration._
-import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 
 class EffApplicativeSpec(using ExecutionEnv) extends Specification with ScalaCheck with ThrownExpectations with Specs2Compat {

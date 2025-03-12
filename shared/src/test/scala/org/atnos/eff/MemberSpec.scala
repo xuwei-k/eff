@@ -8,8 +8,6 @@ import org.specs2._
 import org.scalacheck._
 import option._
 import reader._
-import state._
-import syntax.all._
 import syntax.all.given
 
 class MemberSpec extends Specification with ScalaCheck with Specs2Compat {

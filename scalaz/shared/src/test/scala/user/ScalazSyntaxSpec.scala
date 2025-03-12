@@ -4,7 +4,6 @@ import org.atnos.eff._
 import org.atnos.eff.eval._
 import org.atnos.eff.option._
 import org.atnos.eff.syntax.eval._
-import org.atnos.eff.syntax.addon.scalaz.all._
 import org.atnos.eff.syntax.addon.scalaz.all.given
 import cats.Eval
 import scalaz._

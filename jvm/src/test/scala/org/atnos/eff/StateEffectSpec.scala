@@ -6,7 +6,6 @@ import cats.Monad
 import cats.data._
 import cats.syntax.all._
 import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
 import org.atnos.eff.syntax.all.given
 
 class StateEffectSpec extends Specification with ScalaCheck with Specs2Compat {

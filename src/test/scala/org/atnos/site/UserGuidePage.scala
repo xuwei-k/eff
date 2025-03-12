@@ -8,7 +8,6 @@ import org.specs2.control.ioOperationToOption
 import org.specs2.specification.Snippets
 import org.specs2.specification.core._
 import org.specs2.specification.create.SpecificationCreation
-import scala.collection.compat._
 import scala.reflect.ClassTag
 
 abstract class UserGuidePage

@@ -2,7 +2,6 @@ package org.atnos.site
 package lib
 
 import java.util.concurrent.Executors
-import org.atnos.eff.syntax.all._
 import org.atnos.eff.syntax.all.given
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -17,7 +16,6 @@ Now, let's create some `Task` effects:${snippet {
 
       import org.atnos.eff._
       import org.atnos.eff.addon.monix.task._
-      import org.atnos.eff.syntax.addon.monix.task._
       import org.atnos.eff.syntax.addon.monix.task.given
 
       import monix.eval.Task

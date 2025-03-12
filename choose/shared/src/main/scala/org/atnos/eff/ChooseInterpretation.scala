@@ -1,6 +1,5 @@
 package org.atnos.eff
 
-import Eff._
 import cats._
 import cats.syntax.all._
 import scala.annotation.tailrec

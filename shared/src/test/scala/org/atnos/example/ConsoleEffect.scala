@@ -1,7 +1,6 @@
 package org.atnos.example
 
 import org.atnos.eff._
-import Eff._
 import Interpret._
 import cats._
 import cats.data._

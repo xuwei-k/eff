@@ -1,7 +1,6 @@
 package org.atnos.eff.addon.monix
 
 import org.atnos.eff.option._
-import org.atnos.eff.syntax.eff._
 import org.atnos.eff.syntax.eff.given
 import org.atnos.eff.syntax.option.given
 import org.specs2._
@@ -11,7 +10,6 @@ import monix.execution.Scheduler.Implicits.global
 import monix.eval.Task
 import org.atnos.eff._
 import org.atnos.eff.addon.monix.task._
-import org.atnos.eff.syntax.addon.monix.task._
 import org.atnos.eff.syntax.addon.monix.task.given
 import scala.concurrent.Await
 import scala.concurrent.duration._
