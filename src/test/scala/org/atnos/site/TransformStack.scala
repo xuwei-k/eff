@@ -294,7 +294,6 @@ Then we can use the `into` method to inject effects from each stack into this co
       import S3Stack._
       import HadoopStack._
 // this imports the `into` and runXXX syntax
-      import org.atnos.eff.syntax.all._
       import org.atnos.eff.syntax.all.given
 
       val action = for {
