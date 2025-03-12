@@ -35,7 +35,7 @@ class EffLastSpec extends Specification with ScalaCheck with Specs2Compat {
     val messages = new ListBuffer[String]
 
     import org.atnos.eff.all._
-    import org.atnos.eff.syntax.all._
+    import org.atnos.eff.syntax.all.given
 
     val act = for {
       _ <- protect[R, Unit](messages.append("a")).addLast(protect[R, Unit](messages.append("end")))
@@ -52,7 +52,7 @@ class EffLastSpec extends Specification with ScalaCheck with Specs2Compat {
     val messages = new ListBuffer[String]
 
     import org.atnos.eff.all._
-    import org.atnos.eff.syntax.all._
+    import org.atnos.eff.syntax.all.given
 
     val act = (for {
       _ <- protect[R, Unit](messages.append("a"))
@@ -73,7 +73,7 @@ class EffLastSpec extends Specification with ScalaCheck with Specs2Compat {
     val messages = new ListBuffer[String]
 
     import org.atnos.eff.all._
-    import org.atnos.eff.syntax.all._
+    import org.atnos.eff.syntax.all.given
 
     val act = (for {
       _ <- protect[R, Unit](messages.append("a")).addLast(protect[R, Unit](messages.append("end1")))
@@ -94,7 +94,7 @@ class EffLastSpec extends Specification with ScalaCheck with Specs2Compat {
     val messages = new ListBuffer[String]
 
     import org.atnos.eff.all._
-    import org.atnos.eff.syntax.all._
+    import org.atnos.eff.syntax.all.given
 
     val act = for {
       _ <- protect[R, Unit](messages.append("a")).addLast(protect[R, Unit] { messages.append("boom"); throw new Exception("boom") })

@@ -7,20 +7,18 @@ object validate extends org.atnos.eff.syntax.validate with validate
 
 trait validate {
 
-  implicit def toValidateEffectScalazOps[R, A](e: Eff[R, A]): ValidateEffectScalazOps[R, A] =
-    new ValidateEffectScalazOps[R, A](e)
+  given scalazValidateExtension: AnyRef with {
 
-}
+    extension [R, A](e: Eff[R, A]) {
+      def runValidationNel[U, E](using m: Member.Aux[Validate[E, *], R, U]): Eff[U, ValidationNel[E, A]] =
+        addon.scalaz.validate.runValidationNel(e)
 
-final class ValidateEffectScalazOps[R, A](private val e: Eff[R, A]) extends AnyVal {
+      def runNelDisjunction[U, E](using m: Member.Aux[Validate[E, *], R, U]): Eff[U, NonEmptyList[E] \/ A] =
+        addon.scalaz.validate.runNelDisjunction(e)
 
-  def runValidationNel[U, E](using m: Member.Aux[Validate[E, *], R, U]): Eff[U, ValidationNel[E, A]] =
-    addon.scalaz.validate.runValidationNel(e)
-
-  def runNelDisjunction[U, E](using m: Member.Aux[Validate[E, *], R, U]): Eff[U, NonEmptyList[E] \/ A] =
-    addon.scalaz.validate.runNelDisjunction(e)
-
-  def runMapDisjunction[U, E, L: Semigroup](map: E => L)(using m: Member.Aux[Validate[E, *], R, U]): Eff[U, L \/ A] =
-    addon.scalaz.validate.runMapDisjunction(e)(map)
+      def runMapDisjunction[U, E, L: Semigroup](map: E => L)(using m: Member.Aux[Validate[E, *], R, U]): Eff[U, L \/ A] =
+        addon.scalaz.validate.runMapDisjunction(e)(map)
+    }
+  }
 
 }
