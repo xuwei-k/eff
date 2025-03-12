@@ -10,6 +10,7 @@ import org.atnos.eff.Specs2Compat
 import org.atnos.eff.syntax.eff._
 import org.atnos.eff.syntax.eff.given
 import org.atnos.eff.syntax.addon.doobie._
+import org.atnos.eff.syntax.addon.doobie.given
 import org.specs2.matcher.ThrownExpectations
 import org.specs2.matcher.ValueCheck
 import doobie.free.connection

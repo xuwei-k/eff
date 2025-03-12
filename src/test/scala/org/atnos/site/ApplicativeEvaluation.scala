@@ -17,6 +17,7 @@ The default interpretation of `Eff` values is "monadic" meaning that effectful v
       import scala.concurrent._, duration._, ExecutionContext.Implicits.global
       import org.atnos.eff.concurrent.Scheduler
       import org.atnos.eff.syntax.future._
+      import org.atnos.eff.syntax.future.given
 
       type WriterString[A] = Writer[String, A]
       type _writerString[R] = WriterString |= R

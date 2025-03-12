@@ -179,7 +179,7 @@ trait Interpret {
   def interceptNat[R, T[_], A](effect: Eff[R, A])(nat: T ~> T)(using m: T /= R): Eff[R, A] =
     intercept(effect)(Interpreter.fromNat(nat))
 
-  type of[F[_], G[_]] = { type l[A] = F[G[A]] }
+  infix type of[F[_], G[_]] = { type l[A] = F[G[A]] }
 
   /**
    * Intercept the values for one effect,

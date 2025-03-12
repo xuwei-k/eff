@@ -9,17 +9,16 @@ import org.atnos.eff._
 
 trait doobie {
 
-  implicit final def toDoobieConnectionIOOps[R, A](e: Eff[R, A]): DoobieConnectionIOOps[R, A] =
-    new DoobieConnectionIOOps[R, A](e)
-
-}
-
-final class DoobieConnectionIOOps[R, A](private val e: Eff[R, A]) extends AnyVal {
-  def runConnectionIO[F[_], U, E, B](
-    t: Transactor[F]
-  )(using mc: Member.Aux[ConnectionIO, R, U], mf: MemberInOut[F, U], me: Bracket[F, Throwable]): Eff[U, A] = {
-    DoobieConnectionIOInterpretation.runConnectionIO[R, U, F, E, A, B](e)(t)
+  given doobieExtension: AnyRef with {
+    extension [R, A](e: Eff[R, A]) {
+      def runConnectionIO[F[_], U, E, B](
+        t: Transactor[F]
+      )(using mc: Member.Aux[ConnectionIO, R, U], mf: MemberInOut[F, U], me: Bracket[F, Throwable]): Eff[U, A] = {
+        DoobieConnectionIOInterpretation.runConnectionIO[R, U, F, E, A, B](e)(t)
+      }
+    }
   }
+
 }
 
 object doobie extends doobie
