@@ -12,6 +12,7 @@ import monix.eval.Task
 import org.atnos.eff._
 import org.atnos.eff.addon.monix.task._
 import org.atnos.eff.syntax.addon.monix.task._
+import org.atnos.eff.syntax.addon.monix.task.given
 import scala.concurrent.Await
 import scala.concurrent.duration._
 

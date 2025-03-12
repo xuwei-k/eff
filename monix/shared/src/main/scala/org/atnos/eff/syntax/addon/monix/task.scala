@@ -9,32 +9,32 @@ import scala.util.Either
 
 trait task {
 
-  implicit final def toTaskOps[R, A](e: Eff[R, A]): TaskOps[R, A] = new TaskOps[R, A](e)
+  given taskExtension: AnyRef with {
 
-}
+    extension [R, A](e: Eff[R, A]) {
 
-final class TaskOps[R, A](private val e: Eff[R, A]) extends AnyVal {
+      def asyncBoundary(using task: Task |= R): Eff[R, A] =
+        e.flatMap(a => TaskEffect.asyncBoundary.map(_ => a))
 
-  def asyncBoundary(using task: Task |= R): Eff[R, A] =
-    e.flatMap(a => TaskEffect.asyncBoundary.map(_ => a))
+      def asyncBoundary(s: Scheduler)(using task: Task |= R): Eff[R, A] =
+        e.flatMap(a => TaskEffect.asyncBoundary(s).map(_ => a))
 
-  def asyncBoundary(s: Scheduler)(using task: Task |= R): Eff[R, A] =
-    e.flatMap(a => TaskEffect.asyncBoundary(s).map(_ => a))
+      def taskAttempt(using task: Task /= R): Eff[R, Throwable Either A] =
+        TaskInterpretation.taskAttempt(e)
 
-  def taskAttempt(using task: Task /= R): Eff[R, Throwable Either A] =
-    TaskInterpretation.taskAttempt(e)
+      def taskMemo(key: AnyRef, cache: Cache)(using task: Task /= R): Eff[R, A] =
+        TaskInterpretation.taskMemo(key, cache, e)
 
-  def taskMemo(key: AnyRef, cache: Cache)(using task: Task /= R): Eff[R, A] =
-    TaskInterpretation.taskMemo(key, cache, e)
+      def runAsync(using m: Member.Aux[Task, R, NoFx]): Task[A] =
+        TaskInterpretation.runAsync(e)
 
-  def runAsync(using m: Member.Aux[Task, R, NoFx]): Task[A] =
-    TaskInterpretation.runAsync(e)
+      def runSequential(using m: Member.Aux[Task, R, NoFx]): Task[A] =
+        TaskInterpretation.runSequential(e)
 
-  def runSequential(using m: Member.Aux[Task, R, NoFx]): Task[A] =
-    TaskInterpretation.runSequential(e)
-
-  def retryUntil(condition: A => Boolean, durations: List[FiniteDuration])(using task: Task |= R): Eff[R, A] =
-    TaskCreation.retryUntil(e, condition, durations)
+      def retryUntil(condition: A => Boolean, durations: List[FiniteDuration])(using task: Task |= R): Eff[R, A] =
+        TaskCreation.retryUntil(e, condition, durations)
+    }
+  }
 }
 
 object task extends task

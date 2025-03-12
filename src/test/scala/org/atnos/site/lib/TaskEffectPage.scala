@@ -18,6 +18,7 @@ Now, let's create some `Task` effects:${snippet {
       import org.atnos.eff._
       import org.atnos.eff.addon.monix.task._
       import org.atnos.eff.syntax.addon.monix.task._
+      import org.atnos.eff.syntax.addon.monix.task.given
 
       import monix.eval.Task
 
