@@ -9,7 +9,7 @@ import org.atnos.eff._
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import IOEffect._
-import org.atnos.eff.syntax.addon.cats.effect._
+import org.atnos.eff.syntax.addon.cats.effect.given
 import scala.concurrent.duration._
 
 class IOEffectSpec(implicit ee: ExecutionEnv) extends Specification with ScalaCheck {
