@@ -119,7 +119,7 @@ trait TaskInterpretation extends TaskTypes {
       case Right(a) => Eff.pure(a)
     }
 
-  implicit val taskSequenceCached: SequenceCached[Task] = new SequenceCached[Task] {
+  given taskSequenceCached: SequenceCached[Task] = new SequenceCached[Task] {
     def get[X](cache: Cache, key: AnyRef): Task[Option[X]] =
       Task.delay(cache.get(key)).executeAsync
 
