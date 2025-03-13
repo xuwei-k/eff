@@ -3,7 +3,6 @@ package org.atnos.eff
 import cats.Eval
 import cats.syntax.all._
 import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
 import org.specs2._
 import org.specs2.matcher.Matcher
 import org.specs2.matcher.ThrownExpectations

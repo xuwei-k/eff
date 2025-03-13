@@ -98,7 +98,7 @@ fromOption(Option(1)).runOption
 
 You can also access all the syntax imports at once with:
 ```scala
-import org.atnos.eff.syntax.all._
+import org.atnos.eff.syntax.all.given
 ```
 
 #### Intellij support
