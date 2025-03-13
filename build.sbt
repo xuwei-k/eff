@@ -15,7 +15,6 @@ effSettings
 noPublishSettings
 commonJvmSettings
 libraryDependencies += "org.specs2" %% "specs2-html" % specs2Version % "test"
-libraryDependencies += "org.scala-lang.modules" %% "scala-collection-compat" % "2.13.0" % Test
 
 dependsOn(
   all.jvm % "test->test;compile->compile",
