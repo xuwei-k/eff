@@ -10,7 +10,7 @@ import scalaz._
 import Scalaz._
 import org.specs2._
 
-class ScalazSpec extends Specification with Specs2Compat {
+class ScalazSpec extends Specification {
   def is = s2"""
 
  The Eff monad must be usable with Scalaz typeclasses

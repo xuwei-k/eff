@@ -2,7 +2,6 @@ package org.atnos.eff
 
 import cats._
 import Eff._
-import EffCompat._
 import org.atnos.eff.either._
 import org.atnos.eff.syntax.all.given
 import scala.util.control.NonFatal
@@ -112,14 +111,14 @@ object SubscribeEffect {
 
       case Impure(u: Union[?, ?], c, last) =>
         Impure(
-          materialize(u.cast[Union[FS, Any]]),
-          c.mapLast(r => memoizeSubsequence(key, sequenceKey, sub, cache, r)).cast[Continuation[Fx1[Subscribe], Any, A]],
+          materialize(u.asInstanceOf[Union[FS, Any]]),
+          c.mapLast(r => memoizeSubsequence(key, sequenceKey, sub, cache, r)).asInstanceOf[Continuation[Fx1[Subscribe], Any, A]],
           last
         )
 
       case ImpureAp(unions, continuation, last) =>
         val materializedUnions =
-          Unions(materialize(unions.first.cast[Union[FS, Any]]), unions.rest.map(materialize))
+          Unions(materialize(unions.first.asInstanceOf[Union[FS, Any]]), unions.rest.map(materialize))
 
         val continuation1 = continuation.mapLast(r => memoizeSubsequence(key, sequenceKey, sub, cache, r))
         ImpureAp(materializedUnions, continuation1, last)

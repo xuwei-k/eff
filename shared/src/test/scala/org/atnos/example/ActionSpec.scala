@@ -13,7 +13,7 @@ import Member.<=
 import cats.Eval
 import org.specs2._
 
-class ActionSpec extends Specification with ScalaCheck with Specs2Compat {
+class ActionSpec extends Specification with ScalaCheck {
   def is = s2"""
 
  The action stack can be used to

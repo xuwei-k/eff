@@ -17,7 +17,7 @@ import scala.concurrent._
 import duration._
 import scala.collection.mutable.ListBuffer
 
-class EffApplicativeSpec(using ExecutionEnv) extends Specification with ScalaCheck with ThrownExpectations with Specs2Compat {
+class EffApplicativeSpec(using ExecutionEnv) extends Specification with ScalaCheck with ThrownExpectations {
   def is = s2"""
 
  *> uses the applicative "sequencing" whereas >> uses the monadic sequencing $operators

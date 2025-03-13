@@ -10,7 +10,7 @@ import EitherEffect.{left => leftE}
 import EitherEffect.{right => rightE}
 import scala.collection.mutable.ListBuffer
 
-class EffLastSpec extends Specification with ScalaCheck with Specs2Compat {
+class EffLastSpec extends Specification with ScalaCheck {
   def is = sequential ^ s2"""
 
   An action can run completely at the end, regardless of the number of flatmaps $runLast

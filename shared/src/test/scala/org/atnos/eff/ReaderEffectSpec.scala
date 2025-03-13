@@ -6,7 +6,7 @@ import cats.data._
 import org.atnos.eff.all._
 import org.atnos.eff.syntax.all.given
 
-class ReaderEffectSpec extends Specification with Specs2Compat {
+class ReaderEffectSpec extends Specification {
   def is = s2"""
 
  local can be used to "zoom" on a configuration $localEffect

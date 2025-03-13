@@ -1,6 +1,5 @@
 package org.atnos.site
 
-import org.atnos.eff.Specs2Compat
 import org.specs2.matcher._
 import org.specs2.execute.Snippet
 import org.specs2.io._
@@ -15,7 +14,6 @@ abstract class UserGuidePage
     with SpecificationCreation
     with Snippets
     with TypedEqual
-    with Specs2Compat
     with ExpectationsCreation {
 
   /** mute all links, so that they are not decorated in the html */

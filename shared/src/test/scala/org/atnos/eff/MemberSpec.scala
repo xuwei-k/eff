@@ -10,7 +10,7 @@ import option._
 import reader._
 import syntax.all.given
 
-class MemberSpec extends Specification with ScalaCheck with Specs2Compat {
+class MemberSpec extends Specification with ScalaCheck {
   def is = s2"""
 
 for 3-element stacks:

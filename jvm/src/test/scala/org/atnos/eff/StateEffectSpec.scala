@@ -8,7 +8,7 @@ import cats.syntax.all._
 import org.atnos.eff.all._
 import org.atnos.eff.syntax.all.given
 
-class StateEffectSpec extends Specification with ScalaCheck with Specs2Compat {
+class StateEffectSpec extends Specification with ScalaCheck {
   def is = s2"""
 
  The state monad can be used to put/get state $putGetState

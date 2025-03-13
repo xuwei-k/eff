@@ -5,7 +5,7 @@ import org.atnos.eff.all._
 import org.atnos.eff.syntax.all.given
 import cats.syntax.all._
 
-class ListEffectSpec extends Specification with Specs2Compat {
+class ListEffectSpec extends Specification {
   def is = s2"""
 
  List effect example       $listEffect

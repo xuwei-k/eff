@@ -1,7 +1,6 @@
 package org.atnos.eff
 
 import cats._
-import EffCompat._
 
 trait EffImplicits {
 
@@ -70,7 +69,7 @@ trait EffImplicits {
             case Pure(f, last1) =>
               Pure(f(a), last1 *> last)
             case Impure(NoEffect(f), c, last1) =>
-              Impure[AnyRef, Any, B](NoEffect[AnyRef, Any](f), c.append(f1 => pure(f1(a))).cast[Continuation[Object, Any, B]], c.onNone)
+              Impure[AnyRef, Any, B](NoEffect[AnyRef, Any](f), c.append(f1 => pure(f1(a))).asInstanceOf[Continuation[Object, Any, B]], c.onNone)
                 .addLast(last1 *> last)
             case Impure(u: Union[?, ?], c: Continuation[AnyRef, Any, A => B], last1) =>
               ImpureAp(Unions(u, Vector.empty), c.dimapEff((x: Vector[Any]) => x.head)(_.map(_(a))), last1 *> last)

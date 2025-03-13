@@ -11,7 +11,7 @@ import EitherEffect.{right => rightEffect}
 import EitherEffect.{left => leftEffect}
 import scala.collection.mutable.ListBuffer
 
-class SafeEffectSpec extends Specification with ScalaCheck with ThrownExpectations with Specs2Compat {
+class SafeEffectSpec extends Specification with ScalaCheck with ThrownExpectations  {
   def is = sequential ^ s2"""
 
   The Safe effect can be used to protect resources and computations

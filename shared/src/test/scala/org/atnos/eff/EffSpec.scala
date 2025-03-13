@@ -13,7 +13,7 @@ import org.atnos.eff.syntax.all.given
 import org.specs2.matcher.ThrownExpectations
 import scala.annotation.tailrec
 
-class EffSpec extends Specification with ScalaCheck with ThrownExpectations with Specs2Compat {
+class EffSpec extends Specification with ScalaCheck with ThrownExpectations {
   def is = s2"""
 
  The Eff monad respects the laws            $laws
