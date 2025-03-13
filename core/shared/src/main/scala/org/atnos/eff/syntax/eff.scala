@@ -77,13 +77,13 @@ trait effOperations {
 }
 
 trait effCats {
-  implicit final def toEffOneEffectOps[M[_], A](e: Eff[Fx1[M], A]): EffOneEffectOps[M, A] = new EffOneEffectOps(e)
-}
+  given effCatsExtension: AnyRef with {
+    extension [M[_], A](e: Eff[Fx1[M], A]) {
+      def detach[E](using M: MonadError[M, E]): M[A] =
+        Eff.detach(e)
 
-final class EffOneEffectOps[M[_], A](private val e: Eff[Fx1[M], A]) extends AnyVal {
-  def detach[E](using M: MonadError[M, E]): M[A] =
-    Eff.detach(e)
-
-  def detachA[E](applicative: Applicative[M])(using monad: MonadError[M, E]): M[A] =
-    Eff.detachA(e)(using monad, applicative)
+      def detachA[E](applicative: Applicative[M])(using monad: MonadError[M, E]): M[A] =
+        Eff.detachA(e)(using monad, applicative)
+    }
+  }
 }
