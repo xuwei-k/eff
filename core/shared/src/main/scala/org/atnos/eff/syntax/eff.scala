@@ -34,9 +34,6 @@ trait effOperations {
 
       def runPure: Option[A] =
         Eff.runPure(e)
-
-      def tuple2[B](b: Eff[R, B]): Eff[R, (A, B)] =
-        Eff.EffApplicative[R].tuple2(e, b)
     }
 
     extension [A](e: Eff[NoFx, A]) {
@@ -46,12 +43,6 @@ trait effOperations {
 
     extension [M[_], A](ma: M[A]) {
       def send[R](using m: M |= R): Eff[R, A] = Eff.send(ma)
-
-      def traverseA[R, B](f: A => Eff[R, B])(using F: Traverse[M]): Eff[R, M[B]] =
-        Eff.traverseA(ma)(f)
-
-      def flatTraverseA[R, B](f: A => Eff[R, M[B]])(using F1: Traverse[M], F2: FlatMap[M]): Eff[R, M[B]] =
-        Eff.flatTraverseA(ma)(f)
     }
 
     extension [A](a: A) {
@@ -59,20 +50,6 @@ trait effOperations {
         Eff.pure(a)
     }
 
-    extension [R, M[_], A](e: Eff[R, M[A]]) {
-      def collapse(using m: M |= R): Eff[R, A] =
-        Eff.collapse[R, M, A](e)
-    }
-
-    extension [F[_], R, A](values: F[Eff[R, A]]) {
-      def sequenceA(using F: Traverse[F]): Eff[R, F[A]] =
-        Eff.sequenceA(values)
-    }
-
-    extension [F[_], R, A](values: F[Eff[R, F[A]]]) {
-      def flatSequenceA(using F1: Traverse[F], F2: FlatMap[F]): Eff[R, F[A]] =
-        Eff.flatSequenceA(values)
-    }
   }
 }
 
@@ -84,6 +61,34 @@ trait effCats {
 
       def detachA[E](applicative: Applicative[M])(using monad: MonadError[M, E]): M[A] =
         Eff.detachA(e)(using monad, applicative)
+    }
+
+    extension [R, M[_], A](e: Eff[R, M[A]]) {
+      def collapse(using m: M |= R): Eff[R, A] =
+        Eff.collapse[R, M, A](e)
+    }
+
+    extension [M[_], A](ma: M[A]) {
+      def traverseA[R, B](f: A => Eff[R, B])(using F: Traverse[M]): Eff[R, M[B]] =
+        Eff.traverseA(ma)(f)
+
+      def flatTraverseA[R, B](f: A => Eff[R, M[B]])(using F1: Traverse[M], F2: FlatMap[M]): Eff[R, M[B]] =
+        Eff.flatTraverseA(ma)(f)
+    }
+
+    extension [F[_], R, A](values: F[Eff[R, A]]) {
+      def sequenceA(using F: Traverse[F]): Eff[R, F[A]] =
+        Eff.sequenceA(values)
+    }
+
+    extension [F[_], R, A](values: F[Eff[R, F[A]]]) {
+      def flatSequenceA(using F1: Traverse[F], F2: FlatMap[F]): Eff[R, F[A]] =
+        Eff.flatSequenceA(values)
+    }
+
+    extension [R, A](e: Eff[R, A]) {
+      def tuple2[B](b: Eff[R, B]): Eff[R, (A, B)] =
+        Eff.EffApplicative[R].tuple2(e, b)
     }
   }
 }
