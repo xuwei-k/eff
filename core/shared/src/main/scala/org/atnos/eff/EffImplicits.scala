@@ -8,7 +8,7 @@ trait EffImplicits {
   /**
     * Monad implementation for the Eff[R, *] type
     */
-  private[this] final val effMonadUnsafeImpl: Monad[Eff[AnyRef, *]] = new Monad[Eff[AnyRef, *]] {
+  private final val effMonadUnsafeImpl: Monad[Eff[AnyRef, *]] = new Monad[Eff[AnyRef, *]] {
 
     def pure[A](a: A): Eff[AnyRef, A] =
       Pure[AnyRef, A](a)
@@ -55,7 +55,7 @@ trait EffImplicits {
       }
   }
 
-  private[this] final val effApplicativeUnsafeImpl: Applicative[Eff[AnyRef, *]] = new Applicative[Eff[AnyRef, *]] {
+  private final val effApplicativeUnsafeImpl: Applicative[Eff[AnyRef, *]] = new Applicative[Eff[AnyRef, *]] {
 
     def pure[A](a: A): Eff[AnyRef, A] =
       Pure[AnyRef, A](a)

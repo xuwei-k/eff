@@ -106,7 +106,7 @@ class EffLastSpec extends Specification with ScalaCheck with Specs2Compat {
     messages.toList ==== List("a", "b", "boom")
   }.setGen(Gen.listOf(Gen.oneOf("a", "b", "c")))
 
-  private[this] var i = 0
+  private var i = 0
 
   def e1 = checkRelease {
     rightE[S, String, Int](1) >>= (v => protect[S, Int](v))

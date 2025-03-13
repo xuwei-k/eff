@@ -79,7 +79,6 @@ ${snippet {
 A typical use case for this is to transform a stack having a `Reader[S, *]` effect to a stack having a `Reader[B, *]` effect
  where `S` is "contained" in `B` (meaning that there is a mapping from `B`, "big", to `S`, "small"). Here is an example:${snippet {
       import org.atnos.eff._, all._
-      import org.atnos.eff.syntax.all._
       import org.atnos.eff.syntax.all.given
       import cats._
       import cats.data._
@@ -256,7 +255,6 @@ ${snippet {
       def runDb[R, U, A](queries: Eff[R, A])(using m: Member.Aux[Db, R, U], e: _eval[U], w: _writerString[U]): Eff[U, A] = ???
 // 8<--
       import org.atnos.eff.all._
-      import org.atnos.eff.syntax.all._
       import org.atnos.eff.syntax.all.given
 
       def executeOnDb[R, U, A](queries: Eff[R, A])(using db: Member.Aux[Db, R, U], eval: _eval[U]): Eff[U, A] = {

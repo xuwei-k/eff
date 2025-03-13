@@ -1,6 +1,5 @@
 package org.atnos.site
 
-
 object ApplicativeEvaluation extends UserGuidePage {
   def is = "Applicative".title ^ s2"""
 

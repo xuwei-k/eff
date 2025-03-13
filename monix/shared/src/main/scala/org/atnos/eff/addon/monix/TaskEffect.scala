@@ -40,7 +40,7 @@ trait TaskCreation extends TaskTypes {
   final def asyncBoundary[R: _task](s: Scheduler): Eff[R, Unit] =
     fromTask(forkedUnit.executeOn(s))
 
-  private[this] val forkedUnit: Task[Unit] =
+  private val forkedUnit: Task[Unit] =
     Task.unit.executeAsync
 
   final def taskAsync[R: _task, A](callbackConsumer: ((Throwable Either A) => Unit) => Unit, timeout: Option[FiniteDuration] = None): Eff[R, A] = {
@@ -62,10 +62,10 @@ object TaskCreation extends TaskCreation
 
 trait TaskInterpretation extends TaskTypes {
 
-  private[this] val monixTaskMonad: MonadError[Task, Throwable] =
+  private val monixTaskMonad: MonadError[Task, Throwable] =
     MonadError[Task, Throwable]
 
-  private[this] val monixTaskApplicative = new Applicative[Task] {
+  private val monixTaskApplicative = new Applicative[Task] {
     override def ap[A, B](ff: Task[A => B])(fa: Task[A]): Task[B] = Task.mapBoth(ff, fa)(_(_))
 
     override def map2[A, B, Z](fa: Task[A], fb: Task[B])(f: (A, B) => Z): Task[Z] = Task.mapBoth(fa, fb)(f)
@@ -148,7 +148,7 @@ trait EffToTask[R] {
 trait TaskEffect extends TaskInterpretation with TaskCreation { outer =>
 
   given asyncInstance[R: _Task](using runEff: EffToTask[R]): cats.effect.Async[Eff[R, *]] = new cats.effect.Async[Eff[R, *]] {
-    private[this] val taskAsyncInstance: cats.effect.Async[Task] =
+    private val taskAsyncInstance: cats.effect.Async[Task] =
       implicitly[cats.effect.Async[Task]]
 
     override def asyncF[A](k: (Either[Throwable, A] => Unit) => Eff[R, Unit]): Eff[R, A] = fromTask(taskAsyncInstance.asyncF[A] { f => runEff(k(f)) })
@@ -185,10 +185,10 @@ trait TaskEffect extends TaskInterpretation with TaskCreation { outer =>
   def effectInstance[R: _Task](using runEff: EffToTask[R], scheduler: Scheduler): cats.effect.Effect[Eff[R, *]] =
     new cats.effect.Effect[Eff[R, *]] {
 
-      private[this] val taskEffectInstance: cats.effect.Effect[Task] =
+      private val taskEffectInstance: cats.effect.Effect[Task] =
         implicitly[cats.effect.Effect[Task]]
 
-      private[this] val asyncInstance: cats.effect.Async[Eff[R, *]] =
+      private val asyncInstance: cats.effect.Async[Eff[R, *]] =
         outer.asyncInstance
 
       override def asyncF[A](k: (Either[Throwable, A] => Unit) => Eff[R, Unit]) = asyncInstance.asyncF(k)

@@ -4,7 +4,6 @@ import EffCompat._
 import cats.data._
 import org.specs2.Specification
 import org.specs2.matcher.ThrownExpectations
-import syntax.all._
 import syntax.all.given
 
 class IntoPolySpec extends Specification with ThrownExpectations {

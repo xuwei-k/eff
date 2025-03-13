@@ -38,7 +38,7 @@ trait ValidateInterpretation extends ValidateCreation {
   )(map: E => L)(pure: (A, L Either Option[L]) => L SomeOr A)(using m: Member.Aux[Validate[E, *], R, U]): Eff[U, L SomeOr A] =
     runInterpreter(effect)(new Interpreter[Validate[E, *], U, A, L SomeOr A] {
       // Left means failed, Right means not failed (Option contains warnings)
-      private[this] var l: L Either Option[L] = Right(None)
+      private var l: L Either Option[L] = Right(None)
 
       def onPure(a: A): Eff[U, L SomeOr A] =
         Eff.pure(pure(a, l))
@@ -80,7 +80,7 @@ trait ValidateInterpretation extends ValidateCreation {
     effect: Eff[R, A]
   )(handle: S[E] => Eff[R, A])(using member: Validate[E, *] <= R, semi: Semigroup[S[E]]): Eff[R, A] =
     intercept(effect)(new Interpreter[Validate[E, *], R, A, A] {
-      private[this] var errs: Option[S[E]] = None
+      private var errs: Option[S[E]] = None
 
       def onPure(a: A): Eff[R, A] =
         errs.map(handle).getOrElse(Eff.pure(a))

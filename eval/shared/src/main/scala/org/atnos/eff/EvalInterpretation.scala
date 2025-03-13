@@ -43,7 +43,7 @@ trait EvalInterpretation extends EvalTypes {
 
   /** the monad error instance for Eval is useful for using detach on Eff[Fx1[Eval], A] */
   given monadErrorEval: MonadError[Eval, Throwable] = new MonadError[Eval, Throwable] {
-    private[this] val m: Monad[Eval] = Eval.catsBimonadForEval
+    private val m: Monad[Eval] = Eval.catsBimonadForEval
 
     def pure[A](x: A): Eval[A] =
       m.pure(x)

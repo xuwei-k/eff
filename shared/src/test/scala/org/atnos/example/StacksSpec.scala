@@ -6,7 +6,6 @@ import cats.data._
 import cats.Eval
 import org.atnos.eff._
 import org.atnos.eff.all._
-import org.atnos.eff.syntax.all._
 import org.atnos.eff.syntax.all.given
 
 class StacksSpec extends Specification with Specs2Compat {
