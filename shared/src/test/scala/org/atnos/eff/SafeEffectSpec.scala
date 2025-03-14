@@ -3,6 +3,7 @@ package org.atnos.eff
 import cats.Eval
 import cats.syntax.all._
 import org.atnos.eff.all._
+import org.atnos.eff.syntax.all.given
 import org.specs2._
 import org.specs2.matcher.Matcher
 import org.specs2.matcher.ThrownExpectations
@@ -11,7 +12,7 @@ import EitherEffect.{right => rightEffect}
 import EitherEffect.{left => leftEffect}
 import scala.collection.mutable.ListBuffer
 
-class SafeEffectSpec extends Specification with ScalaCheck with ThrownExpectations  {
+class SafeEffectSpec extends Specification with ScalaCheck with ThrownExpectations {
   def is = sequential ^ s2"""
 
   The Safe effect can be used to protect resources and computations
