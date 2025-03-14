@@ -9,14 +9,6 @@ object MemberImplicits extends UserGuidePage {
 Type inference with the Eff monad can be a bit tricky to get right if we want to avoid type annotations. Here are some
 tips to help you.
 
-### Running effects with several type parameters
-
-Some effects use 2 type variables, like `Reader` or `Writer`. If you want to use those effects in an effect stack you need
-to make sure you have the following `scalac` option:
-```scala
-scalacOptions += "-Ypartial-unification"
-```
-
 ### Use context bounds and type aliases
 
 When creating effects you can always "require" a stack containing the right effects with the `MemberIn` typeclass:${snippet {
