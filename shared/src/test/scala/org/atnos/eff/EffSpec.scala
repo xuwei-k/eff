@@ -35,6 +35,7 @@ class EffSpec extends Specification with ScalaCheck with ThrownExpectations {
  It is possible to run a Eff value with just one effect and detach it back,
    when the stack is Fx1[M]                                    $detachOneEffect
    when the stack can be transformed to Fx1[M]                 $detachOneEffectInto
+   when the stack is Fx1[M] and applicative                    $detachOneApplicativeEffect
    when the stack can be transformed to Fx1[M] and applicative $detachOneApplicativeEffectInto
 
  A stack can be added a new effect when the effect is not in stack $notInStack
@@ -164,6 +165,9 @@ class EffSpec extends Specification with ScalaCheck with ThrownExpectations {
 
     e.runWriter.runEither.detach must beSome[String Either (Int, List[Int])](Right((1, Nil)))
   }
+
+  def detachOneApplicativeEffect =
+    delay(1).detachA(Applicative[Eval]).value === 1
 
   def detachOneApplicativeEffectInto = {
     type S = Fx.append[Fx.fx2[Writer[Int, *], Either[String, *]], Fx.fx1[Option]]
