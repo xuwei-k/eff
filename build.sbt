@@ -319,9 +319,7 @@ Global / excludeLintKeys ++= Set(
 
 inThisBuild(
   Seq(
-    semanticdbEnabled := (
-      Set("2.12", "2.13").contains(scalaBinaryVersion.value) || scalaVersion.value.startsWith("3.3")
-    ),
+    semanticdbEnabled := scalaVersion.value.startsWith("3.3"),
     semanticdbVersion := scalafixSemanticdb.revision
   )
 )
