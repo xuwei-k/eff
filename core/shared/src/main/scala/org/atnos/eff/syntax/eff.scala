@@ -26,10 +26,10 @@ trait effOperations {
       def translateInto[T[_], U](t: Translate[T, U])(using m: MemberInOut[T, R], into: IntoPoly[R, U]): Eff[U, A] =
         interpret.translateInto(e)(t)(using m, into)
 
-      def write[T[_], O](w: Write[T, O])(using memberT: MemberInOut[T, R], memberW: MemberInOut[Writer[O, *], R]): Eff[R, A] =
+      def write[T[_], O](w: Write[T, O])(using MemberInOut[T, R], MemberInOut[Writer[O, *], R]): Eff[R, A] =
         interpret.write(e)(w)
 
-      def augment[T[_], O[_]](w: Augment[T, O])(using memberT: MemberInOut[T, R], memberO: MemberIn[O, R]): Eff[R, A] =
+      def augment[T[_], O[_]](w: Augment[T, O])(using MemberInOut[T, R], MemberIn[O, R]): Eff[R, A] =
         interpret.augment(e)(w)
 
       def runPure: Option[A] =
@@ -42,7 +42,7 @@ trait effOperations {
     }
 
     extension [M[_], A](ma: M[A]) {
-      def send[R](using m: M |= R): Eff[R, A] = Eff.send(ma)
+      def send[R](using M |= R): Eff[R, A] = Eff.send(ma)
     }
 
     extension [A](a: A) {
@@ -56,7 +56,7 @@ trait effOperations {
 trait effCats {
   given effCatsExtension: AnyRef with {
     extension [M[_], A](e: Eff[Fx1[M], A]) {
-      def detach[E](using M: MonadError[M, E]): M[A] =
+      def detach[E](using MonadError[M, E]): M[A] =
         Eff.detach(e)
 
       def detachA[E](applicative: Applicative[M])(using monad: MonadError[M, E]): M[A] =
@@ -64,25 +64,25 @@ trait effCats {
     }
 
     extension [R, M[_], A](e: Eff[R, M[A]]) {
-      def collapse(using m: M |= R): Eff[R, A] =
+      def collapse(using M |= R): Eff[R, A] =
         Eff.collapse[R, M, A](e)
     }
 
     extension [M[_], A](ma: M[A]) {
-      def traverseA[R, B](f: A => Eff[R, B])(using F: Traverse[M]): Eff[R, M[B]] =
+      def traverseA[R, B](f: A => Eff[R, B])(using Traverse[M]): Eff[R, M[B]] =
         Eff.traverseA(ma)(f)
 
-      def flatTraverseA[R, B](f: A => Eff[R, M[B]])(using F1: Traverse[M], F2: FlatMap[M]): Eff[R, M[B]] =
+      def flatTraverseA[R, B](f: A => Eff[R, M[B]])(using Traverse[M], FlatMap[M]): Eff[R, M[B]] =
         Eff.flatTraverseA(ma)(f)
     }
 
     extension [F[_], R, A](values: F[Eff[R, A]]) {
-      def sequenceA(using F: Traverse[F]): Eff[R, F[A]] =
+      def sequenceA(using Traverse[F]): Eff[R, F[A]] =
         Eff.sequenceA(values)
     }
 
     extension [F[_], R, A](values: F[Eff[R, F[A]]]) {
-      def flatSequenceA(using F1: Traverse[F], F2: FlatMap[F]): Eff[R, F[A]] =
+      def flatSequenceA(using Traverse[F], FlatMap[F]): Eff[R, F[A]] =
         Eff.flatSequenceA(values)
     }
 

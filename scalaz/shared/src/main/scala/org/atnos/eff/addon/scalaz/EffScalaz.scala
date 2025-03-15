@@ -23,7 +23,7 @@ object EffScalaz {
   def flatSequenceA[R, F[_], A](fs: F[Eff[R, F[A]]])(using FT: Traverse[F], FM: Bind[F]): Eff[R, F[A]] =
     FT.traverseM[Eff[R, F[A]], Eff[R, *], A](fs)(identity)(using EffScalazApplicative[R], FM)
 
-  def detach[M[_], A](eff: Eff[Fx1[M], A])(using m: Monad[M], b: BindRec[M]): M[A] =
+  def detach[M[_], A](eff: Eff[Fx1[M], A])(using Monad[M], BindRec[M]): M[A] =
     BindRec[M].tailrecM[Eff[Fx1[M], A], A](eff) {
       case Pure(a, Last(Some(l))) => Monad[M].point(-\/(l.value.as(a)))
       case Pure(a, Last(None)) => Monad[M].point(\/-(a))

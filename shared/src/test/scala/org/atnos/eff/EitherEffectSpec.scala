@@ -179,10 +179,10 @@ class EitherEffectSpec extends Specification with ScalaCheck with EitherMatchers
     given e1Toe2: (Error1 => Error2) = (e1: Error1) => Error2(e1)
     import either.given
 
-    def withE1[R](i: Int)(using m: Either[Error1, *] |= R): Eff[R, Int] =
+    def withE1[R](i: Int)(using Either[Error1, *] |= R): Eff[R, Int] =
       either.right[R, Error1, Int](i)
 
-    def withE2[R](using m: Either[Error2, *] |= R): Eff[R, String] =
+    def withE2[R](using Either[Error2, *] |= R): Eff[R, String] =
       withE1[R](10).map(_.toString)
 
     withE2[Fx.fx1[Either[Error2, *]]].runEither.run ==== Right("10")

@@ -94,10 +94,10 @@ class ActionSpec extends Specification with ScalaCheck {
    * this one can be reused with more effects
    */
   def unboundActions[R](i: Int, j: Int)(using
-    m1: Eval <= R,
-    m2: Console <= R,
-    m3: Warnings <= R,
-    m4: ErrorOrOk <= R
+    Eval <= R,
+    Console <= R,
+    Warnings <= R,
+    ErrorOrOk <= R
   ): Eff[R, Int] = for {
     x <- delay(i)
     _ <- log("got the value " + x)

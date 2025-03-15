@@ -129,10 +129,10 @@ class ErrorEffectSpec extends Specification {
 
     type ErrorOrOk2[A] = ErrorEffect2.ErrorOrOk[A]
 
-    def action1[E](using m: ErrorOrOk1 |= E): Eff[E, Unit] =
+    def action1[E](using ErrorOrOk1 |= E): Eff[E, Unit] =
       ErrorEffect1.fail(Error1("boom"))
 
-    def action2[E](using e: ErrorOrOk2 |= E): Eff[E, Unit] = {
+    def action2[E](using ErrorOrOk2 |= E): Eff[E, Unit] = {
       // add the error1 effect locally and run it right away into error2
       type R1 = Fx.prepend[ErrorOrOk1, E]
 

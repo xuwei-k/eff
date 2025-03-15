@@ -36,7 +36,7 @@ class MembersSpec extends Specification {
   case class TwoEffects() {
     type _effects[R] = _foo[R] &&: _bar[R]
 
-    def foo[R](using e: _effects[R]): Eff[R, Int] = {
+    def foo[R](using _effects[R]): Eff[R, Int] = {
       import Members.given
 
       getFoo[R]
@@ -52,7 +52,7 @@ class MembersSpec extends Specification {
   case class ThreeEffects() {
     type _effects[R] = _foo[R] &: _bar[R] &&: _baz[R]
 
-    def foo[R](i: Int)(using e: _effects[R]): Eff[R, Int] = {
+    def foo[R](i: Int)(using _effects[R]): Eff[R, Int] = {
       import Members.given
 
       getFoo[R]

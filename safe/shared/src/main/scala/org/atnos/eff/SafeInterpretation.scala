@@ -16,17 +16,17 @@ trait SafeInterpretation extends SafeCreation { outer =>
    *
    * Collect finalizer exceptions if any
    */
-  def runSafe[R, U, A](effect: Eff[R, A])(using m: Member.Aux[Safe, R, U]): Eff[U, (ThrowableEither[A], List[Throwable])] =
+  def runSafe[R, U, A](effect: Eff[R, A])(using Member.Aux[Safe, R, U]): Eff[U, (ThrowableEither[A], List[Throwable])] =
     runInterpreter[R, U, Safe, A, Out[A]](effect)(safeInterpreter[U, A])
 
   /** run a safe effect but drop the finalizer errors */
-  def execSafe[R, U, A](r: Eff[R, A])(using m: Member.Aux[Safe, R, U]): Eff[U, ThrowableEither[A]] =
+  def execSafe[R, U, A](r: Eff[R, A])(using Member.Aux[Safe, R, U]): Eff[U, ThrowableEither[A]] =
     runSafe(r).map(_._1)
 
   /**
    * Attempt to execute a safe action including finalizers
    */
-  def attemptSafe[R, A](effect: Eff[R, A])(using m: Safe /= R): Eff[R, (ThrowableEither[A], List[Throwable])] =
+  def attemptSafe[R, A](effect: Eff[R, A])(using Safe /= R): Eff[R, (ThrowableEither[A], List[Throwable])] =
     protect(intercept[R, Safe, A, Out[A]](effect)(safeInterpreter[R, A])).flatten
 
   def safeInterpreter[R, A]: Interpreter[Safe, R, A, Out[A]] =
@@ -165,7 +165,7 @@ trait SafeInterpretation extends SafeCreation { outer =>
    * that the release function is always called "at the end of the world and whatever happens" you need to call
    * Eff.bracketLast
    */
-  def bracket[R, A, B, C](acquire: Eff[R, A])(use: A => Eff[R, B])(release: A => Eff[R, C])(using m: Safe /= R): Eff[R, B] =
+  def bracket[R, A, B, C](acquire: Eff[R, A])(use: A => Eff[R, B])(release: A => Eff[R, C])(using Safe /= R): Eff[R, B] =
     for {
       a <- acquire
       b <- thenFinally(use(a), release(a).void)
@@ -176,7 +176,7 @@ trait SafeInterpretation extends SafeCreation { outer =>
    *
    * Execute a second action if the first one is not successful
    */
-  def otherwise[R, A](action: Eff[R, A], onThrowable: Eff[R, A])(using m: Safe /= R): Eff[R, A] =
+  def otherwise[R, A](action: Eff[R, A], onThrowable: Eff[R, A])(using Safe /= R): Eff[R, A] =
     whenFailed(action, _ => onThrowable)
 
   /**
@@ -184,7 +184,7 @@ trait SafeInterpretation extends SafeCreation { outer =>
    *
    * Execute a second action if the first one is not successful, based on the error
    */
-  def catchThrowable[R, A, B](action: Eff[R, A], pureValue: A => B, onThrowable: Throwable => Eff[R, B])(using m: Safe /= R): Eff[R, B] =
+  def catchThrowable[R, A, B](action: Eff[R, A], pureValue: A => B, onThrowable: Throwable => Eff[R, B])(using Safe /= R): Eff[R, B] =
     recoverThrowable[R, A, B](action, pureValue, { case t => onThrowable(t) })
 
   /**
@@ -193,7 +193,7 @@ trait SafeInterpretation extends SafeCreation { outer =>
    * Execute a second action if the first one is not successful and second is defined for the error
    */
   def recoverThrowable[R, A, B](action: Eff[R, A], pureValue: A => B, onThrowable: PartialFunction[Throwable, Eff[R, B]])(using
-    m: Safe /= R
+    Safe /= R
   ): Eff[R, B] =
     attemptSafe(action).flatMap {
       case (Left(t), ls) if onThrowable.isDefinedAt(t) => onThrowable(t).flatMap(b => ls.traverse(f => finalizerException(f)).as(b))
@@ -208,7 +208,7 @@ trait SafeInterpretation extends SafeCreation { outer =>
    *
    * The final value type is the same as the original type
    */
-  def whenFailed[R, A](action: Eff[R, A], onThrowable: Throwable => Eff[R, A])(using m: Safe /= R): Eff[R, A] =
+  def whenFailed[R, A](action: Eff[R, A], onThrowable: Throwable => Eff[R, A])(using Safe /= R): Eff[R, A] =
     catchThrowable(action, identity[A], onThrowable)
 
   /**
@@ -218,19 +218,19 @@ trait SafeInterpretation extends SafeCreation { outer =>
    *
    * The final value type is the same as the original type
    */
-  def whenThrowable[R, A](action: Eff[R, A], onThrowable: PartialFunction[Throwable, Eff[R, A]])(using m: Safe /= R): Eff[R, A] =
+  def whenThrowable[R, A](action: Eff[R, A], onThrowable: PartialFunction[Throwable, Eff[R, A]])(using Safe /= R): Eff[R, A] =
     recoverThrowable(action, identity[A], onThrowable)
 
   /**
    * try to execute an action an report any issue
    */
-  def attempt[R, A](action: Eff[R, A])(using m: Safe /= R): Eff[R, Either[Throwable, A]] =
+  def attempt[R, A](action: Eff[R, A])(using Safe /= R): Eff[R, Either[Throwable, A]] =
     catchThrowable(action, Right[Throwable, A], (t: Throwable) => pure(Left(t)))
 
   /**
    * ignore one possible exception that could be thrown
    */
-  def ignoreException[R, E <: Throwable: ClassTag, A](action: Eff[R, A])(using m: Safe /= R): Eff[R, Unit] =
+  def ignoreException[R, E <: Throwable: ClassTag, A](action: Eff[R, A])(using Safe /= R): Eff[R, Unit] =
     recoverThrowable[R, A, Unit](
       action,
       _ => (),
@@ -244,7 +244,7 @@ trait SafeInterpretation extends SafeCreation { outer =>
    *
    * if this method is called with the same key the previous value will be returned
    */
-  def safeMemo[R, A](key: AnyRef, cache: Cache, e: Eff[R, A])(using safe: Safe /= R): Eff[R, A] =
+  def safeMemo[R, A](key: AnyRef, cache: Cache, e: Eff[R, A])(using Safe /= R): Eff[R, A] =
     attempt(Eff.memoizeEffect(e, cache, key)).flatMap {
       case Left(t) => Eff.send(Safe.safeSequenceCached.reset(cache, key)) >> SafeEffect.exception(t)
       case Right(a) => Eff.pure(a)

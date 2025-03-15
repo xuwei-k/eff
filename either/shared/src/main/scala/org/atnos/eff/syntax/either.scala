@@ -33,13 +33,13 @@ trait either {
 
       def zoomEither[BR, U1, U2, C, B](
         getter: C => B
-      )(using m1: Member.Aux[Either[C, *], R, U1], m2: Member.Aux[Either[B, *], BR, U2], into: IntoPoly[U1, U2]): Eff[BR, A] =
+      )(using Member.Aux[Either[C, *], R, U1], Member.Aux[Either[B, *], BR, U2], IntoPoly[U1, U2]): Eff[BR, A] =
         EitherInterpretation.zoomEither[R, BR, U1, U2, C, B, A](e, getter)
 
-      def translateEither[U, C, B](getter: C => B)(using sr: Member.Aux[Either[C, *], R, U], br: Either[B, *] |= U): Eff[U, A] =
+      def translateEither[U, C, B](getter: C => B)(using Member.Aux[Either[C, *], R, U], Either[B, *] |= U): Eff[U, A] =
         EitherInterpretation.translateEither[R, U, C, B, A](e, getter)
 
-      def localEither[E](modify: E => E)(using m: Either[E, *] /= R): Eff[R, A] =
+      def localEither[E](modify: E => E)(using Either[E, *] /= R): Eff[R, A] =
         EitherInterpretation.localEither[R, E, A](e)(modify)
     }
   }

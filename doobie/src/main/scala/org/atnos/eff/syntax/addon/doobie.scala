@@ -12,7 +12,7 @@ trait doobie {
     extension [R, A](e: Eff[R, A]) {
       def runConnectionIO[F[_], U](
         t: Transactor[F]
-      )(using mc: Member.Aux[ConnectionIO, R, U], mf: MemberInOut[F, U], me: Bracket[F, Throwable]): Eff[U, A] = {
+      )(using Member.Aux[ConnectionIO, R, U], MemberInOut[F, U], Bracket[F, Throwable]): Eff[U, A] = {
         DoobieConnectionIOInterpretation.runConnectionIO[R, U, F, A](e)(t)
       }
     }

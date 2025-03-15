@@ -14,7 +14,7 @@ trait ErrorInterpretation[F] extends ErrorCreation[F] { outer =>
    *
    * Stop all computation if there is an exception or a failure.
    */
-  def runError[R, U, A](r: Eff[R, A])(using m: Member.Aux[ErrorOrOk, R, U]): Eff[U, Either[Error, A]] =
+  def runError[R, U, A](r: Eff[R, A])(using Member.Aux[ErrorOrOk, R, U]): Eff[U, Either[Error, A]] =
     runInterpreter(r)(errorInterpreter[U, A, Either[Error, A]](a => Right(a), e => Eff.pure(Left(e))))
 
   /**
@@ -22,7 +22,7 @@ trait ErrorInterpretation[F] extends ErrorCreation[F] { outer =>
    *
    * Execute a second action if the first one is not successful, based on the error
    */
-  def catchError[R, A, B](action: Eff[R, A], pure: A => B, onError: Error => Eff[R, B])(using m: ErrorOrOk /= R): Eff[R, B] =
+  def catchError[R, A, B](action: Eff[R, A], pure: A => B, onError: Error => Eff[R, B])(using ErrorOrOk /= R): Eff[R, B] =
     intercept(action)(errorInterpreter(pure, onError))
 
   def errorInterpreter[R, A, B](pureValue: A => B, onError: Error => Eff[R, B]): Interpreter[ErrorOrOk, R, A, B] =
@@ -56,7 +56,7 @@ trait ErrorInterpretation[F] extends ErrorCreation[F] { outer =>
    *
    * Execute a second action whether the first is successful or not
    */
-  def andFinally[R, A](action: Eff[R, A], lastAction: Eff[R, Unit])(using m: ErrorOrOk /= R): Eff[R, A] =
+  def andFinally[R, A](action: Eff[R, A], lastAction: Eff[R, Unit])(using ErrorOrOk /= R): Eff[R, A] =
     intercept(action)(new Interpreter[ErrorOrOk, R, A, A] {
       def onPure(a: A): Eff[R, A] =
         lastAction.as(a)
@@ -87,7 +87,7 @@ trait ErrorInterpretation[F] extends ErrorCreation[F] { outer =>
    *
    * Execute a second action if the first one is not successful
    */
-  def orElse[R, A](action: Eff[R, A], onError: Eff[R, A])(using m: ErrorOrOk /= R): Eff[R, A] =
+  def orElse[R, A](action: Eff[R, A], onError: Eff[R, A])(using ErrorOrOk /= R): Eff[R, A] =
     whenFailed(action, _ => onError)
 
   /**
@@ -97,13 +97,13 @@ trait ErrorInterpretation[F] extends ErrorCreation[F] { outer =>
    *
    * The final value type is the same as the original type
    */
-  def whenFailed[R, A](action: Eff[R, A], onError: Error => Eff[R, A])(using m: ErrorOrOk /= R): Eff[R, A] =
+  def whenFailed[R, A](action: Eff[R, A], onError: Error => Eff[R, A])(using ErrorOrOk /= R): Eff[R, A] =
     catchError(action, identity[A], onError)
 
   /**
    * ignore one possible exception that could be thrown
    */
-  def ignoreException[R, E <: Throwable: ClassTag, A](action: Eff[R, A])(using m: ErrorOrOk /= R): Eff[R, Unit] =
+  def ignoreException[R, E <: Throwable: ClassTag, A](action: Eff[R, A])(using ErrorOrOk /= R): Eff[R, Unit] =
     catchError[R, A, Unit](
       action,
       (_: A) => (),
@@ -119,9 +119,9 @@ trait ErrorInterpretation[F] extends ErrorCreation[F] { outer =>
    * a computation over a "bigger" error (for the full application)
    */
   def localError[SR, BR, U1, U2, F1, F2, A](r: Eff[SR, A], getter: F1 => F2)(using
-    sr: Member.Aux[Evaluate[F1, *], SR, U1],
-    br: Member.Aux[Evaluate[F2, *], BR, U2],
-    into: IntoPoly[U1, U2]
+    Member.Aux[Evaluate[F1, *], SR, U1],
+    Member.Aux[Evaluate[F2, *], BR, U2],
+    IntoPoly[U1, U2]
   ): Eff[BR, A] =
     transform[SR, BR, U1, U2, Evaluate[F1, *], Evaluate[F2, *], A](
       r,
@@ -136,8 +136,8 @@ trait ErrorInterpretation[F] extends ErrorCreation[F] { outer =>
     * a computation over a "bigger" error (for the full application)
     */
   def runLocalError[R, U, F1, F2, A](r: Eff[R, A], getter: F1 => F2)(using
-    sr: Member.Aux[Evaluate[F1, *], R, U],
-    br: Evaluate[F2, *] |= U
+    Member.Aux[Evaluate[F1, *], R, U],
+    Evaluate[F2, *] |= U
   ): Eff[U, A] =
     translate[R, U, Evaluate[F1, *], A](r) {
       new Translate[Evaluate[F1, *], U] {

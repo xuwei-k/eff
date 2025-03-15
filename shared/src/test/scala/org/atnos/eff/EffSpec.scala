@@ -199,10 +199,10 @@ class EffSpec extends Specification with ScalaCheck with ThrownExpectations {
   }
 
   def transformEffect = {
-    def readSize[R](using m: ReaderString |= R): Eff[R, Int] =
+    def readSize[R](using ReaderString |= R): Eff[R, Int] =
       ReaderEffect.ask.map(_.size)
 
-    def setString[R](using m: StateString |= R): Eff[R, Unit] =
+    def setString[R](using StateString |= R): Eff[R, Unit] =
       StateEffect.put("hello")
 
     val readerToState = new ~>[ReaderString, StateString] {
@@ -225,10 +225,10 @@ class EffSpec extends Specification with ScalaCheck with ThrownExpectations {
     type S0 = Fx.fx3[ReaderString, StateString, Option]
     type S1 = Fx.fx2[StateString, Option]
 
-    def readSize[R](using m: ReaderString |= R): Eff[R, Int] =
+    def readSize[R](using ReaderString |= R): Eff[R, Int] =
       ReaderEffect.ask.map(_.size)
 
-    def readerToStateTranslation[R](using m: StateString |= R) = new Translate[ReaderString, R] {
+    def readerToStateTranslation[R](using StateString |= R) = new Translate[ReaderString, R] {
       def apply[A](fa: Reader[String, A]): Eff[R, A] =
         Eff.send(State((s: String) => (s, fa.run(s))))
     }
@@ -240,10 +240,10 @@ class EffSpec extends Specification with ScalaCheck with ThrownExpectations {
   def translateEffectLocal = {
     type S2 = Fx.fx2[StateString, Option]
 
-    def readSize[R](using m: ReaderString |= R): Eff[R, Int] =
+    def readSize[R](using ReaderString |= R): Eff[R, Int] =
       ReaderEffect.ask.map(_.size)
 
-    def setString[R](using m: StateString |= R): Eff[R, Unit] =
+    def setString[R](using StateString |= R): Eff[R, Unit] =
       StateEffect.put("hello")
 
     def readerToState[R](using s: StateString |= R): Translate[ReaderString, R] = new Translate[ReaderString, R] {
@@ -295,7 +295,7 @@ class EffSpec extends Specification with ScalaCheck with ThrownExpectations {
   case class Update(k: String, i: Int) extends Stored[Unit]
   case class Remove(k: String) extends Stored[Unit]
 
-  def runStored[R, U, A](e: Eff[R, A])(using m: Member.Aux[Stored, R, U]): Eff[U, A] =
+  def runStored[R, U, A](e: Eff[R, A])(using Member.Aux[Stored, R, U]): Eff[U, A] =
     interpret.translate[R, U, Stored, A](e)(new Translate[Stored, U] {
       def apply[X](tx: Stored[X]) = pure[U, X](().asInstanceOf[X])
     })

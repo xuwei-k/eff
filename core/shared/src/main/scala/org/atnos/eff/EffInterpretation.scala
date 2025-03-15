@@ -36,13 +36,13 @@ trait EffInterpretation {
   /**
    * peel-off the only present effect
    */
-  def detach[M[_], R, A, E](eff: Eff[R, A])(using monad: MonadError[M, E], m: Member.Aux[M, R, NoFx]): M[A] =
+  def detach[M[_], R, A, E](eff: Eff[R, A])(using MonadError[M, E], Member.Aux[M, R, NoFx]): M[A] =
     detachA(Eff.effInto[R, Fx1[M], A](eff))
 
   /**
    * peel-off the only present effect
    */
-  def detach[M[_], A, E](eff: Eff[Fx1[M], A])(using monad: MonadError[M, E]): M[A] =
+  def detach[M[_], A, E](eff: Eff[Fx1[M], A])(using MonadError[M, E]): M[A] =
     detachA(eff)
 
   /**

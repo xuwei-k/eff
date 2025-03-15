@@ -10,13 +10,13 @@ trait validate {
   given scalazValidateExtension: AnyRef with {
 
     extension [R, A](e: Eff[R, A]) {
-      def runValidationNel[U, E](using m: Member.Aux[Validate[E, *], R, U]): Eff[U, ValidationNel[E, A]] =
+      def runValidationNel[U, E](using Member.Aux[Validate[E, *], R, U]): Eff[U, ValidationNel[E, A]] =
         addon.scalaz.validate.runValidationNel(e)
 
-      def runNelDisjunction[U, E](using m: Member.Aux[Validate[E, *], R, U]): Eff[U, NonEmptyList[E] \/ A] =
+      def runNelDisjunction[U, E](using Member.Aux[Validate[E, *], R, U]): Eff[U, NonEmptyList[E] \/ A] =
         addon.scalaz.validate.runNelDisjunction(e)
 
-      def runMapDisjunction[U, E, L: Semigroup](map: E => L)(using m: Member.Aux[Validate[E, *], R, U]): Eff[U, L \/ A] =
+      def runMapDisjunction[U, E, L: Semigroup](map: E => L)(using Member.Aux[Validate[E, *], R, U]): Eff[U, L \/ A] =
         addon.scalaz.validate.runMapDisjunction(e)(map)
     }
   }

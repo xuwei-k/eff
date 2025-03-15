@@ -21,10 +21,10 @@ trait writer {
       def runWriterNoLog[O](using member: Member[Writer[O, *], R]): Eff[member.Out, A] =
         runWriterUnsafe[O](_ => ())
 
-      def runWriterNoLogU[O, U](using member: Member.Aux[Writer[O, *], R, U]): Eff[U, A] =
+      def runWriterNoLogU[O, U](using Member.Aux[Writer[O, *], R, U]): Eff[U, A] =
         runWriterUnsafe[O](_ => ())
 
-      def discardWriter[O, U](using member: Member.Aux[Writer[O, *], R, U]): Eff[U, A] =
+      def discardWriter[O, U](using Member.Aux[Writer[O, *], R, U]): Eff[U, A] =
         runWriterNoLogU[O, U]
 
       def runWriterLog[O](using member: Member[Writer[O, *], R]): Eff[member.Out, List[O]] =

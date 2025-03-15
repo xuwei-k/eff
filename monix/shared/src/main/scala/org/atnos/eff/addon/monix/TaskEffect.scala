@@ -87,7 +87,7 @@ trait TaskInterpretation extends TaskTypes {
 
   import interpret.of
 
-  def taskAttempt[R, A](e: Eff[R, A])(using task: Task /= R): Eff[R, Either[Throwable, A]] =
+  def taskAttempt[R, A](e: Eff[R, A])(using Task /= R): Eff[R, Either[Throwable, A]] =
     interpret.interceptNatM[R, Task, Either[Throwable, *], A](
       e,
       new (Task ~> (Task of Either[Throwable, *])#l) {
@@ -96,7 +96,7 @@ trait TaskInterpretation extends TaskTypes {
       }
     )
 
-  def forkTasks[R, A](e: Eff[R, A])(using task: Task /= R): Eff[R, A] =
+  def forkTasks[R, A](e: Eff[R, A])(using Task /= R): Eff[R, A] =
     interpret.interceptNat[R, Task, A](e)(new (Task ~> Task) {
       def apply[X](fa: Task[X]): Task[X] =
         fa.executeAsync
@@ -113,7 +113,7 @@ trait TaskInterpretation extends TaskTypes {
     *
     * if this method is called with the same key the previous value will be returned
     */
-  def taskMemo[R, A](key: AnyRef, cache: Cache, e: Eff[R, A])(using task: Task /= R): Eff[R, A] =
+  def taskMemo[R, A](key: AnyRef, cache: Cache, e: Eff[R, A])(using Task /= R): Eff[R, A] =
     taskAttempt(Eff.memoizeEffect(e, cache, key)).flatMap {
       case Left(t) => Eff.send(taskSequenceCached.reset(cache, key)) >> TaskEffect.taskFailed(t)
       case Right(a) => Eff.pure(a)

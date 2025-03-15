@@ -13,13 +13,13 @@ trait error {
       def runError(using m: Member[ErrorOrOk, R]): Eff[m.Out, Either[Error, A]] =
         ErrorEffect.runError(action)(using m.aux)
 
-      def andFinally(last: Eff[R, Unit])(using m: ErrorOrOk <= R): Eff[R, A] =
+      def andFinally(last: Eff[R, Unit])(using ErrorOrOk <= R): Eff[R, A] =
         ErrorEffect.andFinally(action, last)
 
-      def orElse(action2: Eff[R, A])(using m: ErrorOrOk <= R): Eff[R, A] =
+      def orElse(action2: Eff[R, A])(using ErrorOrOk <= R): Eff[R, A] =
         ErrorEffect.orElse(action, action2)
 
-      def ignore[E <: Throwable: ClassTag](using m: ErrorOrOk <= R): Eff[R, Unit] =
+      def ignore[E <: Throwable: ClassTag](using ErrorOrOk <= R): Eff[R, Unit] =
         ErrorEffect.ignoreException(action)
     }
 

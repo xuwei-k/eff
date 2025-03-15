@@ -30,16 +30,16 @@ trait validate {
       def runIorNel[E](using m: Member[Validate[E, *], R]): Eff[m.Out, IorNel[E, A]] =
         ValidateInterpretation.runIorNel(e)(using m.aux)
 
-      def catchWrongs[E, S[_]: Applicative](handle: S[E] => Eff[R, A])(using m: Member[Validate[E, *], R], semi: Semigroup[S[E]]): Eff[R, A] =
+      def catchWrongs[E, S[_]: Applicative](handle: S[E] => Eff[R, A])(using Member[Validate[E, *], R], Semigroup[S[E]]): Eff[R, A] =
         ValidateInterpretation.catchWrongs(e)(handle)
 
-      def catchFirstWrong[E](handle: E => Eff[R, A])(using m: Member[Validate[E, *], R]): Eff[R, A] =
+      def catchFirstWrong[E](handle: E => Eff[R, A])(using Member[Validate[E, *], R]): Eff[R, A] =
         ValidateInterpretation.catchFirstWrong(e)(handle)
 
-      def catchLastWrong[E](handle: E => Eff[R, A])(using m: Member[Validate[E, *], R]): Eff[R, A] =
+      def catchLastWrong[E](handle: E => Eff[R, A])(using Member[Validate[E, *], R]): Eff[R, A] =
         ValidateInterpretation.catchLastWrong(e)(handle)
 
-      def catchAllWrongs[E](handle: NonEmptyList[E] => Eff[R, A])(using m: Member[Validate[E, *], R]): Eff[R, A] =
+      def catchAllWrongs[E](handle: NonEmptyList[E] => Eff[R, A])(using Member[Validate[E, *], R]): Eff[R, A] =
         ValidateInterpretation.catchAllWrongs(e)(handle)
     }
   }

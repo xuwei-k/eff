@@ -12,25 +12,25 @@ trait task {
 
     extension [R, A](e: Eff[R, A]) {
 
-      def asyncBoundary(using task: Task |= R): Eff[R, A] =
+      def asyncBoundary(using Task |= R): Eff[R, A] =
         e.flatMap(a => TaskEffect.asyncBoundary.map(_ => a))
 
-      def asyncBoundary(s: Scheduler)(using task: Task |= R): Eff[R, A] =
+      def asyncBoundary(s: Scheduler)(using Task |= R): Eff[R, A] =
         e.flatMap(a => TaskEffect.asyncBoundary(s).map(_ => a))
 
-      def taskAttempt(using task: Task /= R): Eff[R, Either[Throwable, A]] =
+      def taskAttempt(using Task /= R): Eff[R, Either[Throwable, A]] =
         TaskInterpretation.taskAttempt(e)
 
-      def taskMemo(key: AnyRef, cache: Cache)(using task: Task /= R): Eff[R, A] =
+      def taskMemo(key: AnyRef, cache: Cache)(using Task /= R): Eff[R, A] =
         TaskInterpretation.taskMemo(key, cache, e)
 
-      def runAsync(using m: Member.Aux[Task, R, NoFx]): Task[A] =
+      def runAsync(using Member.Aux[Task, R, NoFx]): Task[A] =
         TaskInterpretation.runAsync(e)
 
-      def runSequential(using m: Member.Aux[Task, R, NoFx]): Task[A] =
+      def runSequential(using Member.Aux[Task, R, NoFx]): Task[A] =
         TaskInterpretation.runSequential(e)
 
-      def retryUntil(condition: A => Boolean, durations: List[FiniteDuration])(using task: Task |= R): Eff[R, A] =
+      def retryUntil(condition: A => Boolean, durations: List[FiniteDuration])(using Task |= R): Eff[R, A] =
         TaskCreation.retryUntil(e, condition, durations)
     }
   }

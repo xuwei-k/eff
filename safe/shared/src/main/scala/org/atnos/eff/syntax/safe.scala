@@ -11,37 +11,37 @@ trait safe {
 
     extension [R, A](e: Eff[R, A]) {
 
-      def runSafe[U](using m: Member.Aux[Safe, R, U]): Eff[U, (Either[Throwable, A], List[Throwable])] =
+      def runSafe[U](using Member.Aux[Safe, R, U]): Eff[U, (Either[Throwable, A], List[Throwable])] =
         SafeEffect.runSafe[R, U, A](e)
 
-      def execSafe[U](using m: Member.Aux[Safe, R, U]): Eff[U, Either[Throwable, A]] =
+      def execSafe[U](using Member.Aux[Safe, R, U]): Eff[U, Either[Throwable, A]] =
         SafeEffect.execSafe[R, U, A](e)
 
-      def `finally`(last: Eff[R, Unit])(using m: Safe /= R): Eff[R, A] =
+      def `finally`(last: Eff[R, Unit])(using Safe /= R): Eff[R, A] =
         SafeEffect.thenFinally(e, last)
 
-      def thenFinally(last: Eff[R, Unit])(using m: Safe /= R): Eff[R, A] =
+      def thenFinally(last: Eff[R, Unit])(using Safe /= R): Eff[R, A] =
         SafeEffect.thenFinally(e, last)
 
-      def catchThrowable[B](pure: A => B, onThrowable: Throwable => Eff[R, B])(using m: Safe /= R): Eff[R, B] =
+      def catchThrowable[B](pure: A => B, onThrowable: Throwable => Eff[R, B])(using Safe /= R): Eff[R, B] =
         SafeEffect.catchThrowable(e, pure, onThrowable)
 
-      def recoverThrowable[B](pure: A => B, onThrowable: PartialFunction[Throwable, Eff[R, B]])(using m: Safe /= R): Eff[R, B] =
+      def recoverThrowable[B](pure: A => B, onThrowable: PartialFunction[Throwable, Eff[R, B]])(using Safe /= R): Eff[R, B] =
         SafeEffect.recoverThrowable(e, pure, onThrowable)
 
-      def otherwise(onThrowable: Eff[R, A])(using m: Safe /= R): Eff[R, A] =
+      def otherwise(onThrowable: Eff[R, A])(using Safe /= R): Eff[R, A] =
         SafeEffect.otherwise(e, onThrowable)
 
-      def whenFailed(onThrowable: Throwable => Eff[R, A])(using m: Safe /= R): Eff[R, A] =
+      def whenFailed(onThrowable: Throwable => Eff[R, A])(using Safe /= R): Eff[R, A] =
         SafeEffect.whenFailed(e, onThrowable)
 
-      def whenThrowable(onThrowable: PartialFunction[Throwable, Eff[R, A]])(using m: Safe /= R): Eff[R, A] =
+      def whenThrowable(onThrowable: PartialFunction[Throwable, Eff[R, A]])(using Safe /= R): Eff[R, A] =
         SafeEffect.whenThrowable(e, onThrowable)
 
-      def attempt(using m: Safe /= R): Eff[R, Either[Throwable, A]] =
+      def attempt(using Safe /= R): Eff[R, Either[Throwable, A]] =
         SafeEffect.attempt(e)
 
-      def ignoreException[E <: Throwable: ClassTag](using m: Safe /= R): Eff[R, Unit] =
+      def ignoreException[E <: Throwable: ClassTag](using Safe /= R): Eff[R, Unit] =
         SafeEffect.ignoreException[R, E, A](e)
     }
   }

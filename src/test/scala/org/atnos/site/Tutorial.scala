@@ -179,10 +179,10 @@ It is nice to be able to "chain" `run` methods with this additional piece of syn
 
       extension [R, A](effects: Eff[R, A]) {
         def runStore[U](using
-          m: Member.Aux[KVStore, R, U],
-          throwable: _throwableEither[U],
-          writer: _writerString[U],
-          state: _stateMap[U]
+          Member.Aux[KVStore, R, U],
+          _throwableEither[U],
+          _writerString[U],
+          _stateMap[U]
         ): Eff[U, A] =
           runKVStore(effects)
       }

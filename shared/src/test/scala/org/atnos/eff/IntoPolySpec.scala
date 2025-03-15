@@ -64,7 +64,7 @@ class IntoPolySpec extends Specification with ThrownExpectations {
   }
 
   def memberInto = {
-    def stopUnless[EO, E](cond: Eff[E, Boolean])(using m: Member.Aux[Option, EO, E]): Eff[EO, Unit] = {
+    def stopUnless[EO, E](cond: Eff[E, Boolean])(using Member.Aux[Option, EO, E]): Eff[EO, Unit] = {
       cond.into[EO].flatMap { c =>
         if (c) OptionEffect.some(())
         else OptionEffect.none
@@ -74,7 +74,7 @@ class IntoPolySpec extends Specification with ThrownExpectations {
     def isEven[E](n: Int): Eff[E, Boolean] =
       Eff.pure[E, Boolean](n % 2 == 0)
 
-    def action[EO, E](using r: Reader[Int, *] |= EO, o: Member.Aux[Option, EO, E]): Eff[EO, String] =
+    def action[EO, E](using Reader[Int, *] |= EO, Member.Aux[Option, EO, E]): Eff[EO, String] =
       for {
         m <- reader.ask[EO, Int]
         _ <- stopUnless[EO, E](isEven(m + 1))

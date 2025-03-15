@@ -7,10 +7,10 @@ object either extends either
 
 trait either {
 
-  def fromDisjunction[R, E, A](ea: E \/ A)(using member: Either[E, *] |= R): Eff[R, A] =
+  def fromDisjunction[R, E, A](ea: E \/ A)(using Either[E, *] |= R): Eff[R, A] =
     org.atnos.eff.either.fromEither(ea.toEither)
 
-  def runDisjunction[R, U, E, A](r: Eff[R, A])(using m: Member.Aux[Either[E, *], R, U]): Eff[U, E \/ A] =
+  def runDisjunction[R, U, E, A](r: Eff[R, A])(using Member.Aux[Either[E, *], R, U]): Eff[U, E \/ A] =
     org.atnos.eff.either.runEither(r).map(_.fold(\/.left, \/.right))
 
   /** run the Either effect, yielding E Either A and combine all Es */
