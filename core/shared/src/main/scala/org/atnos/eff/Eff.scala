@@ -1,6 +1,8 @@
 package org.atnos.eff
 
 import cats.Monad
+import cats.data.Writer
+import cats.~>
 
 /**
  * Effects of type R, returning a value of type A
@@ -93,6 +95,26 @@ sealed abstract class Eff[R, A] {
   /** add one last action to be executed after any computation chained to this Eff value */
   def addLast(l: Last[R]): Eff[R, A]
 
+  def into[U](using f: IntoPoly[R, U]): Eff[U, A] =
+    Eff.effInto(this)(using f)
+
+  def transform[BR, U, M[_], N[_]](t: ~>[M, N])(using m: Member.Aux[M, R, U], n: Member.Aux[N, BR, U]): Eff[BR, A] =
+    Interpret.transform(this, t)(using m, n, IntoPoly.intoSelf[U])
+
+  def translate[M[_], U](t: Translate[M, U])(using m: Member.Aux[M, R, U]): Eff[U, A] =
+    Interpret.translate(this)(t)(using m)
+
+  def translateInto[T[_], U](t: Translate[T, U])(using m: MemberInOut[T, R], into: IntoPoly[R, U]): Eff[U, A] =
+    interpret.translateInto(this)(t)(using m, into)
+
+  def write[T[_], O](w: Write[T, O])(using MemberInOut[T, R], MemberInOut[Writer[O, *], R]): Eff[R, A] =
+    interpret.write(this)(w)
+
+  def augment[T[_], O[_]](w: Augment[T, O])(using MemberInOut[T, R], MemberIn[O, R]): Eff[R, A] =
+    interpret.augment(this)(w)
+
+  def runPure: Option[A] =
+    Eff.runPure(this)
 }
 
 case class Pure[R, A](value: A, last: Last[R] = Last.none[R]) extends Eff[R, A] {

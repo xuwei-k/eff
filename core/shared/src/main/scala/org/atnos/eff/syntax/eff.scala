@@ -2,7 +2,6 @@ package org.atnos.eff
 package syntax
 
 import cats.*
-import cats.data.Writer
 
 /**
   * Operations of Eff[R, A] values
@@ -13,29 +12,6 @@ trait eff extends effOperations with effCats
 
 trait effOperations {
   given effExtension: AnyRef with {
-    extension [R, A](e: Eff[R, A]) {
-      def into[U](using f: IntoPoly[R, U]): Eff[U, A] =
-        Eff.effInto(e)(using f)
-
-      def transform[BR, U, M[_], N[_]](t: ~>[M, N])(using m: Member.Aux[M, R, U], n: Member.Aux[N, BR, U]): Eff[BR, A] =
-        Interpret.transform(e, t)(using m, n, IntoPoly.intoSelf[U])
-
-      def translate[M[_], U](t: Translate[M, U])(using m: Member.Aux[M, R, U]): Eff[U, A] =
-        Interpret.translate(e)(t)(using m)
-
-      def translateInto[T[_], U](t: Translate[T, U])(using m: MemberInOut[T, R], into: IntoPoly[R, U]): Eff[U, A] =
-        interpret.translateInto(e)(t)(using m, into)
-
-      def write[T[_], O](w: Write[T, O])(using MemberInOut[T, R], MemberInOut[Writer[O, *], R]): Eff[R, A] =
-        interpret.write(e)(w)
-
-      def augment[T[_], O[_]](w: Augment[T, O])(using MemberInOut[T, R], MemberIn[O, R]): Eff[R, A] =
-        interpret.augment(e)(w)
-
-      def runPure: Option[A] =
-        Eff.runPure(e)
-    }
-
     extension [A](e: Eff[NoFx, A]) {
       def run: A =
         Eff.run(e)

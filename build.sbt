@@ -157,6 +157,7 @@ lazy val buildSettings = Seq(
 )
 
 lazy val commonSettings = Def.settings(
+  semanticdbEnabled := scalaVersion.value.startsWith("3.3"),
   libraryDependencies += "org.typelevel" %%% "cats-core" % "2.13.0",
   scalacOptions ++= commonScalacOptions.value,
   (Compile / doc / scalacOptions) ++= {
@@ -319,7 +320,6 @@ Global / excludeLintKeys ++= Set(
 
 inThisBuild(
   Seq(
-    semanticdbEnabled := scalaVersion.value.startsWith("3.3"),
     semanticdbVersion := scalafixSemanticdb.revision
   )
 )
