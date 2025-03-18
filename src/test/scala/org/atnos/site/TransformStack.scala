@@ -275,7 +275,6 @@ We can also define another stack, for storing and retrieving data on [S3](https:
 
 So what happens when you want to both use S3 and Hadoop? As you can see from the definition above those 2 stacks share
 some common effects, so the resulting stack we want to work with is:${snippet {
-      import org.atnos.eff._
       import cats.Eval
       import HadoopStack._
       import S3Stack.{WriterString as _, _}
