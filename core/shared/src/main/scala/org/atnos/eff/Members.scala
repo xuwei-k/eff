@@ -1,7 +1,7 @@
 package org.atnos.eff
 
 /** list of Member instances for a given stack R */
-sealed trait Members
+sealed abstract class Members
 
 object Members {
 

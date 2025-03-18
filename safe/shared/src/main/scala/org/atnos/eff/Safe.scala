@@ -6,7 +6,7 @@ import cats.*
  * The Safe type is a mix of a ThrowableEither / Eval effect
  *   and a writer effect to collect finalizer failures
  */
-sealed trait Safe[A] {
+sealed abstract class Safe[A] {
   def memoize: Safe[A]
 }
 

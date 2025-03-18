@@ -13,7 +13,7 @@ object SubscribeEffect {
 
   type Callback[A] = (Either[Throwable, A]) => Unit
 
-  sealed trait Subscribe[A] extends (Callback[A] => Unit) {
+  sealed abstract class Subscribe[A] extends (Callback[A] => Unit) {
     def memoizeKey: Option[(AnyRef, Cache)]
     def unmemoize: Subscribe[A]
   }

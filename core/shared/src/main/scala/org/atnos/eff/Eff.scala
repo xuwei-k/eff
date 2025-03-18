@@ -47,7 +47,7 @@ import cats.Monad
  * @see [[https://okmij.org/ftp/Haskell/extensible/more.pdf]]
  *
  */
-sealed trait Eff[R, A] {
+sealed abstract class Eff[R, A] {
   import Eff.EffApplicative
 
   def map[B](f: A => B): Eff[R, B] =

@@ -48,6 +48,6 @@ sealed trait Fx3[+L[_], +M[_], +R[_]] extends Fx
 /**
  * The "empty" tree of effects
  */
-class NoFx extends Fx
+sealed abstract class NoFx extends Fx
 
 object NoFx extends NoFx
